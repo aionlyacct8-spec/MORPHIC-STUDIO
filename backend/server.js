@@ -53,7 +53,7 @@ app.post("/api/analyze-script", async (req, res) => {
 
     // 2. Generate the storyboard via the AI Stack
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       contents: `You are the AI Story Planner for Morphic Studio. Convert the following script into a structured comic storyboard format. Outline the panels, visual descriptions, and dialogue:\n\n${scriptText}`,
     });
 
