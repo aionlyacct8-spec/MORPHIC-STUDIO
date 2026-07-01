@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — World Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-dim": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .location-card.selected { border-color: rgba(192,193,255,0.5); box-shadow: 0 0 0 1px rgba(192,193,255,0.3), 0 0 20px rgba(192,193,255,0.1); }
+  .tab-btn.active { color: #c0c1ff; border-bottom: 2px solid #c0c1ff; }
+  .atmos-chip.active { background: rgba(192,193,255,0.2); border-color: rgba(192,193,255,0.5); color: #c0c1ff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden selection:bg-primary/30 selection:text-primary">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full z-40 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 backdrop-blur-2xl shadow-sm border-b border-white/10">
+  <div class="flex items-center gap-4">
+    <h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Morphic Studio</h1>
+    <div class="h-4 w-px bg-white/10 hidden md:block"></div>
+    <nav class="hidden md:flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+      <a class="hover:text-primary transition-colors" href="/dashboard.html">Project: The Last Echo</a>
+      <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+      <span class="text-primary font-bold drop-shadow-[0_0_8px_rgba(192,193,255,0.4)]">World Builder</span>
+    </nav>
+  </div>
+  <div class="flex items-center gap-6">
+    <div class="hidden md:flex items-center gap-4">
+      <button class="bg-surface-variant/50 text-on-surface font-label-md text-label-md px-4 py-2 rounded-md hover:bg-surface-bright transition-colors border border-white/10">Share</button>
+      <button onclick="openAddLocation()" class="bg-primary-container/90 text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-md hover:brightness-110 transition-all font-bold shadow-[0_0_20px_rgba(192,193,255,0.4)] border border-primary/30 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">add_location</span> Add Location
+      </button>
+    </div>
+    <div class="flex items-center gap-4 text-on-surface-variant">
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">account_circle</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="flex h-screen pt-16 pb-10">
+  <!-- Sidebar -->
+  <aside class="flex flex-col h-full py-8 w-64 bg-surface-container-low/60 backdrop-blur-xl flex-shrink-0 border-r border-white/5">
+    <div class="px-6 mb-8 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+      </div>
+      <div>
+        <h2 class="font-headline-md text-[16px] leading-tight font-bold text-on-surface">Morphic Studio</h2>
+        <p class="font-label-sm text-[10px] text-primary/80">Memory Engine: Online</p>
+      </div>
+    </div>
+    <div class="px-4 mb-6">
+      <a href="/new-project.html" class="w-full bg-surface-variant/40 hover:bg-white/5 text-on-surface font-label-md text-label-md py-2.5 rounded-md border border-white/10 transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">add</span> New Project
+      </a>
+    </div>
+    <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/dashboard.html"><span class="material-symbols-outlined text-[18px]">edit_note</span><span class="font-label-md text-sm">Story Writing</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/story-hub.html"><span class="material-symbols-outlined text-[18px]">menu_book</span><span class="font-label-md text-sm">Story Bible</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/character-manager.html"><span class="material-symbols-outlined text-[18px]">groups</span><span class="font-label-md text-sm">Character Manager</span></a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-primary font-bold border-l-2 border-primary bg-primary/10 shadow-[inset_20px_0_40px_rgba(192,193,255,0.05)]" href="/world-builder.html"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">public</span><span class="font-label-md text-sm">World Builder</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/asset-library.html"><span class="material-symbols-outlined text-[18px]">auto_stories</span><span class="font-label-md text-sm">Asset Library</span></a>
+      <div class="h-px bg-white/5 my-2 mx-2"></div>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/storyboard.html"><span class="material-symbols-outlined text-[18px]">timeline</span><span class="font-label-md text-sm">Storyboard</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/comic-studio.html"><span class="material-symbols-outlined text-[18px]">view_quilt</span><span class="font-label-md text-sm">Comic Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/animation-studio.html"><span class="material-symbols-outlined text-[18px]">movie_creation</span><span class="font-label-md text-sm">Animation Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/motion-comic-studio.html"><span class="material-symbols-outlined text-[18px]">animation</span><span class="font-label-md text-sm">Motion Comic</span></a>
+    </nav>
+    <div class="px-3 mt-auto pt-4 border-t border-white/5 space-y-0.5">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">settings</span><span class="font-label-md text-sm">Settings</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">help</span><span class="font-label-md text-sm">Support</span></a>
+    </div>
+  </aside>
+
+  <!-- Main + Detail panel -->
+  <main class="flex-1 flex overflow-hidden">
+    <!-- World Codex -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top bar -->
+      <div class="flex-shrink-0 px-8 py-5 border-b border-white/5 bg-surface-container-low/30 backdrop-blur-md flex items-center gap-4">
+        <div class="flex-1">
+          <h2 class="font-headline-md text-[22px] font-bold text-on-surface">World Codex</h2>
+          <p class="font-label-sm text-[11px] text-on-surface-variant mt-0.5">Neo-Veridia, 2084 · 4 locations · 8 lore entries</p>
+        </div>
+        <button onclick="openAddLocation()" class="flex items-center gap-2 bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 rounded-md px-4 py-2 font-label-md text-label-md transition-all">
+          <span class="material-symbols-outlined text-[16px]">add_location</span> Add Location
+        </button>
+      </div>
+
+      <!-- Section tabs -->
+      <div class="flex-shrink-0 px-8 border-b border-white/5 flex items-center gap-0">
+        <button class="tab-btn active px-5 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors border-b-2 border-transparent" data-tab="locations" onclick="switchTab('locations')">Locations</button>
+        <button class="tab-btn px-5 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors border-b-2 border-transparent" data-tab="lore" onclick="switchTab('lore')">Lore Entries</button>
+        <button class="tab-btn px-5 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors border-b-2 border-transparent" data-tab="rules" onclick="switchTab('rules')">World Rules</button>
+        <button class="tab-btn px-5 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors border-b-2 border-transparent" data-tab="timeline" onclick="switchTab('timeline')">Timeline</button>
+      </div>
+
+      <!-- Tab content -->
+      <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+
+        <!-- Locations -->
+        <div id="tab-locations" class="tab-content active space-y-4">
+          <!-- Neo-Veridia -->
+          <div class="location-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" onclick="selectLocation('neoveridia')">
+            <div class="flex gap-5 p-5">
+              <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-[#0a1628] to-[#1a2840] flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 group-hover:ring-primary/30 transition-colors">
+                <span class="material-symbols-outlined text-primary/50 text-3xl">location_city</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h3 class="font-headline-md text-[18px] font-bold text-on-surface group-hover:text-primary transition-colors">Neo-Veridia</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="px-2 py-0.5 rounded-sm bg-primary/15 border border-primary/20 font-label-sm text-[8px] text-primary uppercase tracking-wide">Megacity</span>
+                      <span class="font-label-sm text-[10px] text-on-surface-variant">Late 21st Century, 2084</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 text-on-surface-variant flex-shrink-0">
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-primary font-bold">12</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">scenes</p></div>
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-on-surface font-bold">4</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">chars</p></div>
+                  </div>
+                </div>
+                <p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed line-clamp-2 mb-3">A rain-soaked cyberpunk megacity stratified by class, technology, and forgotten history. The upper levels gleam with neon wealth while the foundations rot in forgotten data.</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Neon-lit</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Rain-soaked</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Stratified</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Oppressive</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Undercity Sector 4 -->
+          <div class="location-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" onclick="selectLocation('undercity')">
+            <div class="flex gap-5 p-5">
+              <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-[#08090f] to-[#0d1020] flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 group-hover:ring-error/30 transition-colors">
+                <span class="material-symbols-outlined text-error/40 text-3xl">landscape</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h3 class="font-headline-md text-[18px] font-bold text-on-surface group-hover:text-primary transition-colors">The Undercity — Sector 4</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="px-2 py-0.5 rounded-sm bg-error/15 border border-error/20 font-label-sm text-[8px] text-error uppercase tracking-wide">Underground</span>
+                      <span class="font-label-sm text-[10px] text-on-surface-variant">Sub-level 7, Neo-Veridia</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-primary font-bold">5</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">scenes</p></div>
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-on-surface font-bold">2</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">chars</p></div>
+                  </div>
+                </div>
+                <p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed line-clamp-2 mb-3">The forgotten foundations of Neo-Veridia. Highly toxic, structurally unstable, populated by exiles and rogue synths. Active mnemonic nodes pulse with suppressed data.</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-error/10 border border-error/20 font-label-sm text-[9px] text-error/70">Toxic</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Claustrophobic</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Bioluminescent</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Dangerous</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Broker Den -->
+          <div class="location-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" onclick="selectLocation('den')">
+            <div class="flex gap-5 p-5">
+              <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-surface-variant to-surface-container-high flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 group-hover:ring-amber-500/30 transition-colors">
+                <span class="material-symbols-outlined text-amber-500/40 text-3xl">storefront</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h3 class="font-headline-md text-[18px] font-bold text-on-surface group-hover:text-primary transition-colors">The Data Broker's Den</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="px-2 py-0.5 rounded-sm bg-amber-500/15 border border-amber-500/20 font-label-sm text-[8px] text-amber-400 uppercase tracking-wide">Industrial</span>
+                      <span class="font-label-sm text-[10px] text-on-surface-variant">Mid-Level 3, District 7</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-primary font-bold">2</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">scenes</p></div>
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-on-surface font-bold">3</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">chars</p></div>
+                  </div>
+                </div>
+                <p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed line-clamp-2 mb-3">A repurposed signal relay station. Holographic market stalls flicker between stolen data feeds. Neutral ground — no faction violence permitted inside.</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Neutral Ground</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Cramped</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Tense</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rain District -->
+          <div class="location-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" onclick="selectLocation('rain')">
+            <div class="flex gap-5 p-5">
+              <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-[#071020] to-[#0d1830] flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 group-hover:ring-tertiary/30 transition-colors">
+                <span class="material-symbols-outlined text-tertiary/40 text-3xl">rainy</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h3 class="font-headline-md text-[18px] font-bold text-on-surface group-hover:text-primary transition-colors">Rain District</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="px-2 py-0.5 rounded-sm bg-tertiary/15 border border-tertiary/20 font-label-sm text-[8px] text-tertiary uppercase tracking-wide">Urban</span>
+                      <span class="font-label-sm text-[10px] text-on-surface-variant">Mid-Level 2, Neo-Veridia</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-primary font-bold">3</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">scenes</p></div>
+                    <div class="text-center"><p class="font-label-sm text-[10px] text-on-surface font-bold">2</p><p class="font-label-sm text-[8px] text-on-surface-variant/60">chars</p></div>
+                  </div>
+                </div>
+                <p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed line-clamp-2 mb-3">Always raining. Mag-lev infrastructure overhead creates a permanent artificial night. Neon reflections puddle in cracked asphalt. People move fast and don't meet eyes.</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Perpetual Night</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Noir</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Melancholy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /locations -->
+
+        <!-- Lore -->
+        <div id="tab-lore" class="tab-content space-y-3">
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors cursor-pointer group">
+            <div class="flex items-start gap-4">
+              <span class="material-symbols-outlined text-primary/60 text-[22px] mt-0.5">history</span>
+              <div>
+                <div class="flex items-center gap-2 mb-1"><h4 class="font-label-md text-[13px] font-bold text-on-surface group-hover:text-primary transition-colors">The Syndicate Fall</h4><span class="px-1.5 py-0.5 rounded-sm bg-surface-bright text-[8px] font-label-sm text-on-surface-variant uppercase">History</span></div>
+                <p class="font-body-md text-sm text-on-surface-variant leading-relaxed">The Meridian Syndicate collapsed seven years before the story begins, leaving a power vacuum filled by three factions: the Neon Reapers, the Architects, and the Ghost Protocol.</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors cursor-pointer group">
+            <div class="flex items-start gap-4">
+              <span class="material-symbols-outlined text-tertiary/60 text-[22px] mt-0.5">memory</span>
+              <div>
+                <div class="flex items-center gap-2 mb-1"><h4 class="font-label-md text-[13px] font-bold text-on-surface group-hover:text-primary transition-colors">Memory Engines</h4><span class="px-1.5 py-0.5 rounded-sm bg-surface-bright text-[8px] font-label-sm text-on-surface-variant uppercase">Technology</span></div>
+                <p class="font-body-md text-sm text-on-surface-variant leading-relaxed">Uncalibrated Memory Engines project suppressed memories as localized, hazardous holograms. The ones in Sector 4 haven't been serviced in decades.</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors cursor-pointer group">
+            <div class="flex items-start gap-4">
+              <span class="material-symbols-outlined text-error/60 text-[22px] mt-0.5">groups</span>
+              <div>
+                <div class="flex items-center gap-2 mb-1"><h4 class="font-label-md text-[13px] font-bold text-on-surface group-hover:text-primary transition-colors">The Neon Reapers</h4><span class="px-1.5 py-0.5 rounded-sm bg-surface-bright text-[8px] font-label-sm text-on-surface-variant uppercase">Faction</span></div>
+                <p class="font-body-md text-sm text-on-surface-variant leading-relaxed">Control the lower levels. Use bioluminescent gang markings visible only under UV. Leader ZERO is a former Memory Engine technician with direct access to rogue mnemonic nodes.</p>
+              </div>
+            </div>
+          </div>
+          <button onclick="openAddLocation()" class="w-full py-3 border border-dashed border-white/10 rounded-xl text-on-surface-variant font-label-md text-[11px] hover:border-primary/30 hover:text-primary transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">add</span> Add Lore Entry
+          </button>
+        </div>
+
+        <!-- Rules -->
+        <div id="tab-rules" class="tab-content space-y-3">
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-4 flex items-start gap-3 group hover:border-white/20 transition-colors">
+            <span class="material-symbols-outlined text-primary/50 text-[18px] mt-0.5">gavel</span>
+            <div class="flex-1"><p class="font-label-md text-[12px] font-bold text-on-surface mb-1">Tech-Noir Lighting Rule</p><p class="font-body-md text-sm text-on-surface-variant">All scenes in Neo-Veridia must use high-contrast lighting with dominant neon colors (magenta, cyan, amber). Natural light forbidden except in flashback sequences.</p></div>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+          </div>
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-4 flex items-start gap-3 group hover:border-white/20 transition-colors">
+            <span class="material-symbols-outlined text-primary/50 text-[18px] mt-0.5">gavel</span>
+            <div class="flex-1"><p class="font-label-md text-[12px] font-bold text-on-surface mb-1">Faction Neutral Ground</p><p class="font-body-md text-sm text-on-surface-variant">No faction violence permitted inside The Data Broker's Den. Violations result in immediate permanent blacklisting from all neutral markets.</p></div>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+          </div>
+          <div class="bg-surface-container/50 border border-white/10 rounded-xl p-4 flex items-start gap-3 group hover:border-white/20 transition-colors">
+            <span class="material-symbols-outlined text-primary/50 text-[18px] mt-0.5">gavel</span>
+            <div class="flex-1"><p class="font-label-md text-[12px] font-bold text-on-surface mb-1">Memory Engine Hazard Zones</p><p class="font-body-md text-sm text-on-surface-variant">Uncalibrated Memory Engine areas are designated hazard zones. Entering without neural shielding risks involuntary memory injection.</p></div>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+          </div>
+          <button class="w-full py-3 border border-dashed border-white/10 rounded-xl text-on-surface-variant font-label-md text-[11px] hover:border-primary/30 hover:text-primary transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">add</span> Add World Rule
+          </button>
+        </div>
+
+        <!-- Timeline -->
+        <div id="tab-timeline" class="tab-content">
+          <div class="relative pl-8 space-y-6">
+            <div class="absolute left-3 top-2 bottom-0 w-px bg-gradient-to-b from-primary/40 via-white/10 to-transparent"></div>
+            <div class="relative">
+              <div class="absolute -left-5 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(192,193,255,0.6)] top-1"></div>
+              <p class="font-label-sm text-[9px] text-primary uppercase tracking-widest mb-1">2077 — 7 Years Before Story</p>
+              <div class="bg-surface-container/50 border border-white/10 rounded-xl p-4">
+                <h4 class="font-label-md text-[12px] font-bold text-on-surface mb-1">The Syndicate Fall</h4>
+                <p class="font-body-md text-sm text-on-surface-variant">The Meridian Syndicate collapses under internal corruption and external pressure. Power vacuum triggers faction wars.</p>
+              </div>
+            </div>
+            <div class="relative">
+              <div class="absolute -left-5 w-2.5 h-2.5 rounded-full bg-on-surface-variant/30 top-1"></div>
+              <p class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-widest mb-1">2082 — 2 Years Before Story</p>
+              <div class="bg-surface-container/50 border border-white/10 rounded-xl p-4">
+                <h4 class="font-label-md text-[12px] font-bold text-on-surface mb-1">Memory Engine Failure Cascade</h4>
+                <p class="font-body-md text-sm text-on-surface-variant">Sector 4 Memory Engines go rogue. Government quarantines the Undercity. Kael loses his first field partner to a mnemonic injection.</p>
+              </div>
+            </div>
+            <div class="relative">
+              <div class="absolute -left-5 w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.6)] top-1"></div>
+              <p class="font-label-sm text-[9px] text-emerald-400 uppercase tracking-widest mb-1">2084 — Story Present</p>
+              <div class="bg-surface-container/50 border border-primary/20 rounded-xl p-4">
+                <h4 class="font-label-md text-[12px] font-bold text-on-surface mb-1">The Last Echo — Chapter 1</h4>
+                <p class="font-body-md text-sm text-on-surface-variant">Kael receives a mission to investigate Sector 4. The story begins.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab area -->
+    </div><!-- /codex -->
+
+    <!-- Location Detail Panel -->
+    <aside class="w-[380px] flex-shrink-0 bg-surface-container/40 backdrop-blur-2xl border-l border-white/5 flex flex-col overflow-hidden shadow-[-5px_0_30px_rgba(0,0,0,0.2)]">
+      <div class="p-5 border-b border-white/5 bg-surface-container-high/30 sticky top-0 flex items-center justify-between">
+        <h3 class="font-label-md text-label-md text-on-surface flex items-center gap-2 uppercase tracking-[0.15em] text-xs font-bold">
+          <span class="material-symbols-outlined text-[18px] text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]">location_on</span>
+          Location Detail
+        </h3>
+        <div class="w-2 h-2 rounded-full bg-primary/80 animate-pulse shadow-[0_0_10px_rgba(192,193,255,0.6)]"></div>
+      </div>
+      <div id="detail-panel" class="flex-1 overflow-y-auto scrollbar-hide">
+        <!-- Empty state -->
+        <div id="detail-empty" class="flex flex-col items-center justify-center h-full py-16 text-center px-8">
+          <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl mb-4">map</span>
+          <p class="font-body-md text-sm text-on-surface-variant/60">Select a location<br/>to view details</p>
+        </div>
+        <!-- Detail content -->
+        <div id="detail-content" class="hidden p-5 space-y-5">
+          <div id="loc-visual" class="h-36 rounded-xl bg-gradient-to-br from-surface-variant to-surface-container-high flex items-center justify-center relative overflow-hidden">
+            <span id="loc-icon" class="material-symbols-outlined text-on-surface-variant/20 text-6xl">location_city</span>
+            <div class="absolute inset-0 bg-gradient-to-t from-surface-container/80 to-transparent"></div>
+          </div>
+          <div>
+            <h4 id="loc-name" class="font-headline-md text-[22px] font-bold text-on-surface mb-2"></h4>
+            <div class="flex flex-wrap gap-2">
+              <span id="loc-type" class="px-2.5 py-1 rounded-sm bg-primary/15 border border-primary/25 font-label-sm text-[9px] text-primary uppercase tracking-wide"></span>
+              <span id="loc-era" class="font-label-sm text-[10px] text-on-surface-variant self-center"></span>
+            </div>
+          </div>
+          <div>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2">Description</h5>
+            <p id="loc-desc" class="font-body-md text-sm text-on-surface/80 leading-relaxed bg-surface/30 border border-white/5 rounded-lg p-3"></p>
+          </div>
+          <!-- Atmosphere -->
+          <div>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3">Atmosphere & Mood</h5>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <button class="atmos-chip px-3 py-2 rounded-lg border border-white/10 font-label-sm text-[10px] text-on-surface-variant hover:border-primary/30 transition-all text-center" onclick="toggleAtmos(this)">Dark / Shadowed</button>
+              <button class="atmos-chip active px-3 py-2 rounded-lg border border-white/10 font-label-sm text-[10px] text-on-surface-variant hover:border-primary/30 transition-all text-center" onclick="toggleAtmos(this)">Neon-lit</button>
+              <button class="atmos-chip px-3 py-2 rounded-lg border border-white/10 font-label-sm text-[10px] text-on-surface-variant hover:border-primary/30 transition-all text-center" onclick="toggleAtmos(this)">Rain / Wet</button>
+              <button class="atmos-chip px-3 py-2 rounded-lg border border-white/10 font-label-sm text-[10px] text-on-surface-variant hover:border-primary/30 transition-all text-center" onclick="toggleAtmos(this)">Harsh Industrial</button>
+            </div>
+            <div id="loc-tags" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <!-- Characters -->
+          <div>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3">Linked Characters</h5>
+            <div id="loc-chars" class="flex gap-2 flex-wrap"></div>
+          </div>
+          <!-- Scenes -->
+          <div>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2">Scenes Set Here</h5>
+            <div id="loc-scenes" class="space-y-1.5"></div>
+          </div>
+          <button class="w-full py-2.5 rounded-md bg-primary/15 hover:bg-primary/25 border border-primary/30 text-primary font-label-md text-label-md transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">auto_fix_high</span> AI Generate Visual
+          </button>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-margin-desktop z-50 bg-surface-container-lowest/80 backdrop-blur-2xl border-t border-white/10">
+  <div class="font-label-md text-label-md text-on-surface/80 flex items-center gap-3">
+    <div class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span></div>
+    <span class="tracking-wide">Memory Sync: Active</span>
+  </div>
+  <div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-5">
+    <span class="font-mono">4 Locations · 8 Lore Entries · 3 World Rules</span>
+  </div>
+</footer>
+
+<!-- Add Location Modal -->
+<div id="add-modal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container border border-white/10 rounded-xl p-8 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.8)]">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-headline-md text-[22px] font-bold text-on-surface">New Location</h3>
+      <button onclick="closeAddLocation()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="space-y-4">
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Location Name *</label><input type="text" placeholder="e.g. The Architect Tower…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Type</label><select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md"><option>Urban</option><option>Underground</option><option>Wilderness</option><option>Industrial</option><option>Digital</option><option>Cosmic</option></select></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Era / Time Period</label><input type="text" placeholder="e.g. Neo-Veridia, 2084…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Description</label><textarea rows="3" placeholder="Describe this location's look, feel, and significance…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea></div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeAddLocation()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
+      <button onclick="closeAddLocation()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Add Location</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const locationData = {
+  neoveridia: {
+    name: "Neo-Veridia", type: "Megacity", era: "2084, Late 21st Century",
+    icon: "location_city",
+    desc: "A rain-soaked cyberpunk megacity stratified by class, technology, and forgotten history. The upper levels gleam with neon wealth while the foundations rot in forgotten data and rogue AI.",
+    tags: ["Neon-lit","Rain-soaked","Stratified","Oppressive","Vertical"],
+    chars: ["Kael","Elara","Viktor","Maya"],
+    scenes: ["SC-01: The Drop","SC-05: Signal Loss","SC-06: The Exchange"]
+  },
+  undercity: {
+    name: "The Undercity — Sector 4", type: "Underground", era: "Sub-level 7, Neo-Veridia",
+    icon: "landscape",
+    desc: "The forgotten foundations of Neo-Veridia. Highly toxic, structurally unstable, populated by exiles and rogue synths. Active mnemonic nodes pulse with suppressed data from the Syndicate era.",
+    tags: ["Toxic","Claustrophobic","Bioluminescent","Dangerous","Humid"],
+    chars: ["Kael","Elara"],
+    scenes: ["SC-02: Alleyway Chase","SC-04: Betrayal","SC-07: The Reveal"]
+  },
+  den: {
+    name: "The Data Broker's Den", type: "Industrial", era: "Mid-Level 3, District 7",
+    icon: "storefront",
+    desc: "A repurposed signal relay station converted into a black market information hub. Holographic market stalls flicker between stolen data feeds. Neutral ground — no faction violence permitted inside.",
+    tags: ["Neutral Ground","Cramped","Tense","Smoky","Flickering"],
+    chars: ["Maya","Viktor"],
+    scenes: ["SC-03: Safehouse","SC-06: The Exchange"]
+  },
+  rain: {
+    name: "Rain District", type: "Urban", era: "Mid-Level 2, Neo-Veridia",
+    icon: "rainy",
+    desc: "Always raining. Mag-lev infrastructure overhead creates a permanent artificial night. Neon reflections puddle in cracked asphalt. People move fast and don't meet eyes.",
+    tags: ["Perpetual Night","Noir","Melancholy","Wet","Lonely"],
+    chars: ["Kael","Maya"],
+    scenes: ["SC-02: Alleyway Chase","SC-08: The Vanishing"]
+  }
+};
+
+function selectLocation(id) {
+  document.querySelectorAll('.location-card').forEach(c => c.classList.remove('selected'));
+  const card = document.querySelector(`.location-card[onclick*="${id}"]`);
+  if (card) card.classList.add('selected');
+  const d = locationData[id];
+  document.getElementById('detail-empty').classList.add('hidden');
+  document.getElementById('detail-content').classList.remove('hidden');
+  document.getElementById('loc-name').textContent = d.name;
+  document.getElementById('loc-type').textContent = d.type;
+  document.getElementById('loc-era').textContent = d.era;
+  document.getElementById('loc-desc').textContent = d.desc;
+  document.getElementById('loc-icon').textContent = d.icon;
+  document.getElementById('loc-tags').innerHTML = d.tags.map(t => `<span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">${t}</span>`).join('');
+  document.getElementById('loc-chars').innerHTML = d.chars.map(c => `<div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[13px] text-on-surface-variant">person</span><span class="font-label-sm text-[10px] text-on-surface">${c}</span></div>`).join('');
+  document.getElementById('loc-scenes').innerHTML = d.scenes.map(s => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[12px] text-on-surface-variant">movie</span><span class="font-label-sm text-[9px] text-on-surface-variant">${s}</span></div>`).join('');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.style.borderBottom = '2px solid transparent'; });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (btn) { btn.classList.add('active'); btn.style.borderBottom = ''; }
+  const content = document.getElementById(`tab-${tab}`);
+  if (content) content.classList.add('active');
+}
+
+function toggleAtmos(btn) { btn.classList.toggle('active'); }
+
+function openAddLocation() { document.getElementById('add-modal').classList.remove('hidden'); }
+function closeAddLocation() { document.getElementById('add-modal').classList.add('hidden'); }
+document.getElementById('add-modal').addEventListener('click', function(e){ if(e.target===this) closeAddLocation(); });
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(() => selectLocation('neoveridia'), 100));
+</script>
+</body>
+</html>

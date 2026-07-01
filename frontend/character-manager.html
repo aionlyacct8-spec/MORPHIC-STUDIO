@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Character Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-dim": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .char-card.selected { box-shadow: 0 0 0 2px #c0c1ff, 0 0 20px rgba(192,193,255,0.2); }
+  .expr-btn.active { background: rgba(192,193,255,0.2); border-color: rgba(192,193,255,0.5); color: #c0c1ff; }
+  .filter-chip.active { background: rgba(192,193,255,0.15); border-color: rgba(192,193,255,0.4); color: #c0c1ff; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden selection:bg-primary/30 selection:text-primary">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full z-40 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 backdrop-blur-2xl shadow-sm border-b border-white/10">
+  <div class="flex items-center gap-4">
+    <h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight drop-shadow-md">Morphic Studio</h1>
+    <div class="h-4 w-px bg-white/10 hidden md:block"></div>
+    <nav class="hidden md:flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+      <a class="hover:text-primary transition-colors cursor-pointer" href="/dashboard.html">Project: The Last Echo</a>
+      <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+      <span class="text-primary font-bold drop-shadow-[0_0_8px_rgba(192,193,255,0.4)]">Characters</span>
+    </nav>
+  </div>
+  <div class="flex items-center gap-6">
+    <div class="hidden md:flex items-center gap-4">
+      <button class="bg-surface-variant/50 backdrop-blur-md text-on-surface font-label-md text-label-md px-4 py-2 rounded-md hover:bg-surface-bright transition-colors border border-white/10">Share</button>
+      <button onclick="openAddModal()" class="bg-primary-container/90 backdrop-blur-md text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-md hover:brightness-110 transition-all font-bold shadow-[0_0_20px_rgba(192,193,255,0.4)] border border-primary/30 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">person_add</span> Add Character
+      </button>
+    </div>
+    <div class="flex items-center gap-4 text-on-surface-variant">
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">account_circle</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="flex h-screen pt-16 pb-10 relative z-10">
+  <!-- Sidebar -->
+  <aside class="flex flex-col h-full py-8 w-64 bg-surface-container-low/60 backdrop-blur-xl flex-shrink-0 border-r border-white/5 shadow-[5px_0_30px_rgba(0,0,0,0.2)]">
+    <div class="px-6 mb-8 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+      </div>
+      <div>
+        <h2 class="font-headline-md text-[16px] leading-tight font-bold text-on-surface">Morphic Studio</h2>
+        <p class="font-label-sm text-[10px] text-primary/80">Memory Engine: Online</p>
+      </div>
+    </div>
+    <div class="px-4 mb-6">
+      <a href="/new-project.html" class="w-full bg-surface-variant/40 backdrop-blur-sm hover:bg-white/5 text-on-surface font-label-md text-label-md py-2.5 rounded-md border border-white/10 transition-all shadow-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">add</span> New Project
+      </a>
+    </div>
+    <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/dashboard.html"><span class="material-symbols-outlined text-[18px]">edit_note</span><span class="font-label-md text-sm">Story Writing</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/story-hub.html"><span class="material-symbols-outlined text-[18px]">menu_book</span><span class="font-label-md text-sm">Story Bible</span></a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-primary font-bold border-l-2 border-primary bg-primary/10 shadow-[inset_20px_0_40px_rgba(192,193,255,0.05)]" href="/character-manager.html"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">groups</span><span class="font-label-md text-sm">Character Manager</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/world-builder.html"><span class="material-symbols-outlined text-[18px]">public</span><span class="font-label-md text-sm">World Builder</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/asset-library.html"><span class="material-symbols-outlined text-[18px]">auto_stories</span><span class="font-label-md text-sm">Asset Library</span></a>
+      <div class="h-px bg-white/5 my-2 mx-2"></div>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/storyboard.html"><span class="material-symbols-outlined text-[18px]">timeline</span><span class="font-label-md text-sm">Storyboard</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/comic-studio.html"><span class="material-symbols-outlined text-[18px]">view_quilt</span><span class="font-label-md text-sm">Comic Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/animation-studio.html"><span class="material-symbols-outlined text-[18px]">movie_creation</span><span class="font-label-md text-sm">Animation Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/motion-comic-studio.html"><span class="material-symbols-outlined text-[18px]">animation</span><span class="font-label-md text-sm">Motion Comic</span></a>
+    </nav>
+    <div class="px-3 mt-auto pt-4 border-t border-white/5 space-y-0.5">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">settings</span><span class="font-label-md text-sm">Settings</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">help</span><span class="font-label-md text-sm">Support</span></a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex overflow-hidden">
+    <!-- Character Roster -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Toolbar -->
+      <div class="flex-shrink-0 px-8 py-5 border-b border-white/5 bg-surface-container-low/30 backdrop-blur-md flex items-center gap-4 flex-wrap">
+        <div class="flex-1">
+          <h2 class="font-headline-md text-[22px] font-bold text-on-surface">Character Roster</h2>
+          <p class="font-label-sm text-[11px] text-on-surface-variant mt-0.5">4 characters · The Last Echo</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+            <input type="text" id="search-input" placeholder="Search characters…" oninput="filterCharacters()" class="bg-surface-container/60 border border-white/10 rounded-md pl-9 pr-4 py-2 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/50 w-52 font-label-md"/>
+          </div>
+          <button onclick="openAddModal()" class="flex items-center gap-2 bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 rounded-md px-4 py-2 font-label-md text-label-md transition-all">
+            <span class="material-symbols-outlined text-[16px]">person_add</span> Add Character
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="flex-shrink-0 px-8 py-3 border-b border-white/5 flex items-center gap-2">
+        <span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mr-2">Filter:</span>
+        <button onclick="setFilter('all')" class="filter-chip active px-3 py-1 rounded-full border border-white/10 font-label-sm text-[11px] text-on-surface-variant transition-all hover:border-primary/30 hover:text-on-surface" data-filter="all">All</button>
+        <button onclick="setFilter('Protagonist')" class="filter-chip px-3 py-1 rounded-full border border-white/10 font-label-sm text-[11px] text-on-surface-variant transition-all hover:border-primary/30 hover:text-on-surface" data-filter="Protagonist">Protagonist</button>
+        <button onclick="setFilter('Antagonist')" class="filter-chip px-3 py-1 rounded-full border border-white/10 font-label-sm text-[11px] text-on-surface-variant transition-all hover:border-primary/30 hover:text-on-surface" data-filter="Antagonist">Antagonist</button>
+        <button onclick="setFilter('Supporting')" class="filter-chip px-3 py-1 rounded-full border border-white/10 font-label-sm text-[11px] text-on-surface-variant transition-all hover:border-primary/30 hover:text-on-surface" data-filter="Supporting">Supporting</button>
+        <button onclick="setFilter('Minor')" class="filter-chip px-3 py-1 rounded-full border border-white/10 font-label-sm text-[11px] text-on-surface-variant transition-all hover:border-primary/30 hover:text-on-surface" data-filter="Minor">Minor</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+        <div id="character-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+          <!-- Kael -->
+          <div class="char-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" data-id="kael" data-role="Protagonist" onclick="selectChar('kael')">
+            <div class="relative h-44 bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-on-surface-variant/30 text-8xl">person</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container/90 via-transparent to-transparent"></div>
+              <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+                <span class="font-label-sm text-[9px] text-emerald-400 uppercase tracking-wide">Active</span>
+              </div>
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md">
+                <span class="font-label-sm text-[9px] text-primary uppercase tracking-widest">Protagonist</span>
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-0.5 group-hover:text-primary transition-colors">Kael</h3>
+              <p class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wide mb-3">Arc-Runner / Investigator</p>
+              <div class="mb-3">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider">Arc Progress</span>
+                  <span class="font-label-sm text-[9px] text-primary">68%</span>
+                </div>
+                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div class="h-full bg-primary/70 rounded-full shadow-[0_0_8px_rgba(192,193,255,0.4)]" style="width:68%"></div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Suspicious</span>
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Determined</span>
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Guarded</span>
+              </div>
+            </div>
+            <div class="px-4 pb-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="event.stopPropagation(); selectChar('kael')" class="flex-1 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-primary font-label-sm text-[10px] hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">biotech</span> View DNA</button>
+              <button class="flex-1 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface-variant font-label-sm text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">edit</span> Edit</button>
+            </div>
+          </div>
+
+          <!-- Elara -->
+          <div class="char-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" data-id="elara" data-role="Supporting" onclick="selectChar('elara')">
+            <div class="relative h-44 bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-on-surface-variant/30 text-8xl">person</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container/90 via-transparent to-transparent"></div>
+              <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+                <span class="font-label-sm text-[9px] text-emerald-400 uppercase tracking-wide">Active</span>
+              </div>
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-sm bg-tertiary/20 border border-tertiary/30 backdrop-blur-md">
+                <span class="font-label-sm text-[9px] text-tertiary uppercase tracking-widest">Supporting</span>
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-0.5 group-hover:text-primary transition-colors">Elara</h3>
+              <p class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wide mb-3">Overwatch / Splicer</p>
+              <div class="mb-3">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider">Arc Progress</span>
+                  <span class="font-label-sm text-[9px] text-tertiary">42%</span>
+                </div>
+                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div class="h-full bg-tertiary/70 rounded-full" style="width:42%"></div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Concerned</span>
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Loyal</span>
+              </div>
+            </div>
+            <div class="px-4 pb-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="event.stopPropagation(); selectChar('elara')" class="flex-1 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-primary font-label-sm text-[10px] hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">biotech</span> View DNA</button>
+              <button class="flex-1 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface-variant font-label-sm text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">edit</span> Edit</button>
+            </div>
+          </div>
+
+          <!-- Viktor -->
+          <div class="char-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" data-id="viktor" data-role="Antagonist" onclick="selectChar('viktor')">
+            <div class="relative h-44 bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-on-surface-variant/30 text-8xl">person</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container/90 via-transparent to-transparent"></div>
+              <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                <span class="font-label-sm text-[9px] text-yellow-400 uppercase tracking-wide">Inactive</span>
+              </div>
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-sm bg-error/20 border border-error/30 backdrop-blur-md">
+                <span class="font-label-sm text-[9px] text-error uppercase tracking-widest">Antagonist</span>
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-0.5 group-hover:text-primary transition-colors">Viktor</h3>
+              <p class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wide mb-3">The Director / Architect</p>
+              <div class="mb-3">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider">Arc Progress</span>
+                  <span class="font-label-sm text-[9px] text-error">25%</span>
+                </div>
+                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div class="h-full bg-error/60 rounded-full" style="width:25%"></div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Calculating</span>
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Ruthless</span>
+              </div>
+            </div>
+            <div class="px-4 pb-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="event.stopPropagation(); selectChar('viktor')" class="flex-1 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-primary font-label-sm text-[10px] hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">biotech</span> View DNA</button>
+              <button class="flex-1 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface-variant font-label-sm text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">edit</span> Edit</button>
+            </div>
+          </div>
+
+          <!-- Maya -->
+          <div class="char-card group bg-surface-container/50 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.3)]" data-id="maya" data-role="Supporting" onclick="selectChar('maya')">
+            <div class="relative h-44 bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-on-surface-variant/30 text-8xl">person</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container/90 via-transparent to-transparent"></div>
+              <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-yellow-400/70"></div>
+                <span class="font-label-sm text-[9px] text-yellow-400/70 uppercase tracking-wide">Inactive</span>
+              </div>
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-sm bg-tertiary/20 border border-tertiary/30 backdrop-blur-md">
+                <span class="font-label-sm text-[9px] text-tertiary uppercase tracking-widest">Supporting</span>
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-0.5 group-hover:text-primary transition-colors">Maya</h3>
+              <p class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wide mb-3">Data Broker / Informant</p>
+              <div class="mb-3">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider">Arc Progress</span>
+                  <span class="font-label-sm text-[9px] text-tertiary">15%</span>
+                </div>
+                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div class="h-full bg-tertiary/50 rounded-full" style="width:15%"></div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Cunning</span>
+                <span class="px-2 py-0.5 rounded-sm bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">Elusive</span>
+              </div>
+            </div>
+            <div class="px-4 pb-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="event.stopPropagation(); selectChar('maya')" class="flex-1 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-primary font-label-sm text-[10px] hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">biotech</span> View DNA</button>
+              <button class="flex-1 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface-variant font-label-sm text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">edit</span> Edit</button>
+            </div>
+          </div>
+
+        </div><!-- /grid -->
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-24 text-center">
+          <span class="material-symbols-outlined text-on-surface-variant/30 text-6xl mb-4">person_search</span>
+          <p class="font-body-md text-on-surface-variant">No characters match your search.</p>
+        </div>
+      </div>
+    </div><!-- /roster -->
+
+    <!-- Character DNA Panel -->
+    <aside class="w-[360px] flex-shrink-0 bg-surface-container/40 backdrop-blur-2xl border-l border-white/5 flex flex-col overflow-hidden shadow-[-5px_0_30px_rgba(0,0,0,0.2)]">
+      <div class="p-5 border-b border-white/5 bg-surface-container-high/30 sticky top-0 flex items-center justify-between">
+        <h3 class="font-label-md text-label-md text-on-surface flex items-center gap-2 uppercase tracking-[0.15em] text-xs font-bold">
+          <span class="material-symbols-outlined text-[18px] text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]">biotech</span>
+          Character DNA
+        </h3>
+        <div class="w-2 h-2 rounded-full bg-primary/80 animate-pulse shadow-[0_0_10px_rgba(192,193,255,0.6)]"></div>
+      </div>
+      <div id="dna-panel" class="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-hide">
+        <!-- Default state -->
+        <div id="dna-empty" class="flex flex-col items-center justify-center h-full py-16 text-center">
+          <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl mb-4">person</span>
+          <p class="font-body-md text-sm text-on-surface-variant/60">Select a character<br/>to view their DNA profile</p>
+        </div>
+        <!-- Character detail (hidden by default) -->
+        <div id="dna-content" class="hidden space-y-6">
+          <!-- Portrait + name -->
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-surface-variant flex items-center justify-center ring-2 ring-primary/40 flex-shrink-0">
+              <span class="material-symbols-outlined text-on-surface-variant text-3xl">person</span>
+            </div>
+            <div>
+              <h4 id="dna-name" class="font-headline-md text-[20px] font-bold text-on-surface"></h4>
+              <p id="dna-role-label" class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wide mt-0.5"></p>
+            </div>
+          </div>
+          <!-- Visual DNA -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">visibility</span> Visual DNA</h5>
+            <div id="dna-appearance" class="bg-surface/40 border border-white/10 rounded-lg p-3 font-body-md text-sm text-on-surface/80 leading-relaxed"></div>
+          </section>
+          <!-- Personality -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">psychology</span> Personality Core</h5>
+            <div id="dna-traits" class="flex flex-wrap gap-2"></div>
+          </section>
+          <!-- Expressions -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">mood</span> Expression Library</h5>
+            <div class="grid grid-cols-3 gap-2">
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">sentiment_neutral</span><span class="font-label-sm text-[9px] text-on-surface-variant">Neutral</span></button>
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">sentiment_satisfied</span><span class="font-label-sm text-[9px] text-on-surface-variant">Resolved</span></button>
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">sentiment_very_dissatisfied</span><span class="font-label-sm text-[9px] text-on-surface-variant">Hostile</span></button>
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">sentiment_stressed</span><span class="font-label-sm text-[9px] text-on-surface-variant">Tense</span></button>
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">psychology_alt</span><span class="font-label-sm text-[9px] text-on-surface-variant">Focused</span></button>
+              <button class="expr-btn flex flex-col items-center gap-1 p-2 rounded-lg bg-surface/30 border border-white/10 hover:border-primary/30 transition-all" onclick="toggleExpr(this)"><span class="material-symbols-outlined text-[20px] text-on-surface-variant">person_alert</span><span class="font-label-sm text-[9px] text-on-surface-variant">Alert</span></button>
+            </div>
+          </section>
+          <!-- Voice profile -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">mic</span> Voice Profile</h5>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between mb-1"><span class="font-label-sm text-[10px] text-on-surface-variant">Tone</span><span id="dna-tone" class="font-label-sm text-[10px] text-primary">Deep / Gravelly</span></div>
+                <div class="h-1.5 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-primary/40 rounded-full" style="width:70%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between mb-1"><span class="font-label-sm text-[10px] text-on-surface-variant">Pace</span><span class="font-label-sm text-[10px] text-tertiary">Measured</span></div>
+                <div class="h-1.5 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-tertiary/40 rounded-full" style="width:45%"></div></div>
+              </div>
+            </div>
+          </section>
+          <!-- Arc Status -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">route</span> Narrative Arc</h5>
+            <div class="bg-surface/30 border border-white/10 rounded-lg p-3">
+              <div class="flex justify-between mb-2">
+                <span id="dna-arc-stage" class="font-label-sm text-[10px] text-primary uppercase tracking-wide">Rising Action</span>
+                <span id="dna-arc-pct" class="font-label-sm text-[10px] text-on-surface-variant">68%</span>
+              </div>
+              <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div id="dna-arc-bar" class="h-full bg-primary/60 rounded-full shadow-[0_0_6px_rgba(192,193,255,0.3)]" style="width:68%"></div>
+              </div>
+            </div>
+          </section>
+          <!-- Scenes -->
+          <section>
+            <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">movie</span> Appears In</h5>
+            <div id="dna-scenes" class="space-y-2"></div>
+          </section>
+          <button class="w-full py-2.5 rounded-md bg-primary/15 hover:bg-primary/25 border border-primary/30 text-primary font-label-md text-label-md transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">auto_fix_high</span> Generate Character Art
+          </button>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-margin-desktop z-50 bg-surface-container-lowest/80 backdrop-blur-2xl border-t border-white/10">
+  <div class="font-label-md text-label-md text-on-surface/80 flex items-center gap-3">
+    <div class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span></div>
+    <span class="tracking-wide">Memory Sync: Active</span>
+  </div>
+  <div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-5">
+    <span class="font-mono">4 Characters · 3 Arcs Active</span>
+  </div>
+</footer>
+
+<!-- Add Character Modal -->
+<div id="add-modal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container border border-white/10 rounded-xl p-8 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.8)]">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-headline-md text-[22px] font-bold text-on-surface">New Character</h3>
+      <button onclick="closeAddModal()" class="text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Character Name *</label>
+        <input type="text" placeholder="Enter character name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
+      </div>
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Role</label>
+        <select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
+          <option>Protagonist</option><option>Antagonist</option><option>Supporting</option><option>Minor</option>
+        </select>
+      </div>
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Appearance / Visual DNA</label>
+        <textarea rows="3" placeholder="Physical description used for AI generation consistency…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
+      </div>
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Personality</label>
+        <textarea rows="2" placeholder="Core personality traits and motivations…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeAddModal()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
+      <button onclick="closeAddModal()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(192,193,255,0.3)]">Create Character</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const charData = {
+  kael: {
+    name: "Kael", role: "Protagonist", roleLabel: "Arc-Runner / Investigator",
+    appearance: "Lean, weathered build. Short dark hair with scattered grey. Deep-set eyes that miss nothing. Synth-leather jacket over a worn field vest. Scarred knuckles. Moves with deliberate, economic precision.",
+    traits: ["Analytical","Determined","Guarded","Tactical","Haunted"],
+    arcStage: "Rising Action", arcPct: 68, tone: "Deep / Gravelly",
+    scenes: ["SC-01: The Drop","SC-02: Alleyway Chase","SC-03: Safehouse","SC-04: Betrayal"]
+  },
+  elara: {
+    name: "Elara", role: "Supporting", roleLabel: "Overwatch / Splicer",
+    appearance: "Compact frame. Neural-port implants at her temples. Sharp eyes behind holographic lenses. Often remote — her physical presence is rare; her voice is constant.",
+    traits: ["Loyal","Brilliant","Concerned","Conflicted","Precise"],
+    arcStage: "Establishment", arcPct: 42, tone: "Clear / Measured",
+    scenes: ["SC-01: The Drop","SC-03: Safehouse","SC-05: Signal Loss"]
+  },
+  viktor: {
+    name: "Viktor", role: "Antagonist", roleLabel: "The Director / Architect",
+    appearance: "Impeccably dressed. Silver hair swept back. Cold grey eyes. Moves like someone who has never needed to hurry. The kind of stillness that reads as threat.",
+    traits: ["Calculating","Ruthless","Patient","Visionary","Merciless"],
+    arcStage: "Introduction", arcPct: 25, tone: "Low / Commanding",
+    scenes: ["SC-04: Betrayal (referenced)","SC-07: The Reveal"]
+  },
+  maya: {
+    name: "Maya", role: "Supporting", roleLabel: "Data Broker / Informant",
+    appearance: "Small and fast. Layered dark clothing with hidden pockets. Constantly shifting eyes, always clocking exits. Neon-stripe tattoo behind left ear — Neon Reaper mark, partially burned off.",
+    traits: ["Cunning","Elusive","Self-interested","Adaptable","Streetwise"],
+    arcStage: "Introduction", arcPct: 15, tone: "Quick / Hushed",
+    scenes: ["SC-02: Alleyway Chase","SC-06: The Exchange"]
+  }
+};
+
+let currentFilter = 'all';
+
+function selectChar(id) {
+  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+  const card = document.querySelector(`.char-card[data-id="${id}"]`);
+  if (card) card.classList.add('selected');
+  const d = charData[id];
+  document.getElementById('dna-empty').classList.add('hidden');
+  document.getElementById('dna-content').classList.remove('hidden');
+  document.getElementById('dna-name').textContent = d.name;
+  document.getElementById('dna-role-label').textContent = d.roleLabel;
+  document.getElementById('dna-appearance').textContent = d.appearance;
+  document.getElementById('dna-tone').textContent = d.tone;
+  document.getElementById('dna-arc-stage').textContent = d.arcStage;
+  document.getElementById('dna-arc-pct').textContent = d.arcPct + '%';
+  document.getElementById('dna-arc-bar').style.width = d.arcPct + '%';
+  const traits = document.getElementById('dna-traits');
+  traits.innerHTML = d.traits.map(t => `<span class="px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 font-label-sm text-[10px] text-primary">${t}</span>`).join('');
+  const scenes = document.getElementById('dna-scenes');
+  scenes.innerHTML = d.scenes.map(s => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5 hover:border-white/10 transition-colors"><span class="material-symbols-outlined text-[13px] text-on-surface-variant">movie</span><span class="font-label-sm text-[10px] text-on-surface-variant">${s}</span></div>`).join('');
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.filter-chip[data-filter="${f}"]`)?.classList.add('active');
+  filterCharacters();
+}
+
+function filterCharacters() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.char-card').forEach(card => {
+    const role = card.dataset.role;
+    const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+    const matchFilter = currentFilter === 'all' || role === currentFilter;
+    const matchSearch = !query || name.includes(query);
+    const show = matchFilter && matchSearch;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('empty-state').classList.toggle('hidden', visible > 0);
+}
+
+function toggleExpr(btn) {
+  document.querySelectorAll('.expr-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
+function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
+
+document.getElementById('add-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
+
+// Select first char on load
+document.addEventListener('DOMContentLoaded', () => setTimeout(() => selectChar('kael'), 100));
+</script>
+</body>
+</html>

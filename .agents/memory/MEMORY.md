@@ -4,3 +4,4 @@
 - [Morphic Studio AI System](morphic-ai-system.md) — AI agents, orchestration, model gateway, safety, providers
 - [Morphic Studio Design System](morphic-design-system.md) — design tokens, color palette, typography, component library, UX philosophy
 - [Morphic Studio Database & Infra](morphic-db-infra.md) — DB schema, storage, auth, security, deployment, observability
+- [Morphic Studio Nav & Routing](morphic-nav-routing.md) — nav link status, root-relative URL convention, placeholder hrefs

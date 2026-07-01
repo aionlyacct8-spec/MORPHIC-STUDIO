@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Asset Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-dim": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .type-tab.active { color: #c0c1ff; border-bottom: 2px solid #c0c1ff; }
+  .asset-card.selected { box-shadow: 0 0 0 2px #c0c1ff, 0 0 20px rgba(192,193,255,0.15); }
+  .detail-panel { transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .detail-panel.open { transform: translateX(0); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden selection:bg-primary/30 selection:text-primary">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full z-40 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 backdrop-blur-2xl shadow-sm border-b border-white/10">
+  <div class="flex items-center gap-4">
+    <h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Morphic Studio</h1>
+    <div class="h-4 w-px bg-white/10 hidden md:block"></div>
+    <nav class="hidden md:flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+      <a class="hover:text-primary transition-colors" href="/dashboard.html">Project: The Last Echo</a>
+      <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+      <span class="text-primary font-bold drop-shadow-[0_0_8px_rgba(192,193,255,0.4)]">Asset Library</span>
+    </nav>
+  </div>
+  <div class="flex items-center gap-6">
+    <div class="hidden md:flex items-center gap-4">
+      <button onclick="openUpload()" class="bg-primary-container/90 text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-md hover:brightness-110 transition-all font-bold shadow-[0_0_20px_rgba(192,193,255,0.4)] border border-primary/30 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">upload</span> Upload Asset
+      </button>
+    </div>
+    <div class="flex items-center gap-4 text-on-surface-variant">
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">notifications</span></button>
+      <button class="hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/5"><span class="material-symbols-outlined">account_circle</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="flex h-screen pt-16 pb-10">
+  <!-- Sidebar -->
+  <aside class="flex flex-col h-full py-8 w-64 bg-surface-container-low/60 backdrop-blur-xl flex-shrink-0 border-r border-white/5 shadow-[5px_0_30px_rgba(0,0,0,0.2)]">
+    <div class="px-6 mb-8 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+      </div>
+      <div>
+        <h2 class="font-headline-md text-[16px] leading-tight font-bold text-on-surface">Morphic Studio</h2>
+        <p class="font-label-sm text-[10px] text-primary/80">Memory Engine: Online</p>
+      </div>
+    </div>
+    <div class="px-4 mb-6">
+      <a href="/new-project.html" class="w-full bg-surface-variant/40 hover:bg-white/5 text-on-surface font-label-md text-label-md py-2.5 rounded-md border border-white/10 transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">add</span> New Project
+      </a>
+    </div>
+    <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/dashboard.html"><span class="material-symbols-outlined text-[18px]">edit_note</span><span class="font-label-md text-sm">Story Writing</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/story-hub.html"><span class="material-symbols-outlined text-[18px]">menu_book</span><span class="font-label-md text-sm">Story Bible</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/character-manager.html"><span class="material-symbols-outlined text-[18px]">groups</span><span class="font-label-md text-sm">Character Manager</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/world-builder.html"><span class="material-symbols-outlined text-[18px]">public</span><span class="font-label-md text-sm">World Builder</span></a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-primary font-bold border-l-2 border-primary bg-primary/10 shadow-[inset_20px_0_40px_rgba(192,193,255,0.05)]" href="/asset-library.html"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">auto_stories</span><span class="font-label-md text-sm">Asset Library</span></a>
+      <div class="h-px bg-white/5 my-2 mx-2"></div>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/storyboard.html"><span class="material-symbols-outlined text-[18px]">timeline</span><span class="font-label-md text-sm">Storyboard</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/comic-studio.html"><span class="material-symbols-outlined text-[18px]">view_quilt</span><span class="font-label-md text-sm">Comic Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/animation-studio.html"><span class="material-symbols-outlined text-[18px]">movie_creation</span><span class="font-label-md text-sm">Animation Studio</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="/motion-comic-studio.html"><span class="material-symbols-outlined text-[18px]">animation</span><span class="font-label-md text-sm">Motion Comic</span></a>
+    </nav>
+    <div class="px-3 mt-auto pt-4 border-t border-white/5 space-y-0.5">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">settings</span><span class="font-label-md text-sm">Settings</span></a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-md text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined text-[18px]">help</span><span class="font-label-md text-sm">Support</span></a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 flex flex-col overflow-hidden relative">
+    <!-- Top bar -->
+    <div class="flex-shrink-0 px-8 py-5 border-b border-white/5 bg-surface-container-low/30 backdrop-blur-md flex items-center gap-4 flex-wrap">
+      <div class="flex-1">
+        <h2 class="font-headline-md text-[22px] font-bold text-on-surface">Asset Library</h2>
+        <p class="font-label-sm text-[11px] text-on-surface-variant mt-0.5">12 assets · The Last Echo</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+          <input type="text" id="search-input" placeholder="Search assets…" oninput="filterAssets()" class="bg-surface-container/60 border border-white/10 rounded-md pl-9 pr-4 py-2 text-sm text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/50 w-48 font-label-md"/>
+        </div>
+        <div class="flex border border-white/10 rounded-md overflow-hidden">
+          <button id="view-grid" onclick="setView('grid')" class="px-3 py-2 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"><span class="material-symbols-outlined text-[18px]">grid_view</span></button>
+          <button id="view-list" onclick="setView('list')" class="px-3 py-2 text-on-surface-variant hover:bg-white/5 transition-colors"><span class="material-symbols-outlined text-[18px]">view_list</span></button>
+        </div>
+        <button onclick="openUpload()" class="flex items-center gap-2 bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 rounded-md px-4 py-2 font-label-md text-label-md transition-all">
+          <span class="material-symbols-outlined text-[16px]">upload</span> Upload
+        </button>
+      </div>
+    </div>
+
+    <!-- Type tabs -->
+    <div class="flex-shrink-0 px-8 border-b border-white/5 flex items-center gap-0 overflow-x-auto scrollbar-hide">
+      <button class="type-tab active px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap" data-type="all" onclick="setType('all')">All Assets <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">12</span></button>
+      <button class="type-tab px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 border-transparent" data-type="Character" onclick="setType('Character')">Characters <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">4</span></button>
+      <button class="type-tab px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 border-transparent" data-type="Background" onclick="setType('Background')">Backgrounds <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">3</span></button>
+      <button class="type-tab px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 border-transparent" data-type="Prop" onclick="setType('Prop')">Props <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">2</span></button>
+      <button class="type-tab px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 border-transparent" data-type="Audio" onclick="setType('Audio')">Audio <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">2</span></button>
+      <button class="type-tab px-4 py-3 font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 border-transparent" data-type="Panel" onclick="setType('Panel')">Panels <span class="ml-1 px-1.5 py-0.5 rounded-sm bg-surface-bright text-[9px]">1</span></button>
+    </div>
+
+    <!-- Asset Grid -->
+    <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+      <div id="asset-grid" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))">
+
+        <!-- Characters -->
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" data-type="Character" data-name="kael portrait" onclick="openDetail(this,'Kael Portrait','Character','2.4 MB','Used in 7 panels',['SC-01','SC-02','SC-03'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/30 text-5xl">person</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-primary uppercase">Character</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px] hover:bg-primary/30 transition-colors">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px] hover:bg-white/20 transition-colors">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Kael Portrait</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Character · 2.4 MB</p>
+            <p class="font-label-sm text-[9px] text-primary/70 mt-1">Used in 7 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" data-type="Character" data-name="kael action pose" onclick="openDetail(this,'Kael — Action Pose','Character','3.1 MB','Used in 4 panels',['SC-02','SC-04'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/30 text-5xl">person</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-primary uppercase">Character</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Kael — Action Pose</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Character · 3.1 MB</p>
+            <p class="font-label-sm text-[9px] text-primary/70 mt-1">Used in 4 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" data-type="Character" data-name="elara comms" onclick="openDetail(this,'Elara — Comms Stance','Character','2.8 MB','Used in 3 panels',['SC-01','SC-03'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-variant to-surface-container-highest flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/30 text-5xl">person</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-primary uppercase">Character</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Elara — Comms</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Character · 2.8 MB</p>
+            <p class="font-label-sm text-[9px] text-primary/70 mt-1">Used in 3 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.3)]" data-type="Character" data-name="viktor silhouette" onclick="openDetail(this,'Viktor — Silhouette','Character','1.9 MB','Used in 1 panel',['SC-07'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-container-highest to-surface-container flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl">person</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-primary uppercase">Character</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Viktor — Silhouette</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Character · 1.9 MB</p>
+            <p class="font-label-sm text-[9px] text-primary/70 mt-1">Used in 1 panel</p>
+          </div>
+        </div>
+
+        <!-- Backgrounds -->
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Background" data-name="neo-veridia skyline" onclick="openDetail(this,'Neo-Veridia Skyline','Background','5.6 MB','Used in 8 panels',['SC-01','SC-05','SC-06'])">
+          <div class="aspect-square bg-gradient-to-br from-[#0a1628] to-[#1a2840] flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl">location_city</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-teal-500/20 border border-teal-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-teal-400 uppercase">Background</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Neo-Veridia Skyline</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Background · 5.6 MB</p>
+            <p class="font-label-sm text-[9px] text-teal-400/70 mt-1">Used in 8 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Background" data-name="undercity sector 4" onclick="openDetail(this,'Undercity — Sector 4','Background','4.2 MB','Used in 5 panels',['SC-02','SC-04'])">
+          <div class="aspect-square bg-gradient-to-br from-[#080c14] to-[#0d1520] flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl">landscape</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-teal-500/20 border border-teal-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-teal-400 uppercase">Background</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Undercity — Sector 4</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Background · 4.2 MB</p>
+            <p class="font-label-sm text-[9px] text-teal-400/70 mt-1">Used in 5 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Background" data-name="rain alley" onclick="openDetail(this,'Rain Alley — Night','Background','3.8 MB','Used in 2 panels',['SC-02'])">
+          <div class="aspect-square bg-gradient-to-br from-[#071020] to-[#0a1830] flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-on-surface-variant/20 text-5xl">night_shelter</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-teal-500/20 border border-teal-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-teal-400 uppercase">Background</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Rain Alley — Night</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Background · 3.8 MB</p>
+            <p class="font-label-sm text-[9px] text-teal-400/70 mt-1">Used in 2 panels</p>
+          </div>
+        </div>
+
+        <!-- Props -->
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Prop" data-name="pulse pistol" onclick="openDetail(this,'Pulse Pistol','Prop','0.9 MB','Used in 3 panels',['SC-01','SC-02'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-variant to-surface-container-high flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-amber-500/30 text-5xl">inventory_2</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-amber-500/20 border border-amber-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-amber-400 uppercase">Prop</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Pulse Pistol</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Prop · 0.9 MB</p>
+            <p class="font-label-sm text-[9px] text-amber-400/70 mt-1">Used in 3 panels</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Prop" data-name="neural interface" onclick="openDetail(this,'Neural Interface','Prop','0.7 MB','Used in 1 panel',['SC-03'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-variant to-surface-container-high flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-amber-500/30 text-5xl">settings_input_component</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-amber-500/20 border border-amber-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-amber-400 uppercase">Prop</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Neural Interface</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Prop · 0.7 MB</p>
+            <p class="font-label-sm text-[9px] text-amber-400/70 mt-1">Used in 1 panel</p>
+          </div>
+        </div>
+
+        <!-- Audio -->
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Audio" data-name="kael voiceline" onclick="openDetail(this,'Kael — Voiceline 01','Audio','1.2 MB','Used in 1 scene',['SC-01'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-container-low to-surface-container flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-emerald-500/40 text-5xl">record_voice_over</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-emerald-500/20 border border-emerald-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-emerald-400 uppercase">Audio</span></div>
+            <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-0.5 px-4">
+              <div class="w-1 h-3 bg-emerald-500/40 rounded-full animate-pulse"></div>
+              <div class="w-1 h-6 bg-emerald-500/60 rounded-full animate-pulse" style="animation-delay:.1s"></div>
+              <div class="w-1 h-4 bg-emerald-500/50 rounded-full animate-pulse" style="animation-delay:.2s"></div>
+              <div class="w-1 h-8 bg-emerald-500/70 rounded-full animate-pulse" style="animation-delay:.3s"></div>
+              <div class="w-1 h-5 bg-emerald-500/50 rounded-full animate-pulse" style="animation-delay:.4s"></div>
+              <div class="w-1 h-3 bg-emerald-500/40 rounded-full animate-pulse" style="animation-delay:.5s"></div>
+              <div class="w-1 h-7 bg-emerald-500/60 rounded-full animate-pulse" style="animation-delay:.6s"></div>
+            </div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Kael — Voiceline 01</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Audio · 1.2 MB</p>
+            <p class="font-label-sm text-[9px] text-emerald-400/70 mt-1">Used in 1 scene</p>
+          </div>
+        </div>
+
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Audio" data-name="ambient rain" onclick="openDetail(this,'Ambient Rain — Loop','Audio','3.4 MB','Used in 4 scenes',['SC-01','SC-02','SC-03','SC-05'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-container-low to-surface-container flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-emerald-500/40 text-5xl">music_note</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-emerald-500/20 border border-emerald-500/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-emerald-400 uppercase">Audio</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Ambient Rain — Loop</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Audio · 3.4 MB</p>
+            <p class="font-label-sm text-[9px] text-emerald-400/70 mt-1">Used in 4 scenes</p>
+          </div>
+        </div>
+
+        <!-- Panel -->
+        <div class="asset-card group bg-surface-container/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-white/20 hover:-translate-y-1 transition-all duration-200" data-type="Panel" data-name="chapter 1 page 3" onclick="openDetail(this,'Chapter 1 — Page 3','Panel','8.1 MB','Final export',['SC-02'])">
+          <div class="aspect-square bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center relative">
+            <span class="material-symbols-outlined text-primary/20 text-5xl">view_quilt</span>
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-sm bg-primary/20 border border-primary/30 backdrop-blur-md"><span class="font-label-sm text-[8px] text-primary uppercase">Panel</span></div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 gap-2">
+              <button class="px-2.5 py-1.5 rounded-md bg-primary/20 border border-primary/30 text-primary font-label-sm text-[9px]">Use Asset</button>
+              <button class="px-2.5 py-1.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface font-label-sm text-[9px]">Details</button>
+            </div>
+          </div>
+          <div class="p-3">
+            <p class="font-label-md text-[11px] text-on-surface font-bold truncate">Chapter 1 — Page 3</p>
+            <p class="font-label-sm text-[9px] text-on-surface-variant mt-0.5">Panel · 8.1 MB</p>
+            <p class="font-label-sm text-[9px] text-primary/70 mt-1">Final export</p>
+          </div>
+        </div>
+
+      </div><!-- /grid -->
+      <div id="empty-state" class="hidden flex flex-col items-center justify-center py-24 text-center">
+        <span class="material-symbols-outlined text-on-surface-variant/20 text-6xl mb-4">search_off</span>
+        <p class="font-body-md text-on-surface-variant">No assets match your search.</p>
+      </div>
+    </div><!-- /overflow -->
+
+    <!-- Asset Detail Panel (slide-in) -->
+    <div id="detail-overlay" class="hidden fixed inset-0 z-30" onclick="closeDetail()"></div>
+    <aside id="detail-panel" class="detail-panel fixed top-16 right-0 bottom-10 w-[360px] z-40 bg-surface-container/95 backdrop-blur-2xl border-l border-white/10 flex flex-col shadow-[-10px_0_40px_rgba(0,0,0,0.5)]">
+      <div class="p-5 border-b border-white/5 flex items-center justify-between">
+        <h3 class="font-label-md text-label-md text-on-surface uppercase tracking-[0.15em] text-xs font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary">info</span> Asset Details</h3>
+        <button onclick="closeDetail()" class="text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">close</span></button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5 space-y-5 scrollbar-hide">
+        <div id="detail-thumb" class="aspect-video rounded-lg bg-surface-variant flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-surface-variant/30 text-6xl">image</span>
+        </div>
+        <div>
+          <h4 id="detail-name" class="font-headline-md text-[20px] font-bold text-on-surface"></h4>
+          <div class="flex items-center gap-3 mt-2">
+            <span id="detail-type-badge" class="px-2 py-0.5 rounded-sm bg-primary/20 border border-primary/30 font-label-sm text-[9px] text-primary uppercase"></span>
+            <span id="detail-size" class="font-label-sm text-[10px] text-on-surface-variant"></span>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between p-2 rounded-md bg-surface/30 border border-white/5"><span class="font-label-sm text-[10px] text-on-surface-variant">Created</span><span class="font-label-sm text-[10px] text-on-surface">Jun 28, 2026</span></div>
+          <div class="flex justify-between p-2 rounded-md bg-surface/30 border border-white/5"><span class="font-label-sm text-[10px] text-on-surface-variant">Version</span><span class="font-label-sm text-[10px] text-on-surface">v2</span></div>
+          <div class="flex justify-between p-2 rounded-md bg-surface/30 border border-white/5"><span class="font-label-sm text-[10px] text-on-surface-variant">Usage</span><span id="detail-usage" class="font-label-sm text-[10px] text-primary"></span></div>
+        </div>
+        <div>
+          <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2">Appears In</h5>
+          <div id="detail-scenes" class="space-y-1.5"></div>
+        </div>
+        <div>
+          <h5 class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider mb-2">Version History</h5>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="font-label-sm text-[10px] text-on-surface">v2 — Jun 28 (current)</span></div>
+            <div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/30"></span><span class="font-label-sm text-[10px] text-on-surface-variant">v1 — Jun 24</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-white/5 space-y-2">
+        <button class="w-full py-2.5 rounded-md bg-primary-container/90 text-on-primary-container font-label-md text-label-md font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(192,193,255,0.3)]">Use in Project</button>
+        <button class="w-full py-2.5 rounded-md bg-surface-bright/50 border border-white/10 text-on-surface-variant font-label-md text-label-md hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[16px]">download</span> Download</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full h-10 flex justify-between items-center px-margin-desktop z-50 bg-surface-container-lowest/80 backdrop-blur-2xl border-t border-white/10">
+  <div class="font-label-md text-label-md text-on-surface/80 flex items-center gap-3">
+    <div class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></div>
+    <span class="tracking-wide">Memory Sync: Active</span>
+  </div>
+  <div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-5">
+    <span class="font-mono">12 Assets · 31.1 MB used</span>
+  </div>
+</footer>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="hidden fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container border border-white/10 rounded-xl p-8 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.8)]">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-headline-md text-[22px] font-bold text-on-surface">Upload Asset</h3>
+      <button onclick="closeUpload()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="border-2 border-dashed border-white/10 rounded-xl p-10 text-center mb-5 hover:border-primary/30 transition-colors cursor-pointer">
+      <span class="material-symbols-outlined text-on-surface-variant/40 text-5xl mb-3 block">cloud_upload</span>
+      <p class="font-body-md text-sm text-on-surface-variant mb-1">Drag & drop files here</p>
+      <p class="font-label-sm text-[10px] text-on-surface-variant/60">PNG, JPG, MP4, MP3, WAV, PDF up to 50MB</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Asset Type</label>
+        <select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
+          <option>Character</option><option>Background</option><option>Prop</option><option>Audio</option><option>Panel</option>
+        </select>
+      </div>
+      <div>
+        <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Asset Name</label>
+        <input type="text" placeholder="Enter asset name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeUpload()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
+      <button onclick="closeUpload()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Upload</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentType = 'all';
+
+function setType(t) {
+  currentType = t;
+  document.querySelectorAll('.type-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.type === t);
+    if (tab.dataset.type !== t) tab.style.borderBottom = '2px solid transparent';
+    else tab.style.borderBottom = '';
+  });
+  filterAssets();
+}
+
+function setView(v) {
+  const grid = document.getElementById('asset-grid');
+  if (v === 'list') {
+    grid.style.gridTemplateColumns = '1fr';
+    document.getElementById('view-grid').classList.remove('bg-primary/10','text-primary');
+    document.getElementById('view-list').classList.add('bg-primary/10','text-primary');
+  } else {
+    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
+    document.getElementById('view-list').classList.remove('bg-primary/10','text-primary');
+    document.getElementById('view-grid').classList.add('bg-primary/10','text-primary');
+  }
+}
+
+function filterAssets() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.asset-card').forEach(card => {
+    const matchType = currentType === 'all' || card.dataset.type === currentType;
+    const matchSearch = !q || card.dataset.name.includes(q);
+    const show = matchType && matchSearch;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('empty-state').classList.toggle('hidden', visible > 0);
+}
+
+function openDetail(card, name, type, size, usage, scenes) {
+  document.querySelectorAll('.asset-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  document.getElementById('detail-name').textContent = name;
+  document.getElementById('detail-type-badge').textContent = type;
+  document.getElementById('detail-size').textContent = size;
+  document.getElementById('detail-usage').textContent = usage;
+  document.getElementById('detail-scenes').innerHTML = scenes.map(s => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[12px] text-on-surface-variant">movie</span><span class="font-label-sm text-[9px] text-on-surface-variant">${s}</span></div>`).join('');
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-overlay').classList.remove('hidden');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-overlay').classList.add('hidden');
+  document.querySelectorAll('.asset-card').forEach(c => c.classList.remove('selected'));
+}
+
+function openUpload() { document.getElementById('upload-modal').classList.remove('hidden'); }
+function closeUpload() { document.getElementById('upload-modal').classList.add('hidden'); }
+document.getElementById('upload-modal').addEventListener('click', function(e){ if(e.target===this) closeUpload(); });
+</script>
+</body>
+</html>
