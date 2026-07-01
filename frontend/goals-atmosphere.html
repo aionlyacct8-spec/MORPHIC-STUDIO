@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio - Goals &amp; Genre</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","tertiary-container": "#8e9098","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-dim": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","error-container": "#93000a","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "display-lg": ["EB Garamond"], "headline-lg": ["EB Garamond"], "headline-lg-mobile": ["EB Garamond"], "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-lg-mobile": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/80 backdrop-blur-xl border-b border-white/5 shadow-sm">
+  <div class="flex items-center gap-6">
+    <span class="font-headline-md text-headline-md text-primary tracking-tight">Morphic Studio</span>
+    <nav class="hidden md:flex gap-6 items-center">
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/creator-profile.html">Back</a>
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/index.html">Cancel</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="text-on-surface-variant font-label-md hover:text-primary transition-colors"><span class="material-symbols-outlined">help</span></button>
+    <button class="text-on-surface-variant font-label-md hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+    <a href="/world-character-foundations.html" class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md hover:opacity-90 transition-colors">Next Step</a>
+  </div>
+</header>
+<main class="pt-24 pb-16 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto min-h-screen overflow-y-auto">
+  <div class="mb-12">
+    <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2 block">02. Goals &amp; Atmosphere</span>
+    <h1 class="font-display-lg text-display-lg text-on-surface">Define Your Vision</h1>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+    <div class="lg:col-span-8 flex flex-col gap-12">
+      <section>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-white/5 pb-2">Creative Goals</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="group relative overflow-hidden rounded-xl bg-surface-container-high p-6 cursor-pointer border border-transparent hover:border-primary/30 transition-all duration-300">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10 flex flex-col h-full">
+              <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-primary text-2xl">book</span></div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Illustrated Novel</h3>
+              <p class="text-on-surface-variant font-body-md text-body-md">Chapter-based narrative with rich, atmospheric full-page illustrations guiding the reader through the text.</p>
+            </div>
+          </div>
+          <div class="group relative overflow-hidden rounded-xl bg-surface-container-high p-6 cursor-pointer border border-primary ring-1 ring-primary/20 transition-all duration-300 shadow-[0_0_30px_rgba(192,193,255,0.1)]">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent"></div>
+            <div class="relative z-10 flex flex-col h-full">
+              <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center mb-6"><span class="material-symbols-outlined text-on-primary text-2xl">menu_book</span></div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Graphic Novel</h3>
+              <p class="text-on-surface-variant font-body-md text-body-md">Panel-driven visual storytelling optimized for print or digital consumption, emphasizing dynamic layouts.</p>
+            </div>
+          </div>
+          <div class="group relative overflow-hidden rounded-xl bg-surface-container-high p-6 cursor-pointer border border-transparent hover:border-primary/30 transition-all duration-300">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10 flex flex-col h-full">
+              <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-primary text-2xl">movie</span></div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Cinematic Animation</h3>
+              <p class="text-on-surface-variant font-body-md text-body-md">Sequential frames, storyboards, and keyframes designed to prepare a project for motion production.</p>
+            </div>
+          </div>
+          <div class="group relative overflow-hidden rounded-xl bg-surface-container-high p-6 cursor-pointer border border-transparent hover:border-primary/30 transition-all duration-300">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10 flex flex-col h-full">
+              <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-primary text-2xl">palette</span></div>
+              <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Concept Art Bible</h3>
+              <p class="text-on-surface-variant font-body-md text-body-md">A comprehensive collection of character designs, environment paints, and mood pieces for world-building.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-white/5 pb-2">Genre &amp; Tone</h2>
+        <div class="flex flex-wrap gap-4">
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">Cyberpunk</button>
+          <button class="px-6 py-3 rounded-full bg-primary/20 text-primary font-label-md border border-primary/50 shadow-[0_0_15px_rgba(192,193,255,0.2)] transition-all">Neo-Noir</button>
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">High Fantasy</button>
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">Space Opera</button>
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">Gothic Horror</button>
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">Steampunk</button>
+          <button class="px-6 py-3 rounded-full bg-primary/20 text-primary font-label-md border border-primary/50 shadow-[0_0_15px_rgba(192,193,255,0.2)] transition-all">Gritty Realism</button>
+          <button class="px-6 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label-md hover:bg-surface-container border border-transparent transition-all">Surrealist</button>
+        </div>
+      </section>
+    </div>
+    <div class="lg:col-span-4 lg:sticky lg:top-24">
+      <div class="bg-surface-container-lowest border border-white/5 rounded-2xl overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div class="absolute inset-0 z-0">
+          <div class="w-full h-full opacity-30 mix-blend-luminosity" style="background: linear-gradient(135deg, #051424, #1c2b3c);"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent"></div>
+        </div>
+        <div class="relative z-10 p-8 flex flex-col min-h-[500px]">
+          <h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-4">Live Preview</h3>
+          <div class="flex-grow">
+            <h4 class="font-headline-lg text-headline-lg text-on-surface mb-2">Project Obsidian</h4>
+            <p class="text-on-surface-variant font-body-md text-body-md mb-8">A Graphic Novel exploring the depths of a Neo-Noir metropolis infused with Gritty Realism.</p>
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+                <span class="material-symbols-outlined text-primary/70">format_paint</span>
+                <div><span class="block font-label-sm text-label-sm text-on-surface-variant">Format</span><span class="block font-label-md text-label-md text-on-surface">Graphic Novel</span></div>
+              </div>
+              <div class="flex items-center gap-3 border-b border-white/5 pb-3">
+                <span class="material-symbols-outlined text-primary/70">theater_comedy</span>
+                <div><span class="block font-label-sm text-label-sm text-on-surface-variant">Primary Genre</span><span class="block font-label-md text-label-md text-on-surface">Neo-Noir</span></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary/70">contrast</span>
+                <div><span class="block font-label-sm text-label-sm text-on-surface-variant">Tone</span><span class="block font-label-md text-label-md text-on-surface">Gritty Realism</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/10 flex justify-between items-center">
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Pipeline Readiness</span>
+            <div class="flex gap-1">
+              <div class="w-8 h-1 bg-primary rounded-full"></div>
+              <div class="w-8 h-1 bg-primary rounded-full"></div>
+              <div class="w-8 h-1 bg-surface-container-highest rounded-full"></div>
+              <div class="w-8 h-1 bg-surface-container-highest rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

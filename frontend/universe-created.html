@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio - Universe Created</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&family=Hanken+Grotesk:wght@400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","primary-fixed-dim": "#c0c1ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035",
+        "surface": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0",
+        "error": "#ffb4ab",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "display-lg": ["EB Garamond"], "headline-lg": ["EB Garamond"], "headline-lg-mobile": ["EB Garamond"], "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-lg-mobile": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .pulse-glow { animation: pulseGlow 4s ease-in-out infinite alternate; }
+  @keyframes pulseGlow { 0% { box-shadow: 0 0 40px rgba(192,193,255,0.2); transform: scale(0.98); } 100% { box-shadow: 0 0 80px rgba(192,193,255,0.5); transform: scale(1.02); } }
+  .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; transform: translateY(20px); }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+  .progress-bar-fill { transition: width 1.5s cubic-bezier(0.4,0,0.2,1); }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center justify-center overflow-hidden relative">
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen pulse-glow"></div>
+</div>
+<main class="relative z-10 w-full max-w-4xl px-margin-mobile md:px-margin-desktop py-16 flex flex-col items-center text-center">
+  <div class="relative w-64 h-64 md:w-96 md:h-96 mb-12 fade-in-up">
+    <div class="absolute inset-0 rounded-full border border-white/10 bg-surface-container-low backdrop-blur-2xl flex items-center justify-center pulse-glow overflow-hidden">
+      <div class="w-3/4 h-3/4 rounded-full bg-gradient-to-tr from-primary-container via-primary to-white opacity-80 blur-xl" style="animation: spin 20s linear infinite;"></div>
+      <div class="absolute inset-0 border-[0.5px] border-primary/30 rounded-full"></div>
+    </div>
+  </div>
+  <h1 class="font-display-lg text-display-lg text-on-surface mb-6 fade-in-up delay-100 hidden md:block">Your Universe Has Been Created.</h1>
+  <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-6 fade-in-up delay-100 md:hidden">Your Universe Has Been Created.</h1>
+  <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-16 fade-in-up delay-200">The fundamental parameters of your story world are now set. The creative engine is ready to assist in your narrative journey.</p>
+  <div class="w-full max-w-md flex flex-col gap-6 mb-16 fade-in-up delay-300">
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center px-1">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase">Story Bible Initialization</span>
+        <span class="font-label-md text-label-md text-primary">100%</span>
+      </div>
+      <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
+        <div class="h-full bg-primary w-full shadow-[0_0_10px_rgba(192,193,255,0.8)]"></div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center px-1">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase">Creative Memory Engine</span>
+        <span class="font-label-md text-label-md text-primary">Ready</span>
+      </div>
+      <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
+        <div class="h-full bg-primary w-full shadow-[0_0_10px_rgba(192,193,255,0.8)]"></div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center px-1">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase">AI Planner</span>
+        <span class="font-label-md text-label-md text-primary-fixed-dim animate-pulse" id="syncText">Syncing...</span>
+      </div>
+      <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden relative">
+        <div class="absolute top-0 left-0 h-full bg-primary/40 w-full"></div>
+        <div class="h-full bg-primary progress-bar-fill shadow-[0_0_10px_rgba(192,193,255,0.5)] w-3/4" id="sync-progress"></div>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col sm:flex-row gap-4 fade-in-up delay-400">
+    <a href="/dashboard.html" class="bg-primary-container text-on-primary-container hover:bg-primary transition-colors duration-300 font-label-md text-label-md px-8 py-4 rounded-lg flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(128,131,255,0.3)]">
+      <span>Open Workspace</span>
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+    <a href="/story-hub.html" class="bg-surface-container-highest border border-white/20 hover:bg-surface-bright transition-colors duration-300 text-on-surface font-label-md text-label-md px-8 py-4 rounded-lg flex items-center justify-center gap-2">
+      <span>View Story Bible</span>
+      <span class="material-symbols-outlined">menu_book</span>
+    </a>
+  </div>
+</main>
+<script>
+  setTimeout(() => {
+    const syncProgress = document.getElementById('sync-progress');
+    if (syncProgress) {
+      syncProgress.style.width = '100%';
+      setTimeout(() => {
+        const syncText = document.getElementById('syncText');
+        syncText.textContent = 'Synced';
+        syncText.classList.remove('animate-pulse', 'text-primary-fixed-dim');
+        syncText.classList.add('text-primary');
+      }, 1500);
+    }
+  }, 800);
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio - Style &amp; Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "display-lg": ["EB Garamond"], "headline-lg": ["EB Garamond"], "headline-lg-mobile": ["EB Garamond"], "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-lg-mobile": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .glass-panel { background: rgba(13,28,45,0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  .style-card { transition: all 0.3s ease; }
+  .style-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.5); border-color: rgba(192,193,255,0.3); }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/80 backdrop-blur-xl border-b border-white/5 shadow-sm">
+  <div class="flex items-center gap-6">
+    <div class="font-headline-md text-headline-md text-primary tracking-tight">Morphic Studio</div>
+    <nav class="hidden md:flex items-center gap-6">
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/world-character-foundations.html">Back</a>
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/index.html">Cancel</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">help</span></button>
+    <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+    <a href="/universe-created.html" class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md hover:opacity-90 transition-colors">Next Step</a>
+  </div>
+</header>
+<main class="pt-32 pb-margin-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+  <div class="lg:col-span-8 flex flex-col gap-12">
+    <div class="flex items-center gap-4 text-on-surface-variant">
+      <span class="font-label-sm text-label-sm tracking-widest uppercase">Progress</span>
+      <div class="h-[1px] w-12 bg-white/10"></div>
+      <span class="font-label-md text-label-md text-primary">04. Style &amp; Intelligence</span>
+    </div>
+    <section class="flex flex-col gap-6">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Creative Style</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-2">Define the visual language of your universe. Select a core aesthetic framework to guide the generation engine.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <button class="style-card glass-panel rounded-xl overflow-hidden text-left relative group h-64 border border-primary">
+          <div class="absolute inset-0 bg-gradient-to-br from-primary/30 via-surface-container to-surface-container-lowest opacity-90"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 p-6 flex flex-col gap-2 w-full">
+            <span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Selected</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Anime Cinematic</h3>
+          </div>
+        </button>
+        <button class="style-card glass-panel rounded-xl overflow-hidden text-left relative group h-64 border border-white/10">
+          <div class="absolute inset-0 bg-gradient-to-br from-surface-container-high to-surface-container-lowest opacity-90"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 p-6 flex flex-col gap-2 w-full">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Hyper Realism</h3>
+          </div>
+        </button>
+        <button class="style-card glass-panel rounded-xl overflow-hidden text-left relative group h-64 border border-white/10">
+          <div class="absolute inset-0 bg-gradient-to-br from-surface-container to-surface-container-lowest opacity-90"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 p-6 flex flex-col gap-2 w-full">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Graphic Novel</h3>
+          </div>
+        </button>
+      </div>
+    </section>
+    <section class="flex flex-col gap-6 pt-8 border-t border-white/5">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Intelligence Planning</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-2">Morphic is synthesizing your narrative inputs, constructing the story bible, and mapping character relationships.</p>
+      </div>
+      <div class="glass-panel rounded-xl p-8 flex flex-col gap-8 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 50% 50%, #c0c1ff 0%, transparent 50%); mix-blend-mode: screen;"></div>
+        <div class="flex justify-between items-center relative z-10">
+          <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-3xl animate-pulse">memory</span>
+            <span class="font-label-md text-label-md text-on-surface">System Synthesis Active</span>
+          </div>
+          <span class="font-label-sm text-label-sm text-primary">68% Complete</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+          <div class="flex flex-col gap-3 p-4 rounded-lg bg-surface-container-lowest/50 border border-white/5">
+            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#c0c1ff]"></div><span class="font-label-sm text-label-sm text-on-surface">Narrative Arc</span></div>
+            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Analyzing structural beats and pacing mechanics.</p>
+          </div>
+          <div class="flex flex-col gap-3 p-4 rounded-lg bg-surface-container-lowest/50 border border-white/5">
+            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-primary animate-ping"></div><span class="font-label-sm text-label-sm text-on-surface">World Bible</span></div>
+            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Generating locational logic and physical constraints.</p>
+          </div>
+          <div class="flex flex-col gap-3 p-4 rounded-lg bg-surface-container-lowest/50 border border-white/5">
+            <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-surface-variant"></div><span class="font-label-sm text-label-sm text-on-surface-variant">Entity Relations</span></div>
+            <p class="font-body-md text-body-md text-on-surface-variant text-sm">Queued: Mapping character dynamics and conflicts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <aside class="lg:col-span-4 flex flex-col gap-6 sticky top-24 h-[calc(100vh-8rem)]">
+    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest px-2">Live Project Preview</h3>
+    <div class="glass-panel rounded-xl flex-1 flex flex-col overflow-hidden border-primary/20 shadow-[0_0_40px_-10px_rgba(192,193,255,0.1)]">
+      <div class="p-6 border-b border-white/5 flex flex-col gap-2 bg-surface-container-low/50">
+        <div class="flex justify-between items-start">
+          <h4 class="font-headline-md text-headline-md text-on-surface">Project Alpha</h4>
+          <span class="material-symbols-outlined text-primary">deployed_code</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-on-surface-variant">Universe Core V1.0</span>
+      </div>
+      <div class="flex-1 relative overflow-hidden flex items-center justify-center bg-surface-container-lowest">
+        <div class="absolute inset-0 opacity-40 mix-blend-screen" style="background-image: radial-gradient(circle at center, #8083ff 0%, transparent 70%);"></div>
+        <div class="relative w-48 h-48 border border-primary/30 rounded-full flex items-center justify-center" style="animation: spin 20s linear infinite;">
+          <div class="w-32 h-32 border border-primary/50 rounded-full flex items-center justify-center" style="animation: spin 15s linear infinite reverse;">
+            <div class="w-16 h-16 bg-primary/20 rounded-full backdrop-blur-md shadow-[0_0_30px_#c0c1ff]"></div>
+          </div>
+        </div>
+        <div class="absolute bottom-6 left-6 right-6 text-center">
+          <p class="font-label-sm text-label-sm text-on-surface-variant tracking-widest">CORE SYNTHESIS: 68%</p>
+        </div>
+      </div>
+      <div class="p-6 bg-surface-container-low/50 border-t border-white/5 grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1"><span class="font-label-sm text-label-sm text-on-surface-variant">Entities</span><span class="font-label-md text-label-md text-on-surface">12 Discovered</span></div>
+        <div class="flex flex-col gap-1"><span class="font-label-sm text-label-sm text-on-surface-variant">Locations</span><span class="font-label-md text-label-md text-on-surface">3 Mapped</span></div>
+      </div>
+    </div>
+  </aside>
+</main>
+<style>@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
+</body>
+</html>

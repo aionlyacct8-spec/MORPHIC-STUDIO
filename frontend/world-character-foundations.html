@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio - World &amp; Characters</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "display-lg": ["EB Garamond"], "headline-lg": ["EB Garamond"], "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background-color: #051424; color: #d4e4fa; -webkit-font-smoothing: antialiased; }
+  .glass-panel { background: rgba(26,29,35,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  .input-noir { background-color: #273647; border: none; border-bottom: 1px solid #464554; color: #d4e4fa; transition: all 0.3s ease; }
+  .input-noir:focus { outline: none; border-bottom: 1px solid #c0c1ff; box-shadow: 0 1px 0 0 #c0c1ff; }
+  .input-noir::placeholder { font-family: 'JetBrains Mono', monospace; color: #c7c4d7; opacity: 0.5; }
+  .dossier-card { background-color: #122131; transition: all 0.3s ease; position: relative; overflow: hidden; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/80 backdrop-blur-xl border-b border-white/5 shadow-sm">
+  <div class="flex items-center gap-6">
+    <h1 class="font-headline-md text-headline-md text-primary tracking-tight">Morphic Studio</h1>
+    <nav class="hidden md:flex items-center gap-6">
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/goals-atmosphere.html">Back</a>
+      <a class="text-on-surface-variant font-label-md hover:text-primary transition-colors" href="/index.html">Cancel</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <span class="font-label-sm text-label-sm text-on-surface-variant">03. Foundations</span>
+    <div class="h-4 w-px bg-white/10 mx-2"></div>
+    <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">help</span></button>
+    <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+    <a href="/style-ai-planning.html" class="bg-primary text-on-primary font-label-md text-label-md px-6 py-2 rounded-full hover:opacity-90 transition-colors ml-4">Next Step</a>
+  </div>
+</header>
+<main class="flex-grow pt-32 pb-24 px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+  <div class="col-span-1 lg:col-span-12 mb-12">
+    <h2 class="font-display-lg text-display-lg text-on-surface mb-4">World &amp; Characters</h2>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Define the fundamental architecture of your cinematic universe. Establish the core lore and cast the key inhabitants.</p>
+  </div>
+  <section class="col-span-1 lg:col-span-5 flex flex-col gap-8">
+    <div class="glass-panel rounded-xl p-8 h-full">
+      <div class="flex items-center gap-3 mb-8">
+        <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">public</span>
+        <h3 class="font-headline-md text-headline-md text-on-surface">World Foundation</h3>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-2" for="world-name">World Name</label>
+          <input class="input-noir w-full py-3 px-4 rounded-t-md font-body-md text-body-md" id="world-name" placeholder="e.g., Neo-Kyoto 2084" type="text"/>
+        </div>
+        <div>
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-2" for="time-period">Time Period / Era</label>
+          <input class="input-noir w-full py-3 px-4 rounded-t-md font-body-md text-body-md" id="time-period" placeholder="e.g., Post-collapse, Late 21st Century" type="text"/>
+        </div>
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <label class="block font-label-md text-label-md text-on-surface-variant" for="world-rules">World Rules &amp; Lore</label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant/50">Helps AI remain consistent</span>
+          </div>
+          <textarea class="input-noir w-full py-3 px-4 rounded-t-md font-body-md text-body-md resize-none" id="world-rules" placeholder="Describe the physical laws, societal structures, magic systems, or key historical events..." rows="8"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="col-span-1 lg:col-span-7 flex flex-col gap-8">
+    <div class="glass-panel rounded-xl p-8 h-full">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">group</span>
+          <h3 class="font-headline-md text-headline-md text-on-surface">Character Foundation</h3>
+        </div>
+        <button class="bg-surface-container-high border border-white/20 text-on-surface font-label-md text-label-md px-4 py-2 rounded flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+          <span class="material-symbols-outlined text-sm">add</span> Add Custom Role
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="dossier-card rounded-lg p-6 border border-white/5">
+          <div class="flex justify-between items-start mb-4">
+            <div><span class="font-label-sm text-label-sm text-primary uppercase tracking-widest block mb-1">Main Protagonist</span><h4 class="font-headline-md text-headline-md text-on-surface">Unassigned</h4></div>
+            <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant mb-6 italic">The central figure driving the narrative forward.</p>
+          <button class="w-full bg-surface-container-highest text-on-surface font-label-md text-label-md py-3 rounded hover:bg-white/5 transition-colors border border-white/10 border-dashed flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">add</span> Assign Character
+          </button>
+        </div>
+        <div class="dossier-card rounded-lg p-6 border border-white/5">
+          <div class="flex justify-between items-start mb-4">
+            <div><span class="font-label-sm text-label-sm text-error uppercase tracking-widest block mb-1">Primary Antagonist</span><h4 class="font-headline-md text-headline-md text-on-surface">Unassigned</h4></div>
+            <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant mb-6 italic">The core opposition to the protagonist's goals.</p>
+          <button class="w-full bg-surface-container-highest text-on-surface font-label-md text-label-md py-3 rounded hover:bg-white/5 transition-colors border border-white/10 border-dashed flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">add</span> Assign Character
+          </button>
+        </div>
+        <div class="dossier-card rounded-lg p-6 border border-white/5">
+          <div class="flex justify-between items-start mb-4">
+            <div><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">Supporting Role</span><h4 class="font-headline-md text-headline-md text-on-surface">Unassigned</h4></div>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant mb-6 italic">Key ally or narrative catalyst.</p>
+          <button class="w-full bg-surface-container-highest text-on-surface font-label-md text-label-md py-3 rounded hover:bg-white/5 transition-colors border border-white/10 border-dashed flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">add</span> Assign Character
+          </button>
+        </div>
+        <div class="dossier-card rounded-lg p-6 border border-white/5 border-dashed opacity-60">
+          <div class="flex items-center justify-center h-full min-h-[160px]">
+            <button class="flex flex-col items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-3xl">add_circle_outline</span>
+              <span class="font-label-md text-label-md">Add More Roles</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

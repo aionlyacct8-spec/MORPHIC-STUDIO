@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio - Comic Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff","primary-container": "#8083ff","primary-fixed": "#e1e0ff","primary-fixed-dim": "#c0c1ff","on-primary": "#1000a9","on-primary-container": "#0d0096","inverse-primary": "#494bd6",
+        "secondary": "#c6c6cc","secondary-container": "#47494e","on-secondary": "#2f3035","on-secondary-container": "#b7b8be",
+        "tertiary": "#c4c6ce","on-tertiary": "#2d3037",
+        "surface": "#051424","surface-bright": "#2c3a4c","surface-variant": "#273647","surface-container-lowest": "#010f1f","surface-container-low": "#0d1c2d","surface-container": "#122131","surface-container-high": "#1c2b3c","surface-container-highest": "#273647","surface-tint": "#c0c1ff",
+        "background": "#051424","on-background": "#d4e4fa","on-surface": "#d4e4fa","on-surface-variant": "#c7c4d7","outline": "#908fa0","outline-variant": "#464554",
+        "error": "#ffb4ab","on-error": "#690005",
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { unit: "4px", "container-max": "1440px", "margin-desktop": "64px", "margin-mobile": "20px", gutter: "24px" },
+      fontFamily: { "headline-lg": ["EB Garamond"], "headline-md": ["EB Garamond"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"] },
+      fontSize: {
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background-color: #051424; color: #d4e4fa; overflow: hidden; }
+  .glass-panel { background: rgba(26,29,35,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+</style>
+</head>
+<body class="flex flex-col h-screen w-screen font-body-md text-body-md antialiased">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface-container/80 backdrop-blur-xl border-b border-white/10 shadow-sm">
+  <div class="flex items-center gap-8">
+    <span class="font-headline-lg text-headline-lg font-medium text-on-surface whitespace-nowrap">Morphic Production Studios</span>
+    <div class="hidden md:flex gap-6 items-center pt-1">
+      <a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="/storyboard.html">Storyboard</a>
+      <a class="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Comic</a>
+      <a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="/motion-comic-studio.html">Motion Comic</a>
+      <a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="/animation-studio.html">Animation</a>
+      <a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="#">Voice</a>
+      <a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="#">Music</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">queue_play_next</span></button>
+    <button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+    <button class="px-4 py-2 bg-surface-container-high border border-white/20 text-on-surface font-label-md text-label-md rounded hover:bg-surface-variant transition-colors">Export</button>
+    <button class="px-4 py-2 bg-primary text-on-primary font-label-md text-label-md rounded hover:opacity-90 transition-colors shadow-[0_0_15px_rgba(192,193,255,0.3)]">Generate</button>
+  </div>
+</nav>
+<div class="flex flex-1 pt-16 overflow-hidden">
+  <!-- SideNavBar -->
+  <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] z-40 flex flex-col py-6 bg-surface-container-low/90 backdrop-blur-lg border-r border-white/5 shadow-2xl w-64">
+    <div class="px-6 mb-8 flex flex-col gap-2">
+      <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-2 border border-white/10">
+        <span class="material-symbols-outlined text-primary text-2xl">view_quilt</span>
+      </div>
+      <h2 class="font-headline-md text-headline-md text-on-surface">Director's Console</h2>
+      <span class="font-label-sm text-label-sm text-on-surface-variant/70">Active Studio</span>
+      <button class="mt-4 w-full py-2 bg-primary text-on-primary font-label-sm text-label-sm rounded hover:opacity-90 transition-colors">New Asset</button>
+    </div>
+    <nav class="flex flex-col gap-2 flex-1 px-4">
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">folder_open</span>Assets</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">auto_stories</span>Library</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">timeline</span>Timeline</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-primary font-bold font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">layers</span>Layers</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">brush</span>Brushes</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">info</span>Project Info</a>
+    </nav>
+    <div class="px-4 mt-auto flex flex-col gap-2 border-t border-white/5 pt-4">
+      <a class="flex items-center gap-3 px-4 py-2 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">settings</span>Settings</a>
+      <a class="flex items-center gap-3 px-4 py-2 rounded text-on-surface-variant/70 font-label-sm text-label-sm hover:bg-white/5 transition-all" href="#"><span class="material-symbols-outlined">help_outline</span>Help</a>
+    </div>
+  </aside>
+  <!-- Main Content Area -->
+  <main class="flex-1 ml-64 flex overflow-hidden bg-background relative">
+    <!-- Page Thumbnails Strip -->
+    <div class="w-24 border-r border-white/5 bg-surface flex flex-col items-center py-4 gap-4 overflow-y-auto">
+      <div class="w-16 h-24 bg-surface-container-high border border-white/20 rounded cursor-pointer hover:border-primary transition-colors flex items-center justify-center text-on-surface-variant font-label-sm text-xs">P.1</div>
+      <div class="w-16 h-24 bg-surface-container border border-primary rounded cursor-pointer shadow-[0_0_15px_rgba(192,193,255,0.2)] flex items-center justify-center text-primary font-label-sm text-xs">P.2</div>
+      <div class="w-16 h-24 bg-surface-container-high border border-white/10 rounded cursor-pointer hover:border-primary transition-colors flex items-center justify-center text-on-surface-variant font-label-sm text-xs">P.3</div>
+      <div class="w-16 h-24 bg-surface-container-high border border-white/10 rounded cursor-pointer hover:border-primary transition-colors flex items-center justify-center text-on-surface-variant font-label-sm text-xs">P.4</div>
+      <button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-variant mt-4 border border-white/10 transition-colors">
+        <span class="material-symbols-outlined">add</span>
+      </button>
+    </div>
+    <!-- Canvas Editor -->
+    <div class="flex-1 relative overflow-auto bg-[#0A0D14] flex justify-center items-start p-12">
+      <!-- Comic Page (A4 aspect ratio) -->
+      <div class="w-[700px] bg-white relative shadow-2xl flex flex-col gap-2 p-4" style="aspect-ratio: 1 / 1.414;">
+        <!-- Panel 1: Wide Establishing -->
+        <div class="w-full h-1/3 relative border-4 border-black overflow-hidden group cursor-pointer">
+          <div class="w-full h-full bg-gradient-to-br from-gray-900 via-blue-950 to-gray-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-blue-400/30 text-8xl">location_city</span>
+          </div>
+          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+            <button class="px-4 py-2 bg-white text-gray-900 font-label-md rounded text-sm border border-white/20 font-bold">Edit Frame</button>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-1">
+          <!-- Panel 2: Character -->
+          <div class="flex-1 relative border-4 border-black overflow-hidden group cursor-pointer">
+            <div class="w-full h-full bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center">
+              <span class="material-symbols-outlined text-gray-600/50 text-6xl">person</span>
+            </div>
+            <div class="absolute top-4 right-4 bg-white border-2 border-black rounded-full px-4 py-3 max-w-[200px]">
+              <p class="font-body-md text-black text-sm leading-tight text-center">"The ghost she left behind..."</p>
+              <div class="absolute -bottom-3 left-1/4 w-4 h-4 bg-white border-b-2 border-r-2 border-black transform rotate-45"></div>
+            </div>
+          </div>
+          <!-- Panel 3: Detail -->
+          <div class="w-1/3 relative border-4 border-black overflow-hidden group cursor-pointer">
+            <div class="w-full h-full bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center">
+              <span class="material-symbols-outlined text-gray-600/50 text-5xl">hand_gesture</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Floating Canvas Controls -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 glass-panel rounded-full px-6 py-3 flex gap-6 items-center shadow-2xl">
+        <button class="text-on-surface hover:text-primary flex flex-col items-center gap-1 transition-colors">
+          <span class="material-symbols-outlined">chat_bubble</span>
+          <span class="font-label-sm text-[10px]">Speech</span>
+        </button>
+        <div class="w-px h-8 bg-white/10"></div>
+        <button class="text-on-surface hover:text-primary flex flex-col items-center gap-1 transition-colors">
+          <span class="material-symbols-outlined">subtitles</span>
+          <span class="font-label-sm text-[10px]">Caption</span>
+        </button>
+        <div class="w-px h-8 bg-white/10"></div>
+        <button class="text-on-surface hover:text-primary flex flex-col items-center gap-1 transition-colors">
+          <span class="material-symbols-outlined">view_quilt</span>
+          <span class="font-label-sm text-[10px]">Layout</span>
+        </button>
+        <div class="w-px h-8 bg-white/10"></div>
+        <button class="text-primary hover:text-primary-fixed-dim flex flex-col items-center gap-1 transition-colors">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">play_circle</span>
+          <span class="font-label-sm text-[10px]">Preview</span>
+        </button>
+      </div>
+    </div>
+    <!-- Intelligence Panel -->
+    <aside class="w-80 border-l border-white/5 bg-surface-container-low flex flex-col p-6 gap-6 overflow-y-auto">
+      <h3 class="font-headline-md text-headline-md text-on-surface border-b border-white/10 pb-4">Intelligence</h3>
+      <!-- Consistency Engine -->
+      <div class="bg-surface-container rounded-lg p-4 border border-white/5 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <h4 class="font-label-md text-label-md text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-sm">verified</span>Consistency Engine
+          </h4>
+          <span class="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-label-sm rounded uppercase tracking-wider">98% Match</span>
+        </div>
+        <ul class="flex flex-col gap-3 relative z-10">
+          <li class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-green-400 text-sm mt-0.5">check_circle</span>
+            <div>
+              <p class="font-body-md text-sm text-on-surface">Character: 'Elara' Costume</p>
+              <p class="font-label-sm text-xs text-on-surface-variant">Matches Story Bible v2.</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-amber-400 text-sm mt-0.5">warning</span>
+            <div>
+              <p class="font-body-md text-sm text-on-surface">Lighting Rule</p>
+              <p class="font-label-sm text-xs text-on-surface-variant">Panel 3 suggests daytime in night scene.</p>
+              <button class="mt-2 text-xs text-primary underline">Auto-Fix Rendering</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <!-- AI Layout Variations -->
+      <div class="bg-surface-container rounded-lg p-4 border border-white/5">
+        <h4 class="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-4">
+          <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>AI Layout Variations
+        </h4>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="aspect-square bg-surface border border-white/10 rounded hover:border-primary cursor-pointer flex flex-col gap-1 p-1">
+            <div class="w-full h-1/2 border border-white/20"></div>
+            <div class="flex gap-1 flex-1">
+              <div class="flex-1 border border-white/20"></div>
+              <div class="flex-1 border border-white/20"></div>
+            </div>
+          </div>
+          <div class="aspect-square bg-surface border border-primary/50 rounded hover:border-primary cursor-pointer flex gap-1 p-1 shadow-[0_0_10px_rgba(192,193,255,0.1)]">
+            <div class="flex-1 border border-white/20"></div>
+            <div class="flex-1 flex flex-col gap-1">
+              <div class="flex-1 border border-white/20"></div>
+              <div class="flex-1 border border-white/20"></div>
+            </div>
+          </div>
+        </div>
+        <button class="w-full mt-4 py-2 border border-white/20 text-on-surface font-label-sm rounded hover:bg-white/5 transition-colors">Generate More Options</button>
+      </div>
+      <!-- Script Reference -->
+      <div class="bg-surface-container rounded-lg p-4 border border-white/5 flex-1">
+        <h4 class="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-4">
+          <span class="material-symbols-outlined text-on-surface-variant text-sm">description</span>Script View
+        </h4>
+        <div class="font-body-md text-sm text-on-surface-variant space-y-4">
+          <p><strong class="text-on-surface">PANEL 1:</strong> Wide shot. The city below. Rain pours incessantly.</p>
+          <p><strong class="text-on-surface">PANEL 2:</strong> Focus on ELARA. She looks back, haunted.</p>
+          <p class="pl-4 italic">ELARA (V.O.): "The ghost she left behind..."</p>
+          <p><strong class="text-on-surface">PANEL 3:</strong> Close up. Her hand retrieves the drive.</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+</body>
+</html>
