@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
 import pkg from "pg";
 
 dotenv.config();
@@ -10,12 +9,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 const { Pool } = pkg;
 
-// Connect to your new Replit PostgreSQL database
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
-
-const ai = new GoogleGenAI({});
 
 app.use(cors());
 app.use(express.json());
@@ -28,12 +24,10 @@ app.get("/", (req, res) => {
   });
 });
 
-// Upgraded Route: Save Script -> Analyze -> Save Storyboard
 app.post("/api/analyze-script", async (req, res) => {
   try {
     const { title, scriptText } = req.body;
 
-    // We now require a title to save the script properly
     if (!scriptText || !title) {
       return res
         .status(400)
@@ -42,7 +36,6 @@ app.post("/api/analyze-script", async (req, res) => {
 
     console.log(`Saving script: "${title}"...`);
 
-    // 1. Save the raw script to the database and retrieve its unique ID
     const scriptResult = await pool.query(
       "INSERT INTO scripts (title, content) VALUES ($1, $2) RETURNING id",
       [title, scriptText],
@@ -51,15 +44,33 @@ app.post("/api/analyze-script", async (req, res) => {
 
     console.log(`Script saved (ID: ${scriptId}). Generating storyboard...`);
 
-    // 2. Generate the storyboard via the AI Stack
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `You are the AI Story Planner for Morphic Studio. Convert the following script into a structured comic storyboard format. Outline the panels, visual descriptions, and dialogue:\n\n${scriptText}`,
+    const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://morphic-studio.replit.app",
+        "X-Title": "Morphic Studio",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: `You are the AI Story Planner for Morphic Studio. Convert the following script into a structured comic storyboard format. Outline the panels, visual descriptions, and dialogue:\n\n${scriptText}`,
+          },
+        ],
+      }),
     });
 
-    const storyboardText = response.text;
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      throw new Error(`OpenRouter error ${aiResponse.status}: ${errText}`);
+    }
 
-    // 3. Save the generated storyboard, permanently linking it to the Script ID
+    const aiData = await aiResponse.json();
+    const storyboardText = aiData.choices[0].message.content;
+
     await pool.query(
       "INSERT INTO storyboards (script_id, panel_data) VALUES ($1, $2)",
       [scriptId, JSON.stringify({ content: storyboardText })],
@@ -67,7 +78,6 @@ app.post("/api/analyze-script", async (req, res) => {
 
     console.log("Storyboard generated and saved permanently!");
 
-    // 4. Return the complete package to the user
     res.json({
       success: true,
       scriptId: scriptId,
