@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Story Systems Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{ extend:{
+    colors:{
+      "primary":"#c0c1ff","on-primary":"#1000a9","primary-container":"#8083ff",
+      "on-primary-container":"#0d0096","primary-fixed-dim":"#c0c1ff",
+      "background":"#051424","on-background":"#d4e4fa",
+      "surface":"#051424","on-surface":"#d4e4fa",
+      "surface-variant":"#273647","on-surface-variant":"#c7c4d7",
+      "surface-container-lowest":"#010f1f","surface-container-low":"#0d1c2d",
+      "surface-container":"#122131","surface-container-high":"#1c2b3c",
+      "surface-container-highest":"#273647","surface-bright":"#2c3a4c",
+      "outline":"#908fa0","outline-variant":"#464554",
+    },
+    fontFamily:{
+      "headline-lg":["EB Garamond"],"headline-md":["EB Garamond"],
+      "display-lg":["EB Garamond"],"body-lg":["Hanken Grotesk"],
+      "body-md":["Hanken Grotesk"],"label-md":["JetBrains Mono"],"label-sm":["JetBrains Mono"],
+    },
+    fontSize:{
+      "display-lg":["64px",{lineHeight:"72px",letterSpacing:"-0.02em",fontWeight:"500"}],
+      "headline-lg":["40px",{lineHeight:"48px",fontWeight:"500"}],
+      "headline-md":["28px",{lineHeight:"36px",fontWeight:"500"}],
+      "body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],
+      "body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],
+      "label-md":["14px",{lineHeight:"20px",letterSpacing:"0.05em",fontWeight:"500"}],
+      "label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+    },
+    spacing:{"margin-desktop":"64px","margin-mobile":"20px","gutter":"24px","container-max":"1440px"},
+  }}
+}
+</script>
+<style>
+  .glass-panel { background: rgba(26,29,35,0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  .glass-panel:hover { border-color: rgba(192,193,255,0.2); transition: border-color 0.3s; }
+  @keyframes pulse-dot { 0%{box-shadow:0 0 0 0 rgba(192,193,255,0.4)}70%{box-shadow:0 0 0 8px rgba(192,193,255,0)}100%{box-shadow:0 0 0 0 rgba(192,193,255,0)} }
+  .pulse-dot { animation: pulse-dot 2s infinite; }
+  .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+  @keyframes shimmer{0%,100%{opacity:0}50%{opacity:0.4}}
+  .shimmer-bar { animation: shimmer 2s infinite; }
+  .node-active { filter: drop-shadow(0 0 8px rgba(192,193,255,0.6)); }
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-hidden h-screen selection:bg-primary selection:text-on-primary">
+
+<!-- Side Nav -->
+<nav class="hidden md:flex flex-col py-6 px-3 gap-3 bg-surface-container-lowest shadow-2xl fixed left-0 top-0 h-full w-56 z-40 border-r border-white/5">
+  <div class="mb-6 px-3 flex flex-col gap-1">
+    <a href="index.html" class="flex items-center gap-2 mb-2">
+      <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">movie_filter</span>
+      <span class="font-headline-md text-[18px] text-on-surface">Morphic Studio</span>
+    </a>
+    <h2 class="font-headline-md text-[16px] text-on-surface">Project Alpha</h2>
+    <p class="font-body-md text-sm text-on-surface-variant">Noir Thriller</p>
+  </div>
+  <div class="flex flex-col gap-1 flex-grow">
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary font-bold bg-surface-variant/30 transition-all group" href="#">
+      <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-[18px]">menu_book</span>
+      <span class="font-body-md text-sm">Story Bible</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-variant/50 transition-all group" href="#">
+      <span class="material-symbols-outlined group-hover:scale-110 transition-transform text-[18px]">groups</span>
+      <span class="font-body-md text-sm">Characters</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-variant/50 transition-all group" href="#">
+      <span class="material-symbols-outlined group-hover:scale-110 transition-transform text-[18px]">map</span>
+      <span class="font-body-md text-sm">Locations</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-variant/50 transition-all group" href="#">
+      <span class="material-symbols-outlined group-hover:scale-110 transition-transform text-[18px]">account_tree</span>
+      <span class="font-body-md text-sm">Plot Map</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-variant/50 transition-all group" href="#">
+      <span class="material-symbols-outlined group-hover:scale-110 transition-transform text-[18px]">inventory_2</span>
+      <span class="font-body-md text-sm">Archive</span>
+    </a>
+  </div>
+  <div class="mt-auto pt-4 flex flex-col gap-3">
+    <a href="dashboard.html" class="w-full py-2.5 border border-primary/30 text-primary font-label-md text-label-md rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-2 text-sm">
+      <span class="material-symbols-outlined text-[16px]">edit_note</span> Writing Studio
+    </a>
+    <a href="storyboard.html" class="w-full py-2.5 border border-white/10 text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center gap-2 text-sm">
+      <span class="material-symbols-outlined text-[16px]">timeline</span> Storyboard
+    </a>
+  </div>
+</nav>
+
+<!-- Top App Bar -->
+<header class="hidden md:flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 bg-surface/80 backdrop-blur-xl shadow-sm border-b border-white/10 pl-[calc(14rem+24px)] transition-all">
+  <div class="flex items-center gap-6">
+    <h2 class="font-display-lg text-primary tracking-tighter text-[24px] leading-none">Nexus Console</h2>
+  </div>
+  <nav class="flex items-center gap-8 h-full">
+    <a class="h-full flex items-center text-primary border-b-2 border-primary text-label-md font-label-md uppercase tracking-wider" href="#">Overview</a>
+    <a class="h-full flex items-center text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md uppercase tracking-wider" href="storyboard.html">Storyboard</a>
+    <a class="h-full flex items-center text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md uppercase tracking-wider" href="dashboard.html">Writing</a>
+  </nav>
+  <div class="flex items-center gap-4">
+    <button onclick="analyzeArc()" class="px-4 py-1.5 border border-white/20 text-on-surface font-label-md text-label-md rounded hover:bg-white/5 transition-colors text-sm">Export</button>
+    <button onclick="analyzeArc()" class="px-4 py-1.5 bg-primary text-on-primary font-label-md text-label-md rounded hover:opacity-90 transition-opacity shadow-sm shadow-primary/20 flex items-center gap-1.5 text-sm">
+      <span class="material-symbols-outlined text-[16px]">neurology</span> Analyze Arc
+    </button>
+  </div>
+</header>
+
+<!-- Main content -->
+<main class="flex-1 w-full md:pl-56 pt-4 md:pt-20 px-5 md:px-12 pb-24 md:pb-12 flex flex-col gap-6 overflow-y-auto scroll-hide">
+
+  <!-- Dashboard Header -->
+  <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-5 mt-2">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="w-2 h-2 rounded-full bg-primary pulse-dot"></span>
+        <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest text-xs">Engine Synced</span>
+      </div>
+      <h1 class="font-display-lg text-[36px] md:text-[48px] leading-tight font-medium text-on-surface mb-2">Nexus Console</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl text-base">Real-time narrative intelligence. Monitoring character arcs, thematic resonance, and world continuity.</p>
+    </div>
+    <div class="flex gap-3">
+      <button class="px-4 py-2 glass-panel rounded-lg flex items-center gap-2 text-on-surface font-label-md text-label-md hover:bg-white/5 transition-colors text-sm">
+        <span class="material-symbols-outlined text-[16px]">history</span> Revisions
+      </button>
+      <button onclick="analyzeArc()" class="px-4 py-2 bg-primary text-on-primary rounded-lg flex items-center gap-2 font-label-md text-label-md hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 text-sm">
+        <span class="material-symbols-outlined text-[16px]">neurology</span> Analyze Arc
+      </button>
+    </div>
+  </header>
+
+  <!-- Bento Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-[minmax(160px,auto)]">
+
+    <!-- Relationship Graph (8 cols, 2 rows) -->
+    <section class="glass-panel rounded-xl col-span-1 md:col-span-8 md:row-span-2 overflow-hidden relative flex flex-col">
+      <div class="p-5 border-b border-white/5 flex justify-between items-center bg-surface-container-low/50">
+        <h3 class="font-headline-md text-[20px] text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[18px]">hub</span>
+          Universe Relationship Graph
+        </h3>
+        <div class="flex gap-2">
+          <span class="px-2.5 py-1 bg-surface-container rounded-full border border-white/10 font-label-sm text-[10px] text-on-surface-variant flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Characters
+          </span>
+          <span class="px-2.5 py-1 bg-surface-container rounded-full border border-white/10 font-label-sm text-[10px] text-on-surface-variant flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> Locations
+          </span>
+          <span class="px-2.5 py-1 bg-surface-container rounded-full border border-white/10 font-label-sm text-[10px] text-on-surface-variant flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Events
+          </span>
+        </div>
+      </div>
+      <div class="flex-1 relative min-h-[320px] bg-surface-container-lowest/50 overflow-hidden" id="graph-container">
+        <!-- Interactive SVG graph -->
+        <svg class="w-full h-full" id="universe-graph" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#c0c1ff" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#c0c1ff" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="blur-filter">
+              <feGaussianBlur stdDeviation="2"/>
+            </filter>
+          </defs>
+          <!-- Background glow -->
+          <ellipse cx="50%" cy="50%" rx="200" ry="150" fill="url(#glow)" opacity="0.4"/>
+          <!-- Connection lines -->
+          <g opacity="0.3" stroke="#c0c1ff" stroke-width="1" fill="none">
+            <line x1="50%" y1="50%" x2="25%" y2="30%" class="connection"/>
+            <line x1="50%" y1="50%" x2="75%" y2="30%" class="connection"/>
+            <line x1="50%" y1="50%" x2="20%" y2="65%" class="connection"/>
+            <line x1="50%" y1="50%" x2="80%" y2="65%" class="connection"/>
+            <line x1="50%" y1="50%" x2="50%" y2="20%" class="connection"/>
+            <line x1="25%" y1="30%" x2="20%" y2="65%" stroke="#4285f4" opacity="0.4"/>
+            <line x1="75%" y1="30%" x2="80%" y2="65%" stroke="#4285f4" opacity="0.4"/>
+          </g>
+          <!-- Center node (Main protagonist) -->
+          <circle cx="50%" cy="50%" r="20" fill="#c0c1ff" fill-opacity="0.15" stroke="#c0c1ff" stroke-width="1.5" class="node-active cursor-pointer" onclick="selectNode('Kael')"/>
+          <text x="50%" y="50%" text-anchor="middle" dy="0.3em" fill="#c0c1ff" font-size="11" font-family="JetBrains Mono">Kael</text>
+          <!-- Supporting nodes -->
+          <circle cx="25%" cy="30%" r="14" fill="#1c2b3c" stroke="#c7c4d7" stroke-width="1" class="cursor-pointer" onclick="selectNode('Elara')"/>
+          <text x="25%" y="30%" text-anchor="middle" dy="0.3em" fill="#c7c4d7" font-size="10" font-family="JetBrains Mono">Elara</text>
+          <circle cx="75%" cy="30%" r="14" fill="#1c2b3c" stroke="#c7c4d7" stroke-width="1" class="cursor-pointer" onclick="selectNode('The Director')"/>
+          <text x="75%" y="30%" text-anchor="middle" dy="0.3em" fill="#c7c4d7" font-size="9" font-family="JetBrains Mono">Director</text>
+          <circle cx="20%" cy="65%" r="12" fill="#122131" stroke="#4285f4" stroke-width="1" class="cursor-pointer" onclick="selectNode('Undercity')"/>
+          <text x="20%" y="65%" text-anchor="middle" dy="0.3em" fill="#4285f4" font-size="9" font-family="JetBrains Mono">Undercity</text>
+          <circle cx="80%" cy="65%" r="12" fill="#122131" stroke="#4285f4" stroke-width="1" class="cursor-pointer" onclick="selectNode('Neo-Veridia')"/>
+          <text x="80%" y="65%" text-anchor="middle" dy="0.3em" fill="#4285f4" font-size="9" font-family="JetBrains Mono">Neo-Veridia</text>
+          <circle cx="50%" cy="20%" r="10" fill="#122131" stroke="#c4c6ce" stroke-width="1" class="cursor-pointer" onclick="selectNode('Memory Engine')"/>
+          <text x="50%" y="20%" text-anchor="middle" dy="0.3em" fill="#c4c6ce" font-size="8" font-family="JetBrains Mono">Mem. Engine</text>
+        </svg>
+        <!-- Node info overlay -->
+        <div id="node-info" class="hidden absolute bottom-4 left-4 right-4 glass-panel rounded-lg p-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <h4 class="font-label-md text-label-md text-on-surface text-sm" id="node-name">Kael</h4>
+              <p class="font-body-md text-xs text-on-surface-variant mt-1" id="node-desc">Arc-Runner / Investigator. Central protagonist driving the narrative through the Undercity investigation.</p>
+            </div>
+            <button onclick="document.getElementById('node-info').classList.add('hidden')" class="text-on-surface-variant hover:text-on-surface ml-3"><span class="material-symbols-outlined text-[16px]">close</span></button>
+          </div>
+        </div>
+        <!-- Controls -->
+        <div class="absolute bottom-4 right-4 flex gap-2">
+          <button class="w-8 h-8 rounded bg-surface/80 border border-white/10 flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors backdrop-blur-sm"><span class="material-symbols-outlined text-[16px]">zoom_in</span></button>
+          <button class="w-8 h-8 rounded bg-surface/80 border border-white/10 flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors backdrop-blur-sm"><span class="material-symbols-outlined text-[16px]">zoom_out</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Memory Engine (4 cols, 1 row) -->
+    <section class="glass-panel rounded-xl col-span-1 md:col-span-4 flex flex-col">
+      <div class="p-5 border-b border-white/5 flex justify-between items-center bg-surface-container-low/50">
+        <h3 class="font-headline-md text-[20px] text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[18px]">memory</span>
+          Memory Engine
+        </h3>
+        <span class="font-label-sm text-[10px] text-on-surface-variant/60 uppercase tracking-wider">Live</span>
+      </div>
+      <div class="p-5 flex-1 flex flex-col justify-center gap-5">
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <span class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Narrative Tension</span>
+            <span class="font-label-md text-label-md text-primary" id="tension-val">84%</span>
+          </div>
+          <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full relative overflow-hidden" style="width:84%" id="tension-bar">
+              <div class="absolute inset-0 bg-white/10 shimmer-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <span class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Thematic Cohesion</span>
+            <span class="font-label-md text-label-md text-primary" id="cohesion-val">92%</span>
+          </div>
+          <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="h-full bg-primary/80 rounded-full" style="width:92%" id="cohesion-bar"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <span class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">World Consistency</span>
+            <span class="font-label-md text-label-md text-primary" id="consistency-val">78%</span>
+          </div>
+          <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="h-full bg-primary/60 rounded-full" style="width:78%" id="consistency-bar"></div>
+          </div>
+        </div>
+        <div class="mt-1 pt-4 border-t border-white/5 flex items-center justify-between">
+          <span class="font-label-sm text-[10px] text-on-surface-variant/70">Dominant Tone:</span>
+          <span class="px-2 py-1 bg-surface-container rounded border border-white/5 font-label-sm text-[10px] text-on-surface">Melancholy Noir</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Story Bible Codex (4 cols, 1 row) -->
+    <section class="glass-panel rounded-xl col-span-1 md:col-span-4 flex flex-col relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+      <div class="p-5 border-b border-white/5 bg-surface-container-low/50 z-10">
+        <h3 class="font-headline-md text-[20px] text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[18px]">book</span>
+          Story Bible Codex
+        </h3>
+      </div>
+      <div class="flex-1 z-10">
+        <ul class="flex flex-col">
+          <li onclick="openCodex('lighting')" class="px-5 py-3.5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex justify-between items-center group">
+            <div>
+              <span class="font-body-md text-sm text-on-surface">Rule: Tech-Noir Lighting</span>
+              <span class="block font-label-sm text-[10px] text-on-surface-variant/60">Updated 2h ago</span>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors text-[18px]">chevron_right</span>
+          </li>
+          <li onclick="openCodex('syndicate')" class="px-5 py-3.5 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex justify-between items-center group">
+            <div>
+              <span class="font-body-md text-sm text-on-surface">Lore: The Syndicate Fall</span>
+              <span class="block font-label-sm text-[10px] text-on-surface-variant/60">Updated 5h ago</span>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors text-[18px]">chevron_right</span>
+          </li>
+          <li onclick="openCodex('reapers')" class="px-5 py-3.5 hover:bg-white/5 transition-colors cursor-pointer flex justify-between items-center group">
+            <div>
+              <span class="font-body-md text-sm text-on-surface">Faction: Neon Reapers</span>
+              <span class="block font-label-sm text-[10px] text-primary">New Entry</span>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors text-[18px]">chevron_right</span>
+          </li>
+        </ul>
+        <button onclick="addCodexEntry()" class="w-full py-3 border-t border-white/5 text-primary hover:bg-primary/5 transition-colors font-label-sm text-[10px] uppercase tracking-wider flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">add</span> Add Entry
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Scene Intelligence Timeline -->
+  <section class="glass-panel rounded-xl w-full flex flex-col">
+    <div class="p-5 border-b border-white/5 bg-surface-container-low/50 flex justify-between items-center">
+      <h3 class="font-headline-md text-[20px] text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[18px]">linear_scale</span>
+        Scene Intelligence & Pacing
+      </h3>
+      <button class="p-2 rounded hover:bg-white/5 text-on-surface-variant transition-colors">
+        <span class="material-symbols-outlined">more_horiz</span>
+      </button>
+    </div>
+    <div class="p-6 overflow-x-auto scroll-hide">
+      <div class="min-w-[700px] flex items-center relative pt-4 pb-10">
+        <div class="absolute top-1/2 left-0 right-0 h-px bg-surface-container -translate-y-1/2 z-0"></div>
+        <!-- Scrub indicator -->
+        <div class="absolute top-0 bottom-0 w-px bg-primary left-1/3 z-20 flex flex-col items-center">
+          <div class="w-2.5 h-2.5 bg-primary rounded-full absolute top-1/2 -translate-y-1/2 shadow-[0_0_10px_rgba(192,193,255,0.8)]"></div>
+          <div class="bg-primary text-on-primary font-label-sm text-[9px] px-1.5 py-0.5 rounded absolute top-0 -translate-y-full whitespace-nowrap">ACT II</div>
+        </div>
+        <!-- Nodes -->
+        <div class="flex justify-between w-full relative z-10">
+          <div class="flex flex-col items-center gap-3 group cursor-pointer w-28 -ml-14" onclick="selectScene('SC-01')">
+            <div class="w-3.5 h-3.5 rounded-full bg-surface-container border-2 border-on-surface-variant group-hover:border-primary transition-colors"></div>
+            <div class="glass-panel p-2.5 rounded-lg border-l border-l-primary/30 text-center opacity-60 group-hover:opacity-100 transition-opacity">
+              <span class="block font-label-md text-[10px] text-on-surface mb-0.5">SC-01</span>
+              <span class="block font-body-md text-xs text-on-surface-variant">The Drop</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3 group cursor-pointer w-28" onclick="selectScene('SC-02')">
+            <div class="w-3.5 h-3.5 rounded-full bg-primary border-2 border-primary shadow-[0_0_12px_rgba(192,193,255,0.5)]"></div>
+            <div class="glass-panel p-2.5 rounded-lg border-l-2 border-l-primary bg-surface-variant/20 text-center -translate-y-1.5 shadow-md">
+              <span class="block font-label-md text-[10px] text-primary mb-0.5">SC-02</span>
+              <span class="block font-body-md text-xs text-on-surface">Alleyway Chase</span>
+              <div class="mt-1.5 flex justify-center gap-0.5">
+                <span class="w-0.5 h-2.5 bg-red-400/80 rounded-full"></span>
+                <span class="w-0.5 h-3.5 bg-red-400/80 rounded-full"></span>
+                <span class="w-0.5 h-4 bg-red-400/80 rounded-full"></span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3 group cursor-pointer w-28" onclick="selectScene('SC-03')">
+            <div class="w-3.5 h-3.5 rounded-full bg-surface-container border-2 border-on-surface-variant group-hover:border-primary transition-colors"></div>
+            <div class="glass-panel p-2.5 rounded-lg border-l border-l-surface-container text-center opacity-45 group-hover:opacity-100 transition-opacity">
+              <span class="block font-label-md text-[10px] text-on-surface mb-0.5">SC-03</span>
+              <span class="block font-body-md text-xs text-on-surface-variant">Safehouse</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center gap-3 group cursor-pointer w-28 -mr-14" onclick="selectScene('SC-04')">
+            <div class="w-3.5 h-3.5 rounded-full bg-surface-container border-2 border-on-surface-variant group-hover:border-primary transition-colors"></div>
+            <div class="glass-panel p-2.5 rounded-lg border-l border-l-surface-container text-center opacity-45 group-hover:opacity-100 transition-opacity">
+              <span class="block font-label-md text-[10px] text-on-surface mb-0.5">SC-04</span>
+              <span class="block font-body-md text-xs text-on-surface-variant">Betrayal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Codex Modal -->
+<div id="codex-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container border border-white/10 rounded-xl p-8 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.7)]">
+    <div class="flex items-start justify-between mb-6">
+      <h3 class="font-headline-md text-headline-md text-on-surface" id="codex-title">Story Bible Entry</h3>
+      <button onclick="document.getElementById('codex-modal').classList.add('hidden')" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed" id="codex-content"></p>
+    <div class="mt-6 flex gap-3">
+      <button onclick="document.getElementById('codex-modal').classList.add('hidden')" class="flex-1 py-3 border border-white/10 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Close</button>
+      <button class="flex-1 py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">Edit Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Arc analysis modal -->
+<div id="arc-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-surface-container border border-white/10 rounded-xl p-8 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.7)]">
+    <h3 class="font-headline-md text-headline-md text-on-surface mb-4">Narrative Arc Analysis</h3>
+    <div id="arc-loading" class="flex items-center justify-center gap-2 py-8">
+      <span class="material-symbols-outlined text-primary animate-spin text-3xl">neurology</span>
+      <span class="font-body-md text-on-surface-variant">Analyzing narrative structure...</span>
+    </div>
+    <div id="arc-result" class="hidden space-y-4">
+      <div class="bg-surface-container-high rounded-lg p-4 border border-white/5">
+        <div class="flex justify-between mb-2"><span class="font-label-sm text-label-sm text-on-surface-variant">Act Structure</span><span class="text-primary font-label-md text-label-md">3-Act</span></div>
+        <p class="font-body-md text-sm text-on-surface-variant">Classic noir detective structure with strong inciting incident. Consider adding a false climax in Act II.</p>
+      </div>
+      <div class="bg-surface-container-high rounded-lg p-4 border border-white/5">
+        <div class="flex justify-between mb-2"><span class="font-label-sm text-label-sm text-on-surface-variant">Protagonist Arc</span><span class="text-emerald-400 font-label-md text-label-md">Strong</span></div>
+        <p class="font-body-md text-sm text-on-surface-variant">Kael shows clear internal conflict. The tension between duty and personal truth creates compelling character development.</p>
+      </div>
+      <div class="bg-surface-container-high rounded-lg p-4 border border-white/5">
+        <div class="flex justify-between mb-2"><span class="font-label-sm text-label-sm text-on-surface-variant">Pacing</span><span class="text-yellow-400 font-label-md text-label-md">Uneven</span></div>
+        <p class="font-body-md text-sm text-on-surface-variant">Act II pacing dips before the Safehouse scene. Add a pressure point between SC-02 and SC-03 to maintain tension.</p>
+      </div>
+    </div>
+    <button onclick="document.getElementById('arc-modal').classList.add('hidden')" class="mt-6 w-full py-3 border border-white/10 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Close</button>
+  </div>
+</div>
+
+<script>
+const codexData = {
+  lighting: { title: 'Rule: Tech-Noir Lighting', content: 'All scenes in Neo-Veridia must use high-contrast lighting with dominant neon colors (magenta, cyan, amber). Natural light is forbidden except in flashback sequences. Shadows should always be deep and opaque — no ambient fill light unless artificially sourced.' },
+  syndicate: { title: 'Lore: The Syndicate Fall', content: 'The Meridian Syndicate collapsed seven years before the story begins, leaving a power vacuum filled by three factions: the Neon Reapers (street), the Architects (corporate), and the Ghost Protocol (underground AI resistance). Kael was a Syndicate operative before the fall.' },
+  reapers: { title: 'Faction: Neon Reapers', content: 'New entry. The Neon Reapers control the lower levels of Neo-Veridia. They use bioluminescent gang markings visible only under UV spectrum. Their leader, ZERO, is a former Memory Engine technician with direct access to the rogue mnemonic nodes.' },
+};
+
+function openCodex(key) {
+  const data = codexData[key];
+  document.getElementById('codex-title').textContent = data.title;
+  document.getElementById('codex-content').textContent = data.content;
+  document.getElementById('codex-modal').classList.remove('hidden');
+}
+
+function addCodexEntry() {
+  const title = prompt('Entry title:');
+  if (!title) return;
+  const content = prompt('Entry content:') || '';
+  codexData[title.toLowerCase().replace(/\s+/g, '_')] = { title, content };
+  alert('Entry added to Story Bible Codex.');
+}
+
+function selectNode(name) {
+  const descriptions = {
+    'Kael': 'Arc-Runner / Investigator. Central protagonist driving the narrative through the Undercity investigation. Former Syndicate operative.',
+    'Elara': 'Overwatch Handler / Splicer. Kael\'s remote support. Has hidden knowledge about what the Syndicate buried.',
+    'The Director': 'Unknown antagonist. Pulls strings from within the Architect faction. Knows Kael\'s real identity.',
+    'Undercity': 'The forgotten foundations of Neo-Veridia. Sector 4 contains rogue mnemonic nodes with suppressed data.',
+    'Neo-Veridia': 'The primary setting. A rain-soaked megacity stratified by class, technology, and forgotten history.',
+    'Memory Engine': 'The narrative AI that maintains consistency across the universe. Also exists as a physical artifact in the story.',
+  };
+  document.getElementById('node-name').textContent = name;
+  document.getElementById('node-desc').textContent = descriptions[name] || 'No information available.';
+  document.getElementById('node-info').classList.remove('hidden');
+}
+
+function selectScene(id) {
+  const info = {
+    'SC-01': 'The Drop — Kael receives the mission briefing and descends into the Undercity.',
+    'SC-02': 'Alleyway Chase — Kael pursues a rogue synth through neon-lit streets. High tension action sequence.',
+    'SC-03': 'Safehouse — Kael regroups with Elara. Exposition and character development.',
+    'SC-04': 'Betrayal — Plot twist. Elara is revealed to be working for The Director.',
+  };
+  alert(id + ': ' + (info[id] || 'Scene details not available.'));
+}
+
+function analyzeArc() {
+  const modal = document.getElementById('arc-modal');
+  const loading = document.getElementById('arc-loading');
+  const result = document.getElementById('arc-result');
+  loading.classList.remove('hidden');
+  result.classList.add('hidden');
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    loading.classList.add('hidden');
+    result.classList.remove('hidden');
+  }, 2000);
+}
+
+// Animate metrics
+function animateMetrics() {
+  const metrics = [
+    { bar: 'tension-bar', val: 'tension-val', target: 84 },
+    { bar: 'cohesion-bar', val: 'cohesion-val', target: 92 },
+    { bar: 'consistency-bar', val: 'consistency-val', target: 78 },
+  ];
+  metrics.forEach(m => {
+    let current = 0;
+    const interval = setInterval(() => {
+      current = Math.min(current + 2, m.target);
+      document.getElementById(m.bar).style.width = current + '%';
+      document.getElementById(m.val).textContent = current + '%';
+      if (current >= m.target) clearInterval(interval);
+    }, 20);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(animateMetrics, 300);
+});
+</script>
+</body>
+</html>

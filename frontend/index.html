@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Build Entire Story Universes with AI</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#c0c1ff", "on-primary": "#1000a9", "primary-container": "#8083ff",
+        "on-primary-container": "#0d0096", "primary-fixed": "#e1e0ff", "primary-fixed-dim": "#c0c1ff",
+        "on-primary-fixed": "#07006c", "on-primary-fixed-variant": "#2f2ebe",
+        "secondary": "#c6c6cc", "secondary-container": "#47494e",
+        "on-secondary-container": "#b7b8be", "tertiary": "#c4c6ce",
+        "background": "#051424", "on-background": "#d4e4fa",
+        "surface": "#051424", "on-surface": "#d4e4fa",
+        "surface-variant": "#273647", "on-surface-variant": "#c7c4d7",
+        "surface-container-lowest": "#010f1f", "surface-container-low": "#0d1c2d",
+        "surface-container": "#122131", "surface-container-high": "#1c2b3c",
+        "surface-container-highest": "#273647", "surface-bright": "#2c3a4c",
+        "outline": "#908fa0", "outline-variant": "#464554",
+        "inverse-primary": "#494bd6", "inverse-surface": "#d4e4fa",
+        "error": "#ffb4ab", "error-container": "#93000a",
+      },
+      fontFamily: {
+        "display-lg": ["EB Garamond", "serif"],
+        "headline-lg": ["EB Garamond", "serif"],
+        "headline-lg-mobile": ["EB Garamond", "serif"],
+        "headline-md": ["EB Garamond", "serif"],
+        "body-lg": ["Hanken Grotesk", "sans-serif"],
+        "body-md": ["Hanken Grotesk", "sans-serif"],
+        "label-md": ["JetBrains Mono", "monospace"],
+        "label-sm": ["JetBrains Mono", "monospace"],
+      },
+      fontSize: {
+        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "headline-lg": ["40px", { lineHeight: "48px", fontWeight: "500" }],
+        "headline-lg-mobile": ["32px", { lineHeight: "40px", fontWeight: "500" }],
+        "headline-md": ["28px", { lineHeight: "36px", fontWeight: "500" }],
+        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+        "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+      },
+      spacing: {
+        "margin-desktop": "64px", "margin-mobile": "20px",
+        "gutter": "24px", "container-max": "1440px",
+      },
+    }
+  }
+}
+</script>
+<style>
+  .glass-panel { background: rgba(36,40,48,0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  .text-glow { text-shadow: 0 0 30px rgba(192,193,255,0.35); }
+  .feature-card { background: rgba(18,33,49,0.7); border: 1px solid rgba(255,255,255,0.07); transition: all 0.3s ease; }
+  .feature-card:hover { border-color: rgba(192,193,255,0.25); transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .float { animation: float 6s ease-in-out infinite; }
+  @keyframes pulse-glow { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+  .pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary overflow-x-hidden">
+
+<!-- Nav -->
+<nav class="bg-surface/60 backdrop-blur-xl font-label-md text-label-md fixed top-0 w-full z-50 border-b border-white/10 transition-all duration-300">
+  <div class="flex justify-between items-center h-20 px-[20px] md:px-[64px] max-w-[1440px] mx-auto">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">movie_filter</span>
+      <span class="font-headline-md text-headline-md text-on-surface tracking-tight">Morphic Studio</span>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors px-3 py-2 rounded" href="#features">Features</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors px-3 py-2 rounded" href="#how-it-works">How it works</a>
+      <a class="text-on-surface-variant hover:text-on-surface transition-colors px-3 py-2 rounded" href="#studios">Studios</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a class="hidden md:inline-flex text-on-surface-variant hover:text-on-surface transition-colors font-label-md text-label-md px-4 py-2" href="signin.html">Log In</a>
+      <a class="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]" href="new-project.html">Start Creating</a>
+    </div>
+  </div>
+</nav>
+
+<main class="flex-grow pt-20">
+
+  <!-- Hero -->
+  <section class="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-[20px] md:px-[64px]">
+    <div class="absolute inset-0 z-0">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(128,131,255,0.12)_0%,_rgba(5,20,36,0.95)_70%)]"></div>
+      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[100px] pulse-glow"></div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto text-center mt-16">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-label-sm text-label-sm uppercase tracking-widest mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+        Memory Engine Online
+      </div>
+
+      <h1 class="font-display-lg text-[48px] md:text-[72px] leading-[1.05] tracking-[-0.02em] text-on-surface mb-6 text-glow font-medium">
+        Build Entire Story<br/>Universes with AI.
+      </h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-10 leading-relaxed">
+        Create stories, comics, motion comics, and animations from one intelligent workspace that remembers every character, every world, and every creative decision.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="new-project.html" class="w-full sm:w-auto bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded hover:opacity-90 transition-all duration-300 shadow-[0_0_25px_rgba(192,193,255,0.4)] text-center">
+          Start Creating Free
+        </a>
+        <a href="dashboard.html" class="w-full sm:w-auto glass-panel text-on-surface font-label-md text-label-md px-8 py-4 rounded hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">play_circle</span>
+          Try the Studio
+        </a>
+      </div>
+
+      <!-- Floating studio preview card -->
+      <div class="mt-20 float">
+        <div class="glass-panel rounded-xl p-0 overflow-hidden max-w-2xl mx-auto shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] border border-primary/10">
+          <div class="bg-surface-container-low/80 px-4 py-3 border-b border-white/5 flex items-center gap-3">
+            <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-error/60"></div><div class="w-3 h-3 rounded-full bg-yellow-400/40"></div><div class="w-3 h-3 rounded-full bg-emerald-400/40"></div></div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant mx-auto">Morphic Nexus Workspace</span>
+          </div>
+          <div class="p-6 text-left space-y-4">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+              <span class="font-label-sm text-label-sm text-on-surface-variant">Memory Engine Active</span>
+              <span class="ml-auto font-label-sm text-label-sm text-primary">AI Co-Writer Ready</span>
+            </div>
+            <div class="bg-surface-container rounded-lg p-4 border border-white/5">
+              <h3 class="font-headline-md text-[20px] text-on-surface mb-2">The Neon Veil Investigation</h3>
+              <p class="font-body-md text-body-md text-on-surface-variant text-sm leading-relaxed">The rain fell not in drops, but in sheets of grey static, dissolving the edges of the neon-soaked city. Kael stood at the precipice...</p>
+            </div>
+            <div class="flex gap-2">
+              <div class="px-3 py-1.5 bg-primary/10 border border-primary/20 rounded text-primary font-label-sm text-[11px]">Character: Kael (Arc-Runner)</div>
+              <div class="px-3 py-1.5 bg-surface-container border border-white/5 rounded text-on-surface-variant font-label-sm text-[11px]">Location: Undercity</div>
+              <div class="px-3 py-1.5 bg-surface-container border border-white/5 rounded text-on-surface-variant font-label-sm text-[11px]">Tension: 84%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-32 px-[20px] md:px-[64px] max-w-[1440px] mx-auto">
+    <div class="text-center mb-20">
+      <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Capabilities</span>
+      <h2 class="font-headline-lg text-headline-lg text-on-surface mt-4 mb-4">Everything you need to create</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">One platform. Every format. Infinite stories.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">memory</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Memory Engine</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">AI that remembers every character, rule, and world detail across your entire story universe. No more inconsistencies.</p>
+      </div>
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">edit_note</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">AI Co-Writer</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Collaborate with AI to write scripts, suggest dialogue, expand descriptions, and maintain narrative tension.</p>
+      </div>
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">timeline</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Storyboard Studio</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Convert scripts to visual storyboards. AI generates panel descriptions, shot types, and continuity notes.</p>
+      </div>
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">auto_stories</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Comic Studio</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Lay out panels, add dialogue bubbles, and generate consistent character art across every issue.</p>
+      </div>
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">movie_filter</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Motion Comic Engine</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Bring static panels to life with camera moves, transitions, voice synthesis, and ambient soundscapes.</p>
+      </div>
+      <div class="feature-card rounded-xl p-8">
+        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
+          <span class="material-symbols-outlined text-primary text-2xl">hub</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Universe Graph</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Visualize character relationships, location connections, and plot threads in an interactive 3D node graph.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works" class="py-32 px-[20px] md:px-[64px] bg-surface-container-lowest/50">
+    <div class="max-w-[1440px] mx-auto">
+      <div class="text-center mb-20">
+        <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Workflow</span>
+        <h2 class="font-headline-lg text-headline-lg text-on-surface mt-4 mb-4">From idea to universe in four steps</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="text-center relative">
+          <div class="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <span class="font-headline-md text-headline-md text-primary">01</span>
+          </div>
+          <h3 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Initialize Universe</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant text-sm">Name your project, set the genre and format. The Memory Engine begins building your creative foundation.</p>
+        </div>
+        <div class="text-center relative">
+          <div class="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <span class="font-headline-md text-headline-md text-primary">02</span>
+          </div>
+          <h3 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Write your Script</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant text-sm">Use the AI Co-Writer to craft your story. AI maintains character voices, world rules, and narrative arc.</p>
+        </div>
+        <div class="text-center relative">
+          <div class="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <span class="font-headline-md text-headline-md text-primary">03</span>
+          </div>
+          <h3 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Generate Storyboard</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant text-sm">AI breaks your script into panels, shots, and visual sequences ready for production.</p>
+        </div>
+        <div class="text-center relative">
+          <div class="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <span class="font-headline-md text-headline-md text-primary">04</span>
+          </div>
+          <h3 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Publish & Share</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant text-sm">Export as comic, motion comic, or animation. Share your universe with the world.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Studios CTA -->
+  <section id="studios" class="py-32 px-[20px] md:px-[64px]">
+    <div class="max-w-[1440px] mx-auto">
+      <div class="text-center mb-16">
+        <span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Production Suites</span>
+        <h2 class="font-headline-lg text-headline-lg text-on-surface mt-4">Choose your studio</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <a href="dashboard.html" class="feature-card rounded-xl p-8 flex items-start gap-6 cursor-pointer group">
+          <div class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">edit_note</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2 group-hover:text-primary transition-colors">Nexus Workspace</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">Script writing, AI co-authoring, character management, and world building in one view.</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors ml-auto">arrow_forward</span>
+        </a>
+        <a href="storyboard.html" class="feature-card rounded-xl p-8 flex items-start gap-6 cursor-pointer group">
+          <div class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">timeline</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2 group-hover:text-primary transition-colors">Storyboard Studio</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">Visual shot planning, scene flow, and AI-generated panel descriptions for every scene.</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors ml-auto">arrow_forward</span>
+        </a>
+        <a href="story-hub.html" class="feature-card rounded-xl p-8 flex items-start gap-6 cursor-pointer group">
+          <div class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">hub</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2 group-hover:text-primary transition-colors">Story Systems Hub</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">Universe graph, narrative intelligence, character arcs, and scene pacing analysis.</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors ml-auto">arrow_forward</span>
+        </a>
+        <a href="new-project.html" class="feature-card rounded-xl p-8 flex items-start gap-6 cursor-pointer group">
+          <div class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">add_circle</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-2 group-hover:text-primary transition-colors">New Project Wizard</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">Initialize a new story universe with AI-guided project setup and genre configuration.</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors ml-auto">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="py-32 px-[20px] md:px-[64px] text-center">
+    <div class="max-w-3xl mx-auto">
+      <div class="glass-panel rounded-2xl p-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(128,131,255,0.08)_0%,_transparent_70%)]"></div>
+        <div class="relative z-10">
+          <h2 class="font-headline-lg text-headline-lg text-on-surface mb-6">Your universe awaits initialization.</h2>
+          <p class="font-body-lg text-body-lg text-on-surface-variant mb-10">Join thousands of creators building the next generation of visual storytelling.</p>
+          <a href="new-project.html" class="inline-flex items-center gap-2 bg-primary text-on-primary font-label-md text-label-md px-10 py-4 rounded hover:opacity-90 transition-opacity shadow-[0_0_30px_rgba(192,193,255,0.4)]">
+            Initialize Studio <span class="material-symbols-outlined">auto_awesome</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-surface-container-lowest font-body-md text-body-md w-full pt-16 pb-8 border-t border-outline-variant/20">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-[24px] px-[20px] md:px-[64px] max-w-[1440px] mx-auto mb-12">
+    <div class="col-span-2 md:col-span-1 flex flex-col gap-4 mb-6 md:mb-0">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">movie_filter</span>
+        <span class="font-headline-md text-headline-md text-on-surface">Morphic</span>
+      </div>
+      <p class="text-on-surface-variant text-sm">Build story universes with AI.</p>
+    </div>
+    <div class="flex flex-col gap-3">
+      <h4 class="font-label-md text-label-md text-on-surface mb-2">Product</h4>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Documentation</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Roadmap</a>
+    </div>
+    <div class="flex flex-col gap-3">
+      <h4 class="font-label-md text-label-md text-on-surface mb-2">Studios</h4>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="dashboard.html">Nexus Workspace</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="storyboard.html">Storyboard</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="story-hub.html">Story Hub</a>
+    </div>
+    <div class="flex flex-col gap-3">
+      <h4 class="font-label-md text-label-md text-on-surface mb-2">Legal</h4>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
+    </div>
+  </div>
+  <div class="px-[20px] md:px-[64px] max-w-[1440px] mx-auto border-t border-white/5 pt-6 flex justify-between items-center text-sm text-on-surface-variant/60">
+    <p>© 2025 Morphic Studio. All rights reserved.</p>
+    <div class="flex items-center gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+      <span class="font-label-sm text-label-sm">API Online</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

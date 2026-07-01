@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Initialize Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{ extend:{
+    colors:{
+      "primary":"#c0c1ff","on-primary":"#1000a9","primary-container":"#8083ff",
+      "on-primary-container":"#0d0096","primary-fixed":"#e1e0ff","primary-fixed-dim":"#c0c1ff",
+      "background":"#051424","on-background":"#d4e4fa","surface":"#051424","on-surface":"#d4e4fa",
+      "surface-variant":"#273647","on-surface-variant":"#c7c4d7",
+      "surface-container-lowest":"#010f1f","surface-container-low":"#0d1c2d",
+      "surface-container":"#122131","surface-container-high":"#1c2b3c",
+      "surface-container-highest":"#273647","surface-bright":"#2c3a4c",
+      "outline":"#908fa0","outline-variant":"#464554",
+    },
+    fontFamily:{
+      "headline-lg":["EB Garamond"],"headline-md":["EB Garamond"],
+      "display-lg":["EB Garamond"],"headline-lg-mobile":["EB Garamond"],
+      "body-lg":["Hanken Grotesk"],"body-md":["Hanken Grotesk"],
+      "label-md":["JetBrains Mono"],"label-sm":["JetBrains Mono"],
+    },
+    fontSize:{
+      "display-lg":["64px",{lineHeight:"72px",letterSpacing:"-0.02em",fontWeight:"500"}],
+      "headline-lg":["40px",{lineHeight:"48px",fontWeight:"500"}],
+      "headline-lg-mobile":["32px",{lineHeight:"40px",fontWeight:"500"}],
+      "headline-md":["28px",{lineHeight:"36px",fontWeight:"500"}],
+      "body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],
+      "body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],
+      "label-md":["14px",{lineHeight:"20px",letterSpacing:"0.05em",fontWeight:"500"}],
+      "label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+    },
+    spacing:{"margin-desktop":"64px","margin-mobile":"20px","gutter":"24px","container-max":"1440px"},
+  }}
+}
+</script>
+<style>
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#273647;border-radius:4px}
+  .input-field { background: #1c2b3c; border: none; border-bottom: 1px solid #273647; color: #d4e4fa; width: 100%; padding: 14px 0; outline: none; font-size: 16px; transition: border-color 0.3s; }
+  .input-field:focus { border-bottom-color: #c0c1ff; }
+  .input-field::placeholder { color: #908fa0; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  select.input-field { appearance: none; background: #1c2b3c; cursor: pointer; }
+  .step-indicator { transition: all 0.4s ease; }
+  @keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:1} }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+
+<!-- Wizard Header -->
+<header class="w-full flex items-center justify-between px-5 md:px-[64px] h-20 border-b border-white/5 bg-surface/80 backdrop-blur-xl z-50 sticky top-0">
+  <a href="index.html" class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">movie_filter</span>
+    <span class="font-headline-md text-headline-md font-bold tracking-tight">Morphic Studio</span>
+  </a>
+  <div class="hidden md:flex items-center gap-2 font-label-md text-label-md">
+    <span id="step-label-1" class="text-primary font-bold step-indicator">01. Basics</span>
+    <span class="material-symbols-outlined text-sm text-on-surface-variant">chevron_right</span>
+    <span id="step-label-2" class="text-on-surface-variant step-indicator">02. Story Details</span>
+    <span class="material-symbols-outlined text-sm text-on-surface-variant">chevron_right</span>
+    <span id="step-label-3" class="text-on-surface-variant step-indicator">03. Initialize</span>
+  </div>
+  <a href="index.html" class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-2">
+    Cancel <span class="material-symbols-outlined text-lg">close</span>
+  </a>
+</header>
+
+<!-- Step progress bar -->
+<div class="h-1 bg-surface-container">
+  <div id="progress-bar" class="h-full bg-primary transition-all duration-500 w-1/3"></div>
+</div>
+
+<!-- Main -->
+<main class="flex-grow w-full max-w-[1440px] mx-auto px-5 md:px-[64px] py-12 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+  <!-- Left: Steps -->
+  <div class="lg:col-span-7 flex flex-col gap-10">
+
+    <!-- Step 1: Basics -->
+    <div id="step-1" class="step-panel">
+      <header class="flex flex-col gap-3 mb-10">
+        <h1 class="font-display-lg text-[40px] md:text-[56px] leading-tight font-medium">Project Basics</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Define the core identity of your story. The Memory Engine uses this to construct your narrative universe.</p>
+      </header>
+      <div class="flex flex-col gap-8 max-w-2xl">
+        <div class="flex flex-col gap-2 group">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Project Title</label>
+          <input class="input-field text-body-lg" id="projectName" placeholder="e.g., Echoes of the Void" type="text" oninput="updatePreview()"/>
+        </div>
+        <div class="flex flex-col gap-2 group">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Logline / Synopsis</label>
+          <textarea class="input-field text-body-md resize-none" id="projectDesc" placeholder="In a world where memories are currency..." rows="4" oninput="updatePreview()"></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="flex flex-col gap-2 group relative">
+            <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Format</label>
+            <div class="relative">
+              <select class="input-field pr-10" id="projectType" onchange="updatePreview()">
+                <option value="Comic Book">Comic Book</option>
+                <option value="Motion Comic">Motion Comic</option>
+                <option value="Animation">Animation</option>
+                <option value="Mixed Media">Mixed Media</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[20px]">expand_more</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 group relative">
+            <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Primary Genre</label>
+            <div class="relative">
+              <select class="input-field pr-10" id="projectGenre" onchange="updatePreview()">
+                <option value="Sci-Fi Noir">Sci-Fi Noir</option>
+                <option value="Dark Fantasy">Dark Fantasy</option>
+                <option value="Psychological Thriller">Psychological Thriller</option>
+                <option value="Cyberpunk">Cyberpunk</option>
+                <option value="Space Opera">Space Opera</option>
+                <option value="Horror">Horror</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[20px]">expand_more</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Story details (hidden) -->
+    <div id="step-2" class="step-panel hidden">
+      <header class="flex flex-col gap-3 mb-10">
+        <h1 class="font-display-lg text-[40px] md:text-[56px] leading-tight font-medium">Story Details</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Tell the Memory Engine about your world, tone, and core themes.</p>
+      </header>
+      <div class="flex flex-col gap-8 max-w-2xl">
+        <div class="flex flex-col gap-2 group">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Primary Protagonist</label>
+          <input class="input-field" id="protagonist" placeholder="Name and brief description..." type="text"/>
+        </div>
+        <div class="flex flex-col gap-2 group">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">World / Setting</label>
+          <textarea class="input-field resize-none" id="worldDesc" placeholder="Describe the world, time period, key locations..." rows="3"></textarea>
+        </div>
+        <div class="flex flex-col gap-2 group">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider group-focus-within:text-primary transition-colors">Core Theme</label>
+          <input class="input-field" id="coreTheme" placeholder="e.g., Identity, Redemption, Power..." type="text"/>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Visual Style</label>
+          <div class="grid grid-cols-2 gap-3" id="style-grid">
+            <button onclick="selectStyle(this,'Cyberpunk Noir')" class="style-btn py-3 px-4 rounded-lg border border-white/10 text-on-surface-variant font-label-sm text-label-sm hover:border-primary/50 hover:text-primary transition-all text-left flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">blur_on</span> Cyberpunk Noir
+            </button>
+            <button onclick="selectStyle(this,'Dark Fantasy')" class="style-btn py-3 px-4 rounded-lg border border-white/10 text-on-surface-variant font-label-sm text-label-sm hover:border-primary/50 hover:text-primary transition-all text-left flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">castle</span> Dark Fantasy
+            </button>
+            <button onclick="selectStyle(this,'Ink & Wash')" class="style-btn py-3 px-4 rounded-lg border border-white/10 text-on-surface-variant font-label-sm text-label-sm hover:border-primary/50 hover:text-primary transition-all text-left flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">brush</span> Ink & Wash
+            </button>
+            <button onclick="selectStyle(this,'Cinematic Realism')" class="style-btn py-3 px-4 rounded-lg border border-white/10 text-on-surface-variant font-label-sm text-label-sm hover:border-primary/50 hover:text-primary transition-all text-left flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">movie</span> Cinematic Realism
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Initialize -->
+    <div id="step-3" class="step-panel hidden">
+      <header class="flex flex-col gap-3 mb-10">
+        <h1 class="font-display-lg text-[40px] md:text-[56px] leading-tight font-medium">Initialize Universe</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Review your project and let the Memory Engine build your creative foundation.</p>
+      </header>
+      <div id="summary-card" class="bg-surface-container rounded-xl border border-white/5 p-6 mb-8 space-y-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface" id="summary-title">Untitled Project</h3>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary font-label-sm text-[11px]" id="summary-type">Comic Book</span>
+              <span class="px-2 py-0.5 rounded bg-surface-variant border border-white/5 text-on-surface-variant font-label-sm text-[11px]" id="summary-genre">Sci-Fi Noir</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+        </div>
+        <p class="font-body-md text-body-md text-on-surface-variant" id="summary-desc">A new narrative universe awaits initialization.</p>
+        <div class="pt-4 border-t border-white/5 grid grid-cols-3 gap-4 text-center">
+          <div><div class="font-label-sm text-label-sm text-on-surface-variant mb-1">Memory Engine</div><div class="text-emerald-400 font-label-md text-label-md">Ready</div></div>
+          <div><div class="font-label-sm text-label-sm text-on-surface-variant mb-1">AI Co-Writer</div><div class="text-primary font-label-md text-label-md">Standby</div></div>
+          <div><div class="font-label-sm text-label-sm text-on-surface-variant mb-1">World Bible</div><div class="text-on-surface-variant font-label-md text-label-md">Building...</div></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-low rounded-xl border border-white/5 p-6">
+        <h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-4">Memory Engine Initialization</h4>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-400 text-[16px]">check_circle</span>
+            <span class="font-body-md text-body-md text-on-surface-variant">Narrative consistency rules configured</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-400 text-[16px]">check_circle</span>
+            <span class="font-body-md text-body-md text-on-surface-variant">Character arc tracking enabled</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-[16px]">radio_button_unchecked</span>
+            <span class="font-body-md text-body-md text-on-surface-variant">World Bible — awaiting initialization</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-[16px]">radio_button_unchecked</span>
+            <span class="font-body-md text-body-md text-on-surface-variant">Story Bible Codex — awaiting initialization</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Live preview card -->
+  <div class="lg:col-span-5 relative hidden lg:block">
+    <div class="sticky top-28">
+      <div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">visibility</span>
+        Live Preview
+      </div>
+      <div class="relative aspect-[2/3] w-full max-w-[360px] ml-auto rounded-xl overflow-hidden group shadow-[0_40px_60px_-15px_rgba(0,0,0,0.8)]">
+        <div class="absolute inset-0 bg-gradient-to-br from-surface-container via-surface-container-low to-surface"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(192,193,255,0.1)_0%,_transparent_60%)]"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/30 to-transparent"></div>
+        <div class="absolute inset-x-0 bottom-0 p-8 bg-surface/20 backdrop-blur-sm border-t border-white/5">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="px-2 py-1 rounded bg-primary/10 border border-primary/20 text-primary font-label-sm text-[11px] uppercase tracking-wider" id="preview-type">Comic Book</span>
+            <span class="px-2 py-1 rounded bg-surface-variant/50 border border-white/5 text-on-surface-variant font-label-sm text-[11px] uppercase tracking-wider" id="preview-genre">Sci-Fi Noir</span>
+          </div>
+          <h2 class="font-headline-lg text-headline-lg text-on-surface leading-tight drop-shadow-lg mb-3" id="preview-title">Untitled Project</h2>
+          <p class="font-body-md text-body-md text-on-surface-variant line-clamp-3 text-sm" id="preview-desc">A new narrative universe awaits initialization. Enter your project details to begin.</p>
+        </div>
+        <div class="absolute inset-0 border border-white/5 rounded-xl pointer-events-none"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer controls -->
+<footer class="w-full h-20 border-t border-white/5 bg-surface-container-lowest flex items-center justify-between px-5 md:px-[64px] sticky bottom-0 z-40">
+  <button id="back-btn" onclick="prevStep()" class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors px-6 py-3 flex items-center gap-2 opacity-0 pointer-events-none">
+    <span class="material-symbols-outlined">arrow_back</span> Back
+  </button>
+  <div class="flex items-center gap-3">
+    <span class="font-label-sm text-label-sm text-on-surface-variant" id="step-counter">Step 1 of 3</span>
+    <div class="flex gap-1.5">
+      <div class="w-2 h-2 rounded-full bg-primary step-dot"></div>
+      <div class="w-2 h-2 rounded-full bg-surface-variant step-dot"></div>
+      <div class="w-2 h-2 rounded-full bg-surface-variant step-dot"></div>
+    </div>
+  </div>
+  <button id="next-btn" onclick="nextStep()" class="bg-primary text-on-primary font-label-md text-label-md uppercase tracking-wider px-8 py-3.5 rounded hover:opacity-90 transition-opacity flex items-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.2)]">
+    Continue <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+</footer>
+
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+
+function updatePreview() {
+  const name = document.getElementById('projectName').value.trim();
+  const desc = document.getElementById('projectDesc').value.trim();
+  const type = document.getElementById('projectType').value;
+  const genre = document.getElementById('projectGenre').value;
+  document.getElementById('preview-title').textContent = name || 'Untitled Project';
+  document.getElementById('preview-desc').textContent = desc || 'A new narrative universe awaits initialization.';
+  document.getElementById('preview-type').textContent = type;
+  document.getElementById('preview-genre').textContent = genre;
+}
+
+function selectStyle(btn, style) {
+  document.querySelectorAll('.style-btn').forEach(b => {
+    b.className = 'style-btn py-3 px-4 rounded-lg border border-white/10 text-on-surface-variant font-label-sm text-label-sm hover:border-primary/50 hover:text-primary transition-all text-left flex items-center gap-2';
+  });
+  btn.className = 'style-btn py-3 px-4 rounded-lg border border-primary text-primary font-label-sm text-label-sm transition-all text-left flex items-center gap-2 bg-primary/10';
+}
+
+function nextStep() {
+  if (currentStep < totalSteps) {
+    document.getElementById('step-' + currentStep).classList.add('hidden');
+    currentStep++;
+    document.getElementById('step-' + currentStep).classList.remove('hidden');
+    updateStepUI();
+    if (currentStep === totalSteps) {
+      updateSummary();
+    }
+  } else {
+    initializeUniverse();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    document.getElementById('step-' + currentStep).classList.add('hidden');
+    currentStep--;
+    document.getElementById('step-' + currentStep).classList.remove('hidden');
+    updateStepUI();
+  }
+}
+
+function updateStepUI() {
+  const dots = document.querySelectorAll('.step-dot');
+  dots.forEach((d, i) => {
+    d.className = `w-2 h-2 rounded-full ${i < currentStep ? 'bg-primary' : 'bg-surface-variant'} step-dot`;
+  });
+  document.getElementById('step-counter').textContent = `Step ${currentStep} of ${totalSteps}`;
+  document.getElementById('progress-bar').style.width = `${(currentStep / totalSteps) * 100}%`;
+
+  const backBtn = document.getElementById('back-btn');
+  backBtn.className = `font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors px-6 py-3 flex items-center gap-2 ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`;
+
+  const nextBtn = document.getElementById('next-btn');
+  if (currentStep === totalSteps) {
+    nextBtn.innerHTML = 'Initialize Universe <span class="material-symbols-outlined">auto_awesome</span>';
+    nextBtn.className = nextBtn.className.replace('bg-primary', 'bg-primary');
+  } else {
+    nextBtn.innerHTML = 'Continue <span class="material-symbols-outlined">arrow_forward</span>';
+  }
+
+  const labels = ['step-label-1','step-label-2','step-label-3'];
+  labels.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = `step-indicator font-label-md text-label-md ${i + 1 <= currentStep ? 'text-primary font-bold' : 'text-on-surface-variant'}`;
+  });
+}
+
+function updateSummary() {
+  const name = document.getElementById('projectName').value.trim() || 'Untitled Project';
+  const desc = document.getElementById('projectDesc').value.trim() || 'A new narrative universe awaits initialization.';
+  const type = document.getElementById('projectType').value;
+  const genre = document.getElementById('projectGenre').value;
+  document.getElementById('summary-title').textContent = name;
+  document.getElementById('summary-desc').textContent = desc;
+  document.getElementById('summary-type').textContent = type;
+  document.getElementById('summary-genre').textContent = genre;
+}
+
+function initializeUniverse() {
+  const btn = document.getElementById('next-btn');
+  btn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span> Initializing...';
+  btn.disabled = true;
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = '100%';
+  setTimeout(() => {
+    sessionStorage.setItem('projectName', document.getElementById('projectName').value || 'My Project');
+    window.location.href = 'dashboard.html';
+  }, 2000);
+}
+</script>
+</body>
+</html>

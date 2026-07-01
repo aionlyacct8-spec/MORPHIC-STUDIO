@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Storyboard Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{ extend:{
+    colors:{
+      "primary":"#c0c1ff","on-primary":"#1000a9","primary-container":"#8083ff",
+      "on-primary-container":"#0d0096","primary-fixed-dim":"#c0c1ff",
+      "background":"#051424","on-background":"#d4e4fa",
+      "surface":"#051424","on-surface":"#d4e4fa",
+      "surface-variant":"#273647","on-surface-variant":"#c7c4d7",
+      "surface-container-lowest":"#010f1f","surface-container-low":"#0d1c2d",
+      "surface-container":"#122131","surface-container-high":"#1c2b3c",
+      "surface-container-highest":"#273647","surface-bright":"#2c3a4c",
+      "outline":"#908fa0","outline-variant":"#464554",
+      "tertiary":"#c4c6ce","secondary":"#c6c6cc","secondary-container":"#47494e",
+    },
+    fontFamily:{
+      "headline-lg":["EB Garamond"],"headline-md":["EB Garamond"],
+      "body-lg":["Hanken Grotesk"],"body-md":["Hanken Grotesk"],
+      "label-md":["JetBrains Mono"],"label-sm":["JetBrains Mono"],
+    },
+    fontSize:{
+      "headline-md":["28px",{lineHeight:"36px",fontWeight:"500"}],
+      "headline-lg":["40px",{lineHeight:"48px",fontWeight:"500"}],
+      "body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],
+      "body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],
+      "label-md":["14px",{lineHeight:"20px",letterSpacing:"0.05em",fontWeight:"500"}],
+      "label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+    },
+  }}
+}
+</script>
+<style>
+  .glass-panel { background: rgba(28,43,60,0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+  .glass-card { background: #1A1D23; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; }
+  .glass-card:hover { background: #242830; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5); }
+  .timeline-scroll::-webkit-scrollbar{width:6px;height:6px}
+  .timeline-scroll::-webkit-scrollbar-track{background:rgba(0,0,0,0.1)}
+  .timeline-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+  .scroll-hide::-webkit-scrollbar{display:none}.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+  @keyframes ping-once{0%{transform:scale(1);opacity:1}100%{transform:scale(2);opacity:0}}
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+
+<!-- TopAppBar -->
+<header class="h-16 shrink-0 flex justify-between items-center px-6 bg-surface-container/80 backdrop-blur-xl border-b border-white/10 z-50">
+  <div class="flex items-center gap-6">
+    <a href="index.html" class="font-headline-md text-[20px] font-medium text-on-surface tracking-tight">Morphic Production Studios</a>
+    <nav class="hidden md:flex items-center gap-5">
+      <a href="storyboard.html" class="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md">Storyboard</a>
+      <a href="#" class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">Comic</a>
+      <a href="#" class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">Motion Comic</a>
+      <a href="#" class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors">Animation</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="hidden lg:flex items-center bg-surface-container-high rounded-full px-4 py-1.5 border border-white/10 focus-within:border-primary transition-colors">
+      <span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+      <input class="bg-transparent border-none text-on-surface focus:ring-0 text-sm w-40 font-label-sm placeholder:text-on-surface-variant/50 outline-none" placeholder="Search assets..." type="text"/>
+    </div>
+    <button onclick="exportStoryboard()" class="px-4 py-2 bg-surface-container-high border border-white/20 text-on-surface rounded font-label-md text-label-md hover:bg-surface-variant transition-colors">Export</button>
+    <button onclick="generateShot()" id="generate-btn" class="px-6 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]">Generate</button>
+    <div class="flex items-center gap-1 border-l border-white/10 pl-4">
+      <a href="dashboard.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">edit_note</span></a>
+      <a href="story-hub.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">hub</span></a>
+      <button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">settings</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- Main layout -->
+<div class="flex-1 flex overflow-hidden">
+
+  <!-- SideNav -->
+  <aside class="w-56 shrink-0 bg-surface-container-low/90 backdrop-blur-lg border-r border-white/5 flex flex-col py-5 overflow-y-auto scroll-hide">
+    <div class="px-5 mb-6 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-md text-sm font-bold">D</div>
+      <div>
+        <h2 class="font-label-md text-label-md text-on-surface leading-tight">Director's Console</h2>
+        <span class="font-label-sm text-[10px] text-primary opacity-80">Active Studio</span>
+      </div>
+    </div>
+    <div class="px-4 mb-5">
+      <button onclick="addNewShot()" class="w-full py-2 border border-dashed border-primary/50 text-primary rounded font-label-sm text-label-sm hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5">
+        <span class="material-symbols-outlined text-sm">add</span> New Shot
+      </button>
+    </div>
+    <nav class="flex-1 px-2 space-y-0.5">
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant/70 hover:bg-white/5 transition-all font-label-sm text-label-sm group" href="#"><span class="material-symbols-outlined group-hover:text-primary transition-colors">folder_open</span> Assets</a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant/70 hover:bg-white/5 transition-all font-label-sm text-label-sm group" href="#"><span class="material-symbols-outlined group-hover:text-primary transition-colors">auto_stories</span> Library</a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded bg-white/5 text-primary font-bold transition-all font-label-sm text-label-sm relative" href="#">
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full"></div>
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">timeline</span> Timeline
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant/70 hover:bg-white/5 transition-all font-label-sm text-label-sm group" href="#"><span class="material-symbols-outlined group-hover:text-primary transition-colors">layers</span> Layers</a>
+      <a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant/70 hover:bg-white/5 transition-all font-label-sm text-label-sm group" href="#"><span class="material-symbols-outlined group-hover:text-primary transition-colors">brush</span> Brushes</a>
+    </nav>
+    <div class="mt-auto px-2 pt-4 border-t border-white/5 space-y-0.5">
+      <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant/70 hover:text-on-surface hover:bg-white/5 transition-all font-label-sm text-label-sm"><span class="material-symbols-outlined text-sm">edit_note</span> Writing</a>
+      <a href="story-hub.html" class="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant/70 hover:text-on-surface hover:bg-white/5 transition-all font-label-sm text-label-sm"><span class="material-symbols-outlined text-sm">hub</span> Story Hub</a>
+    </div>
+  </aside>
+
+  <!-- Center: Scene Flow -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <!-- Canvas Header -->
+    <div class="px-6 py-4 flex justify-between items-end shrink-0 border-b border-white/5">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] uppercase font-label-md tracking-wider border border-primary/20">Act I</span>
+          <h2 class="font-headline-md text-[22px] text-on-surface">The Neon Veil Investigation</h2>
+        </div>
+        <p class="text-on-surface-variant font-body-md text-sm max-w-lg">Scene 04: Detective Vance approaches the abandoned synth-factory. Rain slicked streets, neon reflections.</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-primary">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+          </span>
+          <span class="font-label-sm text-label-sm uppercase tracking-widest text-xs">AI Ready</span>
+        </div>
+        <div class="h-6 w-px bg-white/10"></div>
+        <div class="flex bg-surface-container-high rounded border border-white/10 p-0.5">
+          <button id="board-btn" onclick="setView('board')" class="px-3 py-1 bg-surface-variant rounded text-on-surface font-label-sm text-label-sm">Board</button>
+          <button id="script-btn" onclick="setView('script')" class="px-3 py-1 text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Script</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene Flow (horizontal scroll) -->
+    <div id="board-view" class="flex-1 relative overflow-hidden bg-gradient-to-b from-transparent to-surface-container-highest/10">
+      <div class="absolute inset-0 timeline-scroll overflow-x-auto flex items-center px-6 py-6 gap-5 snap-x snap-mandatory" id="shots-container">
+
+        <!-- Shot Card 1 -->
+        <div class="glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group">
+          <div class="relative h-48 w-full shrink-0 bg-gradient-to-br from-surface-container-high to-surface-container-lowest">
+            <div class="absolute inset-0 opacity-30 bg-gradient-to-br from-blue-900/50 to-surface-container-lowest"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent"></div>
+            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-label-sm text-white text-xs">SC 04A</div>
+            <div class="absolute top-3 right-3 bg-primary/90 text-on-primary px-2 py-0.5 rounded font-label-sm text-label-sm text-xs font-bold shadow-[0_0_10px_rgba(192,193,255,0.5)]">WS</div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">photo_camera</span>
+            </div>
+          </div>
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-headline-md text-[18px] text-on-surface mb-1">Alleyway Entrance</h3>
+            <p class="font-label-sm text-[10px] text-on-surface-variant mb-3 font-mono">EXT. SYNTH FACTORY - NIGHT</p>
+            <div class="mb-3">
+              <div class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest mb-1">Action</div>
+              <p class="text-on-surface-variant text-xs leading-relaxed line-clamp-3">Vance steps into the alley. The neon 'MOMO'S NOODLES' sign flickers, casting a rhythmic red glow across his trenchcoat.</p>
+            </div>
+            <div class="mt-auto pt-3 border-t border-white/5 flex justify-between items-center">
+              <div class="w-5 h-5 rounded-full bg-surface-container-high border border-outline flex items-center justify-center text-[9px] font-bold">V</div>
+              <div class="font-label-sm text-[10px] text-on-surface-variant/50">4.5s • Track In</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shot Card 2 (Active) -->
+        <div class="glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab ring-2 ring-primary relative group">
+          <div class="absolute inset-0 bg-primary/5 pointer-events-none z-10 rounded-xl"></div>
+          <div class="relative h-48 w-full shrink-0 bg-gradient-to-br from-surface-container to-surface-container-lowest">
+            <div class="absolute inset-0 opacity-40 bg-gradient-to-br from-red-900/30 to-surface-container-lowest"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent"></div>
+            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-label-sm text-white text-xs">SC 04B</div>
+            <div class="absolute top-3 right-3 bg-primary/90 text-on-primary px-2 py-0.5 rounded font-label-sm text-label-sm text-xs font-bold shadow-[0_0_10px_rgba(192,193,255,0.5)]">MCU</div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">face</span>
+            </div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-20">
+              <button onclick="regenerateShot(this)" class="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shadow-lg"><span class="material-symbols-outlined text-[18px]">refresh</span></button>
+              <button class="p-2 bg-surface-container text-on-surface rounded-full hover:scale-110 transition-transform shadow-lg border border-white/10"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+            </div>
+          </div>
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-headline-md text-[18px] text-on-surface mb-1">Vance Reacts</h3>
+            <p class="font-label-sm text-[10px] text-on-surface-variant mb-3 font-mono">EXT. SYNTH FACTORY - NIGHT</p>
+            <div class="mb-3">
+              <div class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest mb-1">Dialogue</div>
+              <div class="bg-surface-container-low p-2.5 rounded border-l-2 border-primary/50">
+                <span class="font-label-sm text-[10px] text-primary block mb-1">VANCE</span>
+                <p class="text-on-surface text-xs italic">"They said the factory was dead. The hum says otherwise."</p>
+              </div>
+            </div>
+            <div class="mt-auto pt-3 border-t border-white/5 flex justify-between items-center">
+              <div class="w-5 h-5 rounded-full bg-surface-container-high border border-outline flex items-center justify-center text-[9px] font-bold">V</div>
+              <div class="font-label-sm text-[10px] text-on-surface-variant/50">3.0s • Static</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shot Card 3 (AI Suggestion) -->
+        <div class="glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group border border-primary/20 bg-primary/3">
+          <div class="relative h-48 w-full shrink-0 bg-gradient-to-br from-primary/5 to-surface-container-lowest">
+            <div class="absolute inset-0 flex items-center justify-center flex-col gap-2">
+              <span class="material-symbols-outlined text-4xl text-primary/30">auto_awesome</span>
+              <span class="font-label-sm text-[10px] text-primary/50 uppercase tracking-widest">AI Suggested</span>
+            </div>
+            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-label-sm text-white text-xs opacity-50">SC 04C</div>
+            <div class="absolute top-3 right-3 bg-surface-container px-2 py-0.5 rounded font-label-sm text-label-sm text-[10px] text-on-surface-variant border border-white/10 opacity-50">CU</div>
+          </div>
+          <div class="p-4 flex-1 flex flex-col">
+            <h3 class="font-headline-md text-[18px] text-on-surface mb-1 opacity-60">AI: Insert Shot</h3>
+            <p class="font-label-sm text-[10px] text-on-surface-variant mb-3 font-mono opacity-50">EXT. SYNTH FACTORY - NIGHT</p>
+            <p class="text-on-surface-variant text-xs leading-relaxed opacity-60 italic mb-3">Suggested: Close-up of Vance's hand gripping his pulse-pistol. The factory hum vibrates the barrel.</p>
+            <div class="mt-auto flex gap-2">
+              <button onclick="acceptAISuggestion(this)" class="flex-1 py-2 bg-primary/10 text-primary border border-primary/30 rounded font-label-sm text-[10px] hover:bg-primary/20 transition-colors">Accept Shot</button>
+              <button onclick="this.closest('.glass-card').remove()" class="px-3 py-2 text-on-surface-variant border border-white/10 rounded font-label-sm text-[10px] hover:text-on-surface transition-colors">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Shot -->
+        <div onclick="addNewShot()" class="shrink-0 w-[360px] rounded-xl border-2 border-dashed border-white/10 hover:border-primary/50 bg-white/3 snap-center flex flex-col h-full max-h-[480px] cursor-pointer transition-colors group items-center justify-center">
+          <div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center mb-3 group-hover:bg-primary/20 group-hover:text-primary transition-colors text-on-surface-variant">
+            <span class="material-symbols-outlined text-2xl">add_photo_alternate</span>
+          </div>
+          <span class="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Add Next Shot</span>
+          <span class="text-[10px] text-on-surface-variant/50 mt-2 text-center px-8">AI will suggest continuity based on SC 04B</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Script view (hidden) -->
+    <div id="script-view" class="hidden flex-1 overflow-y-auto p-8">
+      <div class="max-w-2xl mx-auto font-mono text-sm text-on-surface-variant space-y-4">
+        <div class="text-center mb-8"><h2 class="font-headline-md text-headline-md text-on-surface">Scene 04</h2><p class="font-label-sm text-label-sm text-primary">EXT. ABANDONED SYNTH-FACTORY — NIGHT</p></div>
+        <p><strong class="text-on-surface">ACTION:</strong> Vance steps into the alley. The neon 'MOMO'S NOODLES' sign flickers, casting a rhythmic red glow across his trenchcoat. Rain slicks the broken pavement beneath his boots.</p>
+        <p class="text-center text-primary font-label-md"><strong>VANCE</strong></p>
+        <p class="text-center italic px-16">They said the factory was dead. The hum says otherwise.</p>
+        <p><strong class="text-on-surface">ACTION:</strong> He draws his pulse-pistol. The familiar weight. He pushes through the rusted doors.</p>
+      </div>
+    </div>
+
+    <!-- Shot List panel -->
+    <div class="h-56 border-t border-white/10 bg-surface flex flex-col shrink-0">
+      <div class="px-5 py-2.5 border-b border-white/5 flex justify-between items-center bg-surface-container-lowest">
+        <h3 class="font-label-md text-label-md text-on-surface flex items-center gap-2 text-sm">
+          <span class="material-symbols-outlined text-sm text-primary">format_list_bulleted</span> Shot Sequence
+        </h3>
+        <button class="text-xs text-primary hover:opacity-80 font-label-sm">Expand</button>
+      </div>
+      <div class="flex-1 overflow-y-auto timeline-scroll p-3">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="text-[9px] uppercase tracking-wider text-on-surface-variant/60 border-b border-white/5">
+              <th class="pb-2 font-medium w-14 pl-2">Shot</th>
+              <th class="pb-2 font-medium w-20">Type</th>
+              <th class="pb-2 font-medium">Description</th>
+              <th class="pb-2 font-medium w-44">Camera Notes</th>
+              <th class="pb-2 font-medium w-20 text-right pr-3">Duration</th>
+            </tr>
+          </thead>
+          <tbody class="font-label-sm text-xs" id="shot-table-body">
+            <tr class="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer" onclick="activateShot(this,'04A')">
+              <td class="py-2.5 pl-2 text-on-surface-variant">04A</td>
+              <td class="py-2.5 text-primary">Wide Shot</td>
+              <td class="py-2.5 text-on-surface truncate max-w-[200px]">Alleyway Entrance, Vance approaches.</td>
+              <td class="py-2.5 text-on-surface-variant/80 text-[10px]">Low angle, slow track in.</td>
+              <td class="py-2.5 text-right pr-3 text-on-surface-variant font-mono">00:04:15</td>
+            </tr>
+            <tr class="border-b border-white/5 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer" onclick="activateShot(this,'04B')">
+              <td class="py-2.5 pl-2 text-primary font-bold">04B</td>
+              <td class="py-2.5 text-primary font-bold">Med Close-Up</td>
+              <td class="py-2.5 text-on-surface truncate max-w-[200px]">Vance reacts to factory hum.</td>
+              <td class="py-2.5 text-on-surface-variant/80 text-[10px]">Static, shallow depth of field.</td>
+              <td class="py-2.5 text-right pr-3 text-primary font-mono">00:03:00</td>
+            </tr>
+            <tr class="border-b border-white/5 hover:bg-white/5 transition-colors opacity-50 cursor-pointer" onclick="activateShot(this,'04C')">
+              <td class="py-2.5 pl-2 text-on-surface-variant">04C</td>
+              <td class="py-2.5 text-secondary">Insert (AI)</td>
+              <td class="py-2.5 text-on-surface truncate max-w-[200px] italic">Close-up of Vance's hand gripping blaster.</td>
+              <td class="py-2.5 text-on-surface-variant/80 text-[10px]">Macro shot.</td>
+              <td class="py-2.5 text-right pr-3 text-on-surface-variant font-mono">00:01:15</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Right Intelligence Panel -->
+  <aside class="w-72 border-l border-white/10 bg-surface-container-lowest flex flex-col shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.2)]">
+    <div class="p-4 border-b border-white/5 flex items-center justify-between">
+      <h3 class="font-headline-md text-[20px] text-on-surface">Production AI</h3>
+      <span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+    </div>
+    <div class="flex-1 overflow-y-auto scroll-hide p-4 space-y-5">
+      <!-- AI Suggestions -->
+      <div class="space-y-3">
+        <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px]">Story Bible Context</h4>
+        <div class="glass-panel rounded-lg p-3 relative overflow-hidden">
+          <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-tertiary rounded-r-full"></div>
+          <div class="flex items-start gap-2 pl-2">
+            <span class="material-symbols-outlined text-tertiary text-sm mt-0.5">movie_filter</span>
+            <div>
+              <h5 class="text-on-surface font-label-md text-xs mb-1">Improve Pacing</h5>
+              <p class="text-on-surface-variant text-[11px] leading-relaxed mb-2">WS to MCU feels abrupt. Consider an OTS shot past the neon sign to bridge the gap.</p>
+              <button onclick="insertOTS()" class="text-[10px] bg-tertiary/20 text-tertiary px-2.5 py-1 rounded hover:bg-tertiary/30 transition-colors font-label-sm">Insert OTS Shot</button>
+            </div>
+          </div>
+        </div>
+        <div class="glass-panel rounded-lg p-3 relative overflow-hidden">
+          <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-secondary-container rounded-r-full"></div>
+          <div class="flex items-start gap-2 pl-2">
+            <span class="material-symbols-outlined text-secondary text-sm mt-0.5">lightbulb</span>
+            <div>
+              <h5 class="text-on-surface font-label-md text-xs mb-1">Lighting Continuity</h5>
+              <p class="text-on-surface-variant text-[11px] leading-relaxed mb-1">SC 04A has magenta ambient. SC 04B uses red. Adjust for visual continuity.</p>
+              <button class="text-[10px] text-primary hover:underline font-label-sm">Review Prompt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Context -->
+      <div class="space-y-2.5 pt-4 border-t border-white/5">
+        <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px]">Active Context</h4>
+        <div class="bg-surface-container-high rounded-lg p-3 border border-white/5">
+          <div class="text-[10px] text-on-surface-variant mb-1.5">Location</div>
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm text-on-surface-variant">location_on</span>
+            <span class="font-label-md text-xs text-on-surface">Abandoned Synth-Factory</span>
+          </div>
+        </div>
+        <div class="bg-surface-container-high rounded-lg p-3 border border-white/5">
+          <div class="text-[10px] text-on-surface-variant mb-1.5">Characters in Scene</div>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded bg-surface-container border border-outline/50 flex items-center justify-center text-xs font-bold text-on-surface">V</div>
+            <span class="font-label-md text-xs text-on-surface">Det. Vance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate panel -->
+      <div class="pt-4 border-t border-white/5">
+        <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px] mb-3">Generate New Shot</h4>
+        <textarea id="shot-prompt" class="w-full bg-surface-container border border-white/5 rounded-lg px-3 py-2.5 text-on-surface text-xs font-body-md focus:border-primary focus:outline-none transition-colors resize-none" placeholder="Describe the shot you want to generate..." rows="3"></textarea>
+        <button onclick="generateFromPrompt()" class="mt-2 w-full py-2.5 bg-primary text-on-primary rounded font-label-sm text-label-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot
+        </button>
+      </div>
+    </div>
+
+    <!-- Style Target -->
+    <div class="p-4 border-t border-white/5 bg-surface-container/50">
+      <div class="flex justify-between items-center mb-1.5">
+        <span class="text-[10px] font-label-sm text-on-surface-variant">Style Target</span>
+        <span class="text-[10px] font-label-sm text-primary">Cyberpunk Noir</span>
+      </div>
+      <div class="w-full bg-black/50 h-1 rounded-full overflow-hidden">
+        <div class="bg-primary w-full h-full rounded-full"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+function setView(view) {
+  const boardView = document.getElementById('board-view');
+  const scriptView = document.getElementById('script-view');
+  const boardBtn = document.getElementById('board-btn');
+  const scriptBtn = document.getElementById('script-btn');
+  if (view === 'board') {
+    boardView.classList.remove('hidden'); boardView.classList.add('flex');
+    scriptView.classList.add('hidden');
+    boardBtn.className = 'px-3 py-1 bg-surface-variant rounded text-on-surface font-label-sm text-label-sm';
+    scriptBtn.className = 'px-3 py-1 text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors';
+  } else {
+    boardView.classList.add('hidden'); boardView.classList.remove('flex');
+    scriptView.classList.remove('hidden');
+    scriptBtn.className = 'px-3 py-1 bg-surface-variant rounded text-on-surface font-label-sm text-label-sm';
+    boardBtn.className = 'px-3 py-1 text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors';
+  }
+}
+
+function addNewShot() {
+  const container = document.getElementById('shots-container');
+  const addBtn = container.lastElementChild;
+  const shotNum = container.children.length;
+  const shotId = '04' + String.fromCharCode(64 + shotNum);
+  const card = document.createElement('div');
+  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group';
+  card.innerHTML = `
+    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
+      <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">add_photo_alternate</span>
+      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-xs text-white">${shotId}</div>
+    </div>
+    <div class="p-4 flex-1 flex flex-col">
+      <input class="bg-transparent border-none outline-none font-headline-md text-[18px] text-on-surface mb-1 w-full" placeholder="Shot Title..." value="New Shot"/>
+      <textarea class="bg-transparent border-none outline-none text-on-surface-variant text-xs resize-none flex-1" placeholder="Describe the action..."></textarea>
+    </div>`;
+  container.insertBefore(card, addBtn);
+}
+
+function regenerateShot(btn) {
+  const card = btn.closest('.glass-card');
+  const imgDiv = card.querySelector('.relative.h-48');
+  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">autorenew</span>';
+  setTimeout(() => {
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">refresh</span>';
+  }, 1500);
+}
+
+function acceptAISuggestion(btn) {
+  const card = btn.closest('.glass-card');
+  card.classList.remove('border-primary/20', 'bg-primary/3');
+  card.classList.add('ring-1', 'ring-primary/30');
+  btn.textContent = '✓ Accepted';
+  btn.disabled = true;
+  btn.className = 'flex-1 py-2 bg-emerald-400/10 text-emerald-400 border border-emerald-400/30 rounded font-label-sm text-[10px]';
+}
+
+function insertOTS() {
+  const container = document.getElementById('shots-container');
+  const addBtn = container.lastElementChild;
+  const card = document.createElement('div');
+  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab border border-tertiary/30';
+  card.innerHTML = `
+    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
+      <span class="material-symbols-outlined text-5xl text-tertiary/30">switch_camera</span>
+      <div class="absolute top-3 left-3 bg-black/60 px-2 py-0.5 rounded border border-white/10 text-xs text-white">OTS Insert</div>
+      <div class="absolute top-3 right-3 bg-tertiary/20 text-tertiary px-2 py-0.5 rounded text-[10px] border border-tertiary/30">OTS</div>
+    </div>
+    <div class="p-4 flex-1 flex flex-col"><h3 class="font-headline-md text-[18px] text-on-surface mb-1">OTS — Neon Sign</h3><p class="text-on-surface-variant text-xs">Over-the-shoulder shot past the MOMO'S NOODLES sign, bridging from wide to close-up of Vance.</p></div>`;
+  container.insertBefore(card, addBtn);
+}
+
+function activateShot(row, id) {
+  document.querySelectorAll('#shot-table-body tr').forEach(r => r.classList.remove('bg-primary/5', 'hover:bg-primary/10'));
+  row.classList.add('bg-primary/5', 'hover:bg-primary/10');
+}
+
+function generateFromPrompt() {
+  const prompt = document.getElementById('shot-prompt').value;
+  if (!prompt.trim()) return;
+  const btn = event.currentTarget;
+  btn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">autorenew</span> Generating...';
+  btn.disabled = true;
+  setTimeout(() => {
+    addNewShot();
+    btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot';
+    btn.disabled = false;
+    document.getElementById('shot-prompt').value = '';
+  }, 2000);
+}
+
+function generateShot() {
+  const btn = document.getElementById('generate-btn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  setTimeout(() => {
+    addNewShot();
+    btn.textContent = 'Generate';
+    btn.disabled = false;
+  }, 1500);
+}
+
+function exportStoryboard() {
+  alert('Export feature: Storyboard would be exported as PDF/PNG sequence. Connect to backend export API.');
+}
+</script>
+</body>
+</html>
