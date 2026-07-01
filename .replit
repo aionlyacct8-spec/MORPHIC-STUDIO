@@ -8,8 +8,8 @@ channel = "stable-25_05"
 packages = ["psmisc"]
 
 [[ports]]
-localPort = 3000
-externalPort = 3000
+localPort = 5000
+externalPort = 80
 
 [workflows]
 runButton = "Project"
@@ -30,7 +30,7 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node backend/server.js"
-waitForPort = 3000
+waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "console"
