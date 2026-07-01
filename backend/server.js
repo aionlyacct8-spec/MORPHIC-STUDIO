@@ -21,8 +21,15 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend static files
-app.use(express.static(join(__dirname, "../frontend")));
+// Serve frontend static files — disable cache in dev so the preview always gets fresh HTML
+app.use(express.static(join(__dirname, "../frontend"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html") && process.env.NODE_ENV !== "production") {
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+    }
+  }
+}));
 
 // Health check / API root
 app.get("/api", (req, res) => {
@@ -60,16 +67,14 @@ app.post("/api/analyze-script", async (req, res) => {
 
     console.log(`[Analyze] Script saved (ID: ${scriptId}). Calling OpenRouter...`);
 
-    const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://morphic-studio.replit.app",
-        "X-Title": "Morphic Studio",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
