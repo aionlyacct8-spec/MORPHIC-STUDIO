@@ -1,0 +1,6 @@
+- [Morphic Studio Master Plan](morphic-master-plan.md) — full project vision, stack, phases, and what is already built vs. planned
+- [Morphic Studio Architecture](morphic-architecture.md) — layered architecture, backend/frontend/DB/AI service boundaries
+- [Morphic Studio Features](morphic-features.md) — all studio modules: Comic, Animation, Character, World, Asset, Storyboard, Script
+- [Morphic Studio AI System](morphic-ai-system.md) — AI agents, orchestration, model gateway, safety, providers
+- [Morphic Studio Design System](morphic-design-system.md) — design tokens, color palette, typography, component library, UX philosophy
+- [Morphic Studio Database & Infra](morphic-db-infra.md) — DB schema, storage, auth, security, deployment, observability
