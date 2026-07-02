@@ -77,6 +77,14 @@
  *   voice:generated       { projectId, characterId, assetId }
  *   export:completed      { projectId, exportId, fileUrl }
  *
+ * Production
+ *   chapter:created       { projectId, chapter }
+ *   chapter:updated       { projectId, id, changes }
+ *   comic_page:created    { projectId, page }
+ *   comic_panel:created   { projectId, panel }
+ *   voice_profile:created { projectId, voiceProfile }
+ *   animation_asset:created { projectId, animationAsset }
+ *
  * Memory
  *   memory:appended       { projectId, agentType, memoryType }
  *   memory:expired        { projectId, count }
@@ -114,6 +122,9 @@ const EVENTS = new Set([
   'ai:completed', 'ai:failed',
   'storyboard:generated', 'comic:generated', 'animation:generated',
   'voice:generated', 'export:completed',
+  // Production
+  'chapter:created', 'chapter:updated', 'comic_page:created',
+  'comic_panel:created', 'voice_profile:created', 'animation_asset:created',
   // Memory
   'memory:appended', 'memory:expired',
 ]);
