@@ -1,5 +1,10 @@
+/**
+ * Worlds & Locations Controller — with pagination, soft delete, and KG sync.
+ */
+
 import { query } from '../services/db.js';
 import { buildContext, appendMemory } from '../services/brainService.js';
+import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
 import { generateWorldBible, generateLocation } from '../agents/worldAgent.js';
 import { createError } from '../middleware/errorHandler.js';
 import eventBus from '../services/eventBus.js';
@@ -7,23 +12,53 @@ import logger from '../utils/logger.js';
 
 const log = logger.child('worldsController');
 
-// ── Worlds ────────────────────────────────────────────────
+function paginate(req) {
+  const limit  = Math.min(parseInt(req.query.limit  ?? 50,  10), 200);
+  const offset = Math.max(parseInt(req.query.offset ?? 0,   10), 0);
+  return { limit, offset };
+}
+
+// ── Worlds ────────────────────────────────────────────────────────────────────
 
 export async function listWorlds(req, res) {
   const { projectId } = req.params;
-  const result = await query('SELECT * FROM worlds WHERE project_id = $1 ORDER BY created_at ASC', [projectId]);
-  res.json({ worlds: result.rows });
+  const { limit, offset } = paginate(req);
+  const { type, search } = req.query;
+
+  let sql = `SELECT * FROM worlds WHERE project_id = $1 AND deleted_at IS NULL`;
+  const params = [projectId];
+  let i = 2;
+
+  if (type)   { sql += ` AND type = $${i++}`;           params.push(type); }
+  if (search) { sql += ` AND name ILIKE $${i++}`;       params.push(`%${search}%`); }
+
+  sql += ` ORDER BY created_at ASC LIMIT $${i++} OFFSET $${i}`;
+  params.push(limit, offset);
+
+  const [result, countResult] = await Promise.all([
+    query(sql, params),
+    query(`SELECT COUNT(*) FROM worlds WHERE project_id = $1 AND deleted_at IS NULL`, [projectId]),
+  ]);
+
+  res.json({
+    worlds: result.rows,
+    total:  parseInt(countResult.rows[0].count, 10),
+    limit, offset,
+  });
 }
 
 export async function getWorld(req, res) {
   const { projectId, id } = req.params;
   const world = await query(
-    'SELECT * FROM worlds WHERE id = $1 AND project_id = $2',
+    'SELECT * FROM worlds WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL',
     [id, projectId]
   );
   if (!world.rows.length) throw createError(404, 'World not found.');
 
-  const locations = await query('SELECT * FROM locations WHERE world_id = $1 ORDER BY created_at ASC', [id]);
+  const locations = await query(
+    'SELECT * FROM locations WHERE world_id = $1 ORDER BY created_at ASC',
+    [id]
+  );
   res.json({ world: world.rows[0], locations: locations.rows });
 }
 
@@ -32,9 +67,9 @@ export async function createWorld(req, res) {
   const { name, description, era, type, generateAI } = req.body;
   if (!name) throw createError(400, 'World name is required.');
 
-  let rules = req.body.rules ?? [];
+  let rules      = req.body.rules      ?? [];
   let atmosphere = req.body.atmosphere ?? {};
-  let history = req.body.history ?? [];
+  let history    = req.body.history    ?? [];
 
   if (generateAI) {
     log.info('Generating world bible via AI', { name });
@@ -45,9 +80,9 @@ export async function createWorld(req, res) {
       genre: proj.rows[0]?.genre ?? '', era: era ?? '',
       brainContext,
     });
-    rules = bible.rules ?? rules;
+    rules      = bible.rules      ?? rules;
     atmosphere = bible.atmosphere ?? atmosphere;
-    history = bible.history ?? history;
+    history    = bible.history    ?? history;
   }
 
   const result = await query(
@@ -58,12 +93,17 @@ export async function createWorld(req, res) {
   );
   const world = result.rows[0];
 
-  await appendMemory(projectId, {
-    agentType: 'world', memoryType: 'world_event',
-    content: `World "${name}" added to the project.`,
-    importance: 6,
-    refs: [{ entity_type: 'world', entity_id: world.id, label: name }],
-  });
+  await Promise.all([
+    appendMemory(projectId, {
+      agentType: 'world', memoryType: 'world_event',
+      content: `World "${name}" added to the project.`,
+      importance: 6,
+      refs: [{ entity_type: 'world', entity_id: world.id, label: name }],
+    }),
+    syncEntityToGraph(projectId, {
+      entityId: world.id, entityType: 'world', label: name,
+    }).catch(() => {}),
+  ]);
 
   eventBus.emit('world:created', { projectId, world });
   log.info('World created', { id: world.id, name });
@@ -76,31 +116,57 @@ export async function updateWorld(req, res) {
 
   const result = await query(
     `UPDATE worlds SET
-       name = COALESCE($1, name),
+       name        = COALESCE($1, name),
        description = COALESCE($2, description),
-       era = COALESCE($3, era),
-       type = COALESCE($4, type),
-       rules = COALESCE($5, rules),
-       atmosphere = COALESCE($6, atmosphere),
-       history = COALESCE($7, history),
-       updated_at = NOW()
-     WHERE id = $8 AND project_id = $9 RETURNING *`,
+       era         = COALESCE($3, era),
+       type        = COALESCE($4, type),
+       rules       = COALESCE($5, rules),
+       atmosphere  = COALESCE($6, atmosphere),
+       history     = COALESCE($7, history),
+       updated_at  = NOW()
+     WHERE id = $8 AND project_id = $9 AND deleted_at IS NULL RETURNING *`,
     [name, description, era, type,
-     rules ? JSON.stringify(rules) : null,
+     rules      ? JSON.stringify(rules)      : null,
      atmosphere ? JSON.stringify(atmosphere) : null,
-     history ? JSON.stringify(history) : null,
+     history    ? JSON.stringify(history)    : null,
      id, projectId]
   );
   if (!result.rows.length) throw createError(404, 'World not found.');
+  eventBus.emit('world:updated', { projectId, id, changes: req.body });
   res.json({ world: result.rows[0] });
 }
 
-// ── Locations ─────────────────────────────────────────────
+export async function deleteWorld(req, res) {
+  const { projectId, id } = req.params;
+  const result = await query(
+    `UPDATE worlds SET deleted_at = NOW()
+     WHERE id = $1 AND project_id = $2 AND deleted_at IS NULL RETURNING id`,
+    [id, projectId]
+  );
+  if (!result.rows.length) throw createError(404, 'World not found.');
+  eventBus.emit('world:deleted', { projectId, id });
+  res.json({ deleted: id });
+}
+
+// ── Locations ─────────────────────────────────────────────────────────────────
 
 export async function listLocations(req, res) {
   const { projectId } = req.params;
-  const result = await query('SELECT * FROM locations WHERE project_id = $1 ORDER BY created_at ASC', [projectId]);
-  res.json({ locations: result.rows });
+  const { limit, offset } = paginate(req);
+  const { worldId, type } = req.query;
+
+  let sql = `SELECT * FROM locations WHERE project_id = $1`;
+  const params = [projectId];
+  let i = 2;
+
+  if (worldId) { sql += ` AND world_id = $${i++}`; params.push(worldId); }
+  if (type)    { sql += ` AND type = $${i++}`;     params.push(type); }
+
+  sql += ` ORDER BY created_at ASC LIMIT $${i++} OFFSET $${i}`;
+  params.push(limit, offset);
+
+  const result = await query(sql, params);
+  res.json({ locations: result.rows, total: result.rows.length, limit, offset });
 }
 
 export async function createLocation(req, res) {
@@ -108,16 +174,20 @@ export async function createLocation(req, res) {
   const { name, type, description, generateAI } = req.body;
   if (!name) throw createError(400, 'Location name is required.');
 
-  let atmosphere = req.body.atmosphere ?? {};
+  let atmosphere    = req.body.atmosphere    ?? {};
   let visual_preset = req.body.visual_preset ?? {};
 
   if (generateAI) {
     log.info('Generating location via AI', { name });
     const brainContext = await buildContext(projectId);
     const worldResult = await query('SELECT * FROM worlds WHERE id = $1', [worldId]);
-    const worldCtx = worldResult.rows[0] ? `${worldResult.rows[0].name}: ${worldResult.rows[0].description}` : '';
-    const loc = await generateLocation({ name, type: type ?? 'building', worldContext: worldCtx, brainContext });
-    atmosphere = loc.atmosphere ?? atmosphere;
+    const worldCtx = worldResult.rows[0]
+      ? `${worldResult.rows[0].name}: ${worldResult.rows[0].description}`
+      : '';
+    const loc = await generateLocation({
+      name, type: type ?? 'building', worldContext: worldCtx, brainContext,
+    });
+    atmosphere    = loc.atmosphere    ?? atmosphere;
     visual_preset = loc.visual_preset ?? visual_preset;
   }
 
@@ -127,10 +197,17 @@ export async function createLocation(req, res) {
     [worldId, projectId, name, type, description,
      JSON.stringify(atmosphere), JSON.stringify(visual_preset)]
   );
+  const location = result.rows[0];
 
-  eventBus.emit('location:created', { projectId, worldId, location: result.rows[0] });
+  // Sync to knowledge graph
+  syncEntityToGraph(projectId, {
+    entityId: location.id, entityType: 'location', label: name,
+    properties: { worldId, type: type ?? 'building' },
+  }).catch(() => {});
+
+  eventBus.emit('location:created', { projectId, worldId, location });
   log.info('Location created', { name });
-  res.status(201).json({ location: result.rows[0] });
+  res.status(201).json({ location });
 }
 
 export async function updateLocation(req, res) {
@@ -139,17 +216,18 @@ export async function updateLocation(req, res) {
 
   const result = await query(
     `UPDATE locations SET
-       name = COALESCE($1, name),
-       type = COALESCE($2, type),
-       description = COALESCE($3, description),
-       atmosphere = COALESCE($4, atmosphere),
+       name          = COALESCE($1, name),
+       type          = COALESCE($2, type),
+       description   = COALESCE($3, description),
+       atmosphere    = COALESCE($4, atmosphere),
        visual_preset = COALESCE($5, visual_preset)
      WHERE id = $6 AND project_id = $7 RETURNING *`,
     [name, type, description,
-     atmosphere ? JSON.stringify(atmosphere) : null,
+     atmosphere    ? JSON.stringify(atmosphere)    : null,
      visual_preset ? JSON.stringify(visual_preset) : null,
      id, projectId]
   );
   if (!result.rows.length) throw createError(404, 'Location not found.');
+  eventBus.emit('location:updated', { projectId, id, changes: req.body });
   res.json({ location: result.rows[0] });
 }

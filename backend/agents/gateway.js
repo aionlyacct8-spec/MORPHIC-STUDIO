@@ -2,20 +2,46 @@
  * AI Gateway — provider-agnostic interface for all Morphic Studio agents.
  *
  * Features:
- *  - Provider fallback chain (primary → fallback → error)
+ *  - Provider fallback chain: OpenAI → OpenRouter → Gemini
  *  - Per-request timeout via AbortController
  *  - Exponential-backoff retries on 429 / 5xx
  *  - Model selection per call
- *  - Set AI_PROVIDER=openai (default) or AI_PROVIDER=openrouter in env
+ *  - Cost estimation & logging
+ *  - Provider health check endpoint
+ *  - Gemini (Google GenAI) support
+ *  - Set AI_PROVIDER=openai (default), openrouter, or gemini in env
  */
+
 import logger from '../utils/logger.js';
 
 const log = logger.child('gateway');
 
-// ── Provider registry ────────────────────────────────────────────────────────
+// ── Cost estimates (USD per 1K tokens) ───────────────────────────────────────
+
+const COST_PER_1K = {
+  'gpt-4o-mini':              { input: 0.00015, output: 0.0006  },
+  'gpt-4o':                   { input: 0.005,   output: 0.015   },
+  'openai/gpt-4o-mini':       { input: 0.00015, output: 0.0006  },
+  'openai/gpt-4o':            { input: 0.005,   output: 0.015   },
+  'google/gemini-flash-1.5':  { input: 0.000075,output: 0.0003  },
+  'google/gemini-pro':        { input: 0.0005,  output: 0.0015  },
+  'anthropic/claude-3-haiku': { input: 0.00025, output: 0.00125 },
+  'anthropic/claude-3-sonnet':{ input: 0.003,   output: 0.015   },
+  default:                    { input: 0.001,   output: 0.003   },
+};
+
+function estimateCost(model, usage) {
+  if (!usage) return null;
+  const rates = COST_PER_1K[model] ?? COST_PER_1K.default;
+  return ((usage.prompt_tokens ?? 0) / 1000) * rates.input
+       + ((usage.completion_tokens ?? 0) / 1000) * rates.output;
+}
+
+// ── Provider registry ─────────────────────────────────────────────────────────
 
 const PROVIDERS = {
   openai: {
+    name: 'openai',
     url: 'https://api.openai.com/v1/chat/completions',
     key: () => process.env.OPENAI_API_KEY,
     defaultModel: 'gpt-4o-mini',
@@ -23,27 +49,112 @@ const PROVIDERS = {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
     }),
+    buildBody: ({ messages, model, maxTokens }) => ({
+      model,
+      messages,
+      max_tokens: maxTokens,
+    }),
+    extractContent: (data) => data.choices?.[0]?.message?.content ?? '',
+    extractUsage:   (data) => data.usage,
+    extractModel:   (data) => data.model,
   },
+
   openrouter: {
+    name: 'openrouter',
     url: 'https://openrouter.ai/api/v1/chat/completions',
     key: () => process.env.OPENROUTER_API_KEY,
     defaultModel: 'openai/gpt-4o-mini',
     headers: (key) => ({
       Authorization: `Bearer ${key}`,
-      'HTTP-Referer': 'https://morphic-studio.replit.app',
+      'HTTP-Referer': process.env.APP_URL ?? 'https://morphic-studio.replit.app',
       'X-Title': 'Morphic Studio',
       'Content-Type': 'application/json',
     }),
+    buildBody: ({ messages, model, maxTokens }) => ({
+      model,
+      messages,
+      max_tokens: maxTokens,
+    }),
+    extractContent: (data) => data.choices?.[0]?.message?.content ?? '',
+    extractUsage:   (data) => data.usage,
+    extractModel:   (data) => data.model,
+  },
+
+  gemini: {
+    name: 'gemini',
+    // Gemini REST API (v1beta)
+    url: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model ?? 'gemini-1.5-flash'}:generateContent`,
+    key: () => process.env.GEMINI_API_KEY,
+    defaultModel: 'gemini-1.5-flash',
+    headers: (_key) => ({ 'Content-Type': 'application/json' }),
+    buildBody: ({ messages, maxTokens }) => {
+      // Convert OpenAI-style messages to Gemini format
+      const contents = messages
+        .filter(m => m.role !== 'system')
+        .map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        }));
+
+      const systemMsg = messages.find(m => m.role === 'system');
+      const body = {
+        contents,
+        generationConfig: { maxOutputTokens: maxTokens },
+      };
+      if (systemMsg) {
+        body.system_instruction = { parts: [{ text: systemMsg.content }] };
+      }
+      return body;
+    },
+    extractContent: (data) => data.candidates?.[0]?.content?.parts?.[0]?.text ?? '',
+    extractUsage:   (data) => ({
+      prompt_tokens:     data.usageMetadata?.promptTokenCount ?? 0,
+      completion_tokens: data.usageMetadata?.candidatesTokenCount ?? 0,
+      total_tokens:      data.usageMetadata?.totalTokenCount ?? 0,
+    }),
+    extractModel: (_data, model) => model,
   },
 };
 
 // Fallback chain — if primary fails, try these in order
 const FALLBACK_CHAIN = {
-  openai: ['openrouter'],
-  openrouter: ['openai'],
+  openai:     ['openrouter', 'gemini'],
+  openrouter: ['openai',     'gemini'],
+  gemini:     ['openrouter', 'openai'],
 };
 
-// ── Core call (single provider, one attempt) ─────────────────────────────────
+// ── Health tracking ───────────────────────────────────────────────────────────
+
+const _health = {
+  openai:     { healthy: true, lastChecked: null, failCount: 0 },
+  openrouter: { healthy: true, lastChecked: null, failCount: 0 },
+  gemini:     { healthy: true, lastChecked: null, failCount: 0 },
+};
+
+function _markFailure(providerName) {
+  if (_health[providerName]) {
+    _health[providerName].failCount++;
+    _health[providerName].lastChecked = new Date().toISOString();
+    if (_health[providerName].failCount >= 3) {
+      _health[providerName].healthy = false;
+      log.warn(`Provider "${providerName}" marked unhealthy after ${_health[providerName].failCount} failures`);
+    }
+  }
+}
+
+function _markSuccess(providerName) {
+  if (_health[providerName]) {
+    _health[providerName].healthy = true;
+    _health[providerName].failCount = 0;
+    _health[providerName].lastChecked = new Date().toISOString();
+  }
+}
+
+export function getProviderHealth() {
+  return { ..._health };
+}
+
+// ── Core call (single provider, one attempt) ──────────────────────────────────
 
 async function _callProvider(providerName, { messages, model, maxTokens, timeoutMs = 30_000 }) {
   const p = PROVIDERS[providerName];
@@ -51,21 +162,20 @@ async function _callProvider(providerName, { messages, model, maxTokens, timeout
 
   const key = p.key();
   if (!key) {
-    const keyName = providerName === 'openai' ? 'OPENAI_API_KEY' : 'OPENROUTER_API_KEY';
-    throw new Error(`Provider "${providerName}" needs ${keyName} set.`);
+    const keyNames = { openai: 'OPENAI_API_KEY', openrouter: 'OPENROUTER_API_KEY', gemini: 'GEMINI_API_KEY' };
+    throw new Error(`Provider "${providerName}" needs ${keyNames[providerName] ?? 'API key'} set.`);
   }
 
-  const body = {
-    model: model || p.defaultModel,
-    messages,
-    max_tokens: maxTokens,
-  };
+  const resolvedModel = model || p.defaultModel;
+  const url = typeof p.url === 'function' ? `${p.url(resolvedModel)}?key=${key}` : p.url;
+
+  const body = p.buildBody({ messages, model: resolvedModel, maxTokens });
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(p.url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: p.headers(key),
       body: JSON.stringify(body),
@@ -73,21 +183,32 @@ async function _callProvider(providerName, { messages, model, maxTokens, timeout
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      const err = new Error(`HTTP ${response.status}: ${errText}`);
+      const errText = await response.text().catch(() => response.statusText);
+      const err = new Error(`HTTP ${response.status}: ${errText.slice(0, 200)}`);
       err.status = response.status;
       throw err;
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content ?? '';
-    return { content, usage: data.usage, provider: providerName, model: data.model };
+    const content = p.extractContent(data);
+    const usage   = p.extractUsage(data);
+    const usedModel = p.extractModel(data, resolvedModel);
+
+    const cost = estimateCost(usedModel, usage);
+    log.info(`✓ ${providerName}/${usedModel}`, {
+      tokens: usage?.total_tokens,
+      cost_usd: cost?.toFixed(5),
+    });
+
+    _markSuccess(providerName);
+    return { content, usage, provider: providerName, model: usedModel, cost };
+
   } finally {
     clearTimeout(timer);
   }
 }
 
-// ── Retry with exponential backoff ───────────────────────────────────────────
+// ── Retry with exponential backoff ────────────────────────────────────────────
 
 async function _withRetry(fn, { maxRetries = 2, baseDelayMs = 800 } = {}) {
   let lastErr;
@@ -96,23 +217,26 @@ async function _withRetry(fn, { maxRetries = 2, baseDelayMs = 800 } = {}) {
       return await fn();
     } catch (err) {
       lastErr = err;
-      const retryable = err.status === 429 || (err.status >= 500 && err.status < 600) || err.name === 'AbortError';
+      const retryable = err.status === 429
+        || (err.status >= 500 && err.status < 600)
+        || err.name === 'AbortError';
       if (!retryable || attempt === maxRetries) break;
       const delay = baseDelayMs * Math.pow(2, attempt);
-      log.warn(`Retry ${attempt + 1}/${maxRetries} after ${delay}ms`, { status: err.status });
+      log.warn(`Retry ${attempt + 1}/${maxRetries} in ${delay}ms`, { status: err.status });
       await new Promise(r => setTimeout(r, delay));
     }
   }
   throw lastErr;
 }
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * callAI({ systemPrompt, messages, model, maxTokens, provider, timeoutMs })
- * Returns { content, usage, provider, model }
+ * Returns { content, usage, provider, model, cost }
  *
- * Automatically falls back to secondary provider on failure.
+ * Automatically falls back through the provider chain on failure.
+ * Skips providers marked unhealthy.
  */
 export async function callAI({
   systemPrompt,
@@ -123,14 +247,19 @@ export async function callAI({
   timeoutMs = 30_000,
 } = {}) {
   const primaryName = providerOverride || process.env.AI_PROVIDER || 'openai';
-  const chain = [primaryName, ...(FALLBACK_CHAIN[primaryName] ?? [])];
+  const fullChain = [primaryName, ...(FALLBACK_CHAIN[primaryName] ?? [])];
+
+  // Filter out known-unhealthy providers (except if it's the only one)
+  const chain = fullChain.filter(p => _health[p]?.healthy !== false) .length > 0
+    ? fullChain.filter(p => _health[p]?.healthy !== false)
+    : fullChain; // fallback: try all if all unhealthy
 
   const allMessages = [
     ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
     ...messages,
   ];
 
-  log.info(`callAI — chain: ${chain.join(' → ')}`, { model: model || 'default', turns: allMessages.length });
+  log.info(`callAI — chain: ${chain.join(' → ')}`, { model: model ?? 'default', turns: allMessages.length });
 
   let lastErr;
   for (const providerName of chain) {
@@ -139,10 +268,10 @@ export async function callAI({
         () => _callProvider(providerName, { messages: allMessages, model, maxTokens, timeoutMs }),
         { maxRetries: 2 }
       );
-      log.info(`callAI complete via ${providerName}`, { tokens: result.usage?.total_tokens });
       return result;
     } catch (err) {
       log.warn(`Provider "${providerName}" failed — ${err.message}`);
+      _markFailure(providerName);
       lastErr = err;
     }
   }
@@ -161,7 +290,6 @@ export function parseJSON(text) {
   } catch {
     const start = cleaned.search(/[{[]/);
     if (start !== -1) {
-      // Find matching close bracket and try parsing
       const sub = cleaned.slice(start);
       try { return JSON.parse(sub); } catch { /* fall through */ }
     }
@@ -169,4 +297,4 @@ export function parseJSON(text) {
   }
 }
 
-export default { callAI, parseJSON };
+export default { callAI, parseJSON, getProviderHealth };

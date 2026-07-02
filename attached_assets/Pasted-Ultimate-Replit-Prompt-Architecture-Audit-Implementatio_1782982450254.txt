@@ -1,0 +1,723 @@
+Ultimate Replit Prompt (Architecture Audit + Implementation)
+
+You are the lead software architect and senior full-stack engineer for this project.
+
+Your job is NOT to blindly add code.
+
+Your first responsibility is to audit the current implementation against the project architecture before making any modifications.
+
+You must preserve all existing working functionality while improving the architecture.
+
+CRITICAL RULES
+Never assume something exists because another AI said it does.
+Verify everything by inspecting the actual code.
+If something already exists, improve it instead of recreating it.
+Do not delete existing functionality unless it is clearly obsolete.
+Maintain backwards compatibility whenever possible.
+Keep the code modular and scalable.
+Do not break the current frontend.
+Update imports whenever files are moved.
+Fix architecture before adding new features.
+Think like a senior software architect, not just a code generator.
+PHASE 1 — COMPLETE ARCHITECTURE AUDIT
+
+Before writing any code:
+
+Inspect the entire backend.
+
+Specifically verify:
+
+folder structure
+routes
+controllers
+services
+agents
+middleware
+database
+schemas
+setup scripts
+migrations
+API endpoints
+AI gateway
+event bus
+authentication
+asset system
+project brain
+PostgreSQL integration
+
+Produce an internal checklist.
+
+Do NOT assume anything exists.
+
+Actually inspect it.
+
+PHASE 2 — DATABASE VERIFICATION
+
+Replit previously claimed the database contains tables including:
+
+project_brain
+character_history
+locations
+ai_memory
+assets
+
+Verify that these are actually created inside the setup scripts or migrations.
+
+If any are missing:
+
+Create proper migrations.
+
+Do NOT duplicate existing tables.
+
+Every table should use:
+
+UUID primary keys
+
+timestamps
+
+created_by
+
+updated_at
+
+soft delete capability where appropriate
+
+proper indexes
+
+foreign keys
+
+cascade rules
+
+Database should eventually contain
+
+Projects
+
+Users
+
+Project Brain
+
+Characters
+
+Character History
+
+Relationships
+
+Worlds
+
+Locations
+
+Scenes
+
+Stories
+
+Episodes
+
+Assets
+
+Asset Versions
+
+Asset Tags
+
+Voices
+
+Animations
+
+Camera Presets
+
+Music
+
+Sound Effects
+
+AI Memory
+
+Knowledge Graph Nodes
+
+Knowledge Graph Edges
+
+Timeline Events
+
+Continuity Rules
+
+Style Guides
+
+Generation Jobs
+
+Exports
+
+Normalize everything.
+
+No duplicated information.
+
+PHASE 3 — PROJECT BRAIN
+
+Inspect brainController.
+
+Inspect brainService.
+
+Verify whether the Project Brain actually supports:
+
+automatic rebuilding
+
+incremental updates
+
+context compression
+
+context summarization
+
+version history
+
+context retrieval
+
+search
+
+memory expiration policies
+
+brain locking during writes
+
+brain merging
+
+If not:
+
+Implement them.
+
+The Project Brain should become the permanent memory of every project.
+
+Every AI request must automatically receive the relevant Project Brain context.
+
+Never send unnecessary data to the model.
+
+Implement intelligent context selection.
+
+Brain Structure
+
+Story Bible
+
+Character Bible
+
+World Bible
+
+Timeline
+
+Continuity Rules
+
+Voice Profiles
+
+Style Guide
+
+Art Direction
+
+Lore
+
+Notes
+
+Project Memory
+
+Generation History
+
+Relationships
+
+PHASE 4 — ASSET LIBRARY
+
+This is the highest priority subsystem.
+
+The Asset Library should become the heart of the platform.
+
+Everything generated should become reusable.
+
+Support:
+
+Characters
+
+Character Versions
+
+Outfits
+
+Hair
+
+Expressions
+
+Poses
+
+Voices
+
+Backgrounds
+
+Buildings
+
+Props
+
+Weapons
+
+Vehicles
+
+Maps
+
+Worlds
+
+Animations
+
+Rig Files
+
+Camera Presets
+
+Lighting Presets
+
+Particle Presets
+
+Music
+
+Sound Effects
+
+Fonts
+
+Templates
+
+Storyboards
+
+Comics
+
+Motion Comics
+
+Videos
+
+Every asset should support:
+
+UUID
+
+metadata
+
+preview
+
+thumbnail
+
+creator
+
+project
+
+tags
+
+categories
+
+relationships
+
+version history
+
+usage history
+
+dependencies
+
+favorites
+
+soft delete
+
+restore
+
+search
+
+filter
+
+reuse
+
+No duplicated assets.
+
+PHASE 5 — CHARACTER EVOLUTION
+
+Characters must evolve.
+
+Track:
+
+Appearance history
+
+Outfit history
+
+Voice history
+
+Personality evolution
+
+Relationship evolution
+
+Abilities
+
+Inventory
+
+Expressions
+
+Animation presets
+
+Timeline appearances
+
+Episode appearances
+
+Location history
+
+Growth over time
+
+Every change becomes historical.
+
+Nothing should be overwritten.
+
+Everything should be versioned.
+
+PHASE 6 — KNOWLEDGE GRAPH
+
+Implement a true Knowledge Graph.
+
+Entities:
+
+Characters
+
+Worlds
+
+Locations
+
+Props
+
+Episodes
+
+Scenes
+
+Stories
+
+Weapons
+
+Organizations
+
+Vehicles
+
+Events
+
+Relationships
+
+Support relationships such as:
+
+Character lives_in World
+
+Character owns Weapon
+
+Character appears_in Episode
+
+Character uses Vehicle
+
+Character wears Outfit
+
+Character knows Character
+
+Character belongs_to Organization
+
+Location belongs_to World
+
+Episode contains Scene
+
+Scene contains Asset
+
+Everything should be queryable.
+
+PHASE 7 — AI ORCHESTRATOR
+
+Inspect current AI agent flow.
+
+If missing:
+
+Create an Orchestrator.
+
+Responsibilities:
+
+choose the correct AI agent
+
+coordinate multiple agents
+
+share context
+
+manage retries
+
+manage failures
+
+cache responses
+
+parallel execution
+
+logging
+
+streaming
+
+cost tracking
+
+rate limiting
+
+context injection
+
+Agent hierarchy:
+
+Story Agent
+
+Character Agent
+
+World Agent
+
+Storyboard Agent
+
+Dialogue Agent
+
+Comic Agent
+
+Animation Agent
+
+Voice Agent
+
+Music Agent
+
+Export Agent
+
+Quality Agent
+
+Continuity Agent
+
+PHASE 8 — AI GATEWAY
+
+Current providers:
+
+OpenRouter
+
+OpenAI
+
+Future:
+
+Gemini
+
+Anthropic
+
+Local Models
+
+ComfyUI
+
+Coqui
+
+SadTalker
+
+Blender
+
+The Gateway should support:
+
+provider abstraction
+
+automatic retries
+
+automatic fallback
+
+timeouts
+
+streaming
+
+provider health checks
+
+cost logging
+
+model selection
+
+priority routing
+
+caching
+
+If OpenRouter fails:
+
+↓
+
+Gemini
+
+↓
+
+OpenAI
+
+↓
+
+Local Model
+
+No frontend changes required.
+
+PHASE 9 — EVENT BUS
+
+Inspect eventBus.js.
+
+Expand if necessary.
+
+Events include:
+
+ProjectCreated
+
+StoryUpdated
+
+CharacterCreated
+
+CharacterUpdated
+
+WorldCreated
+
+AssetGenerated
+
+AssetUpdated
+
+StoryboardGenerated
+
+ComicGenerated
+
+AnimationGenerated
+
+VoiceGenerated
+
+ExportCompleted
+
+AICompleted
+
+KnowledgeGraphUpdated
+
+ProjectBrainUpdated
+
+Everything should communicate through events rather than direct coupling where appropriate.
+
+PHASE 10 — API REVIEW
+
+Review every endpoint.
+
+Check:
+
+validation
+
+authorization
+
+ownership
+
+pagination
+
+filtering
+
+sorting
+
+error handling
+
+consistent responses
+
+logging
+
+performance
+
+Remove duplicate logic.
+
+PHASE 11 — PERFORMANCE
+
+Review:
+
+database queries
+
+indexes
+
+N+1 queries
+
+caching
+
+memory usage
+
+API latency
+
+duplicate AI requests
+
+unused imports
+
+dead code
+
+large files
+
+refactor where necessary.
+
+PHASE 12 — SECURITY
+
+Audit:
+
+authentication
+
+authorization
+
+IDOR
+
+SQL injection
+
+XSS
+
+CSRF (if applicable)
+
+input validation
+
+rate limiting
+
+API keys
+
+environment variables
+
+Do not expose secrets.
+
+PHASE 13 — CODE QUALITY
+
+Review entire backend.
+
+Refactor where appropriate.
+
+Use:
+
+controllers
+
+services
+
+repositories
+
+agents
+
+middleware
+
+events
+
+utilities
+
+configuration
+
+Avoid God classes.
+
+Avoid duplicate logic.
+
+PHASE 14 — FRONTEND INTEGRATION
+
+After backend verification:
+
+Ensure all frontend actions call the real APIs.
+
+Verify:
+
+AI Co-Writer
+
+Storyboard
+
+Characters
+
+World Builder
+
+Asset Library
+
+Project Brain
+
+Everything should work end-to-end.
+
+PHASE 15 — FINAL REPORT
+
+After implementation:
+
+Produce a comprehensive report.
+
+Include:
+
+What already existed.
+What was missing.
+What was improved.
+What was created.
+What was refactored.
+What was intentionally left unchanged.
+Remaining technical debt.
+Future recommendations.
+
+Do not claim a feature is complete unless you have verified it in the code. If a feature is only partially implemented, clearly state that and explain what remains to be done. Verify every claim against the actual codebase before reporting success.

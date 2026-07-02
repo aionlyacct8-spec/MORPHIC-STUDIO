@@ -1,101 +1,79 @@
 ---
 name: Morphic Studio Architecture
-description: Full backend architecture — layers, file structure, API shape, DB schema, AI gateway
+description: Layered architecture, backend/frontend/DB/AI service boundaries — current state after audit
 ---
 
-## Stack
-- Node.js 20 + Express (ESM modules — `"type": "module"` in package.json)
-- PostgreSQL via `pg` pool
-- OpenAI API (default) or OpenRouter — swappable via `AI_PROVIDER` env var
-- Static frontend served from `frontend/` by Express
+# Morphic Studio Architecture
 
-## Backend Structure (v2 — modular)
+## Stack
+- **Backend**: Node.js ESM + Express, port 5000
+- **Frontend**: Standalone HTML pages (Tailwind CDN, no build step)
+- **DB**: PostgreSQL via `pg` pool (`database/schema.sql` + migrations)
+- **AI**: Provider-agnostic gateway → OpenAI / OpenRouter / Gemini
+
+## File Structure
 ```
 backend/
-  server.js              ← mounts all routers, serves static, starts on PORT (default 5000)
+  server.js              — entry point, all routes mounted here
   agents/
-    gateway.js           ← callAI({systemPrompt, messages, model, maxTokens, provider})
-    storyAgent.js        ← analyzeScript, generateOutline, expandScene
-    characterAgent.js    ← generateDNA, evolveCharacter, suggestRelationships
-    worldAgent.js        ← generateWorldBible, generateLocation, buildTimeline
-    storyboardAgent.js   ← generatePanels, refinePanels
+    gateway.js           — callAI() with 3-provider chain + cost logging
+    orchestrator.js      — dispatch() routes tasks to agents, tracks jobs
+    storyAgent.js        — analyzeScript, generateOutline, expandScene
+    characterAgent.js    — generateDNA (NOT generateCharacterDNA!), evolveCharacter
+    worldAgent.js        — generateWorldBible, generateLocation, buildTimeline
+    storyboardAgent.js   — generatePanels, refinePanels
+  controllers/           — HTTP handlers
   services/
-    db.js                ← pool singleton, query(), transaction()
-    brainService.js      ← getBrain, updateSection, setBrainSection, appendMemory, buildContext
-  controllers/
-    brainController.js
-    projectsController.js
-    charactersController.js
-    worldsController.js
-    assetsController.js
-    storiesController.js
-  routes/
-    projects.js
-    brain.js             ← mergeParams: true (inherits :projectId)
-    characters.js        ← mergeParams: true
-    worlds.js            ← mergeParams: true
-    assets.js            ← mergeParams: true
-    stories.js           ← mergeParams: true
+    db.js                — pg pool: query(), getTransaction()
+    brainService.js      — brain CRUD, locking, versioning, context compression
+    eventBus.js          — 30+ typed events, singleton MorphicEventBus
+    knowledgeGraphService.js — upsertNode/Edge, getFullGraph, getNeighbors
+    generationJobService.js  — listJobs, getJob, cancelJob, getJobStats
+  routes/                — Router files
   middleware/
-    errorHandler.js      ← asyncWrap(fn), createError(status, msg), errorHandler middleware
-    validate.js          ← requireBody(...fields), requireParams(...params)
-  utils/
-    logger.js            ← logger.child('module') for namespaced logging
+    errorHandler.js      — errorHandler, asyncWrap, createError
+    rateLimiter.js       — in-memory rate limiting, namespaced by windowMs:max
+  utils/logger.js        — Winston logger, logger.child(name)
+
 database/
-  schema.sql             ← full schema, run once
-  setup.js               ← applies schema + seeds default project
+  schema.sql             — 9 original tables
+  migrations/001_*.sql   — art_direction + asset_versions
+  migrations/002_*.sql   — 13 new tables (scenes, episodes, KG, jobs, etc.)
+  migrate.js             — idempotent migration runner
+  setup.js               — init + seed
 ```
 
-## API Shape
-All endpoints are project-scoped:
-```
-/api/projects
-/api/projects/:projectId/brain
-/api/projects/:projectId/brain/sections/:section   PUT
-/api/projects/:projectId/brain/memory              GET POST
-/api/projects/:projectId/characters
-/api/projects/:projectId/characters/:id/evolve     POST
-/api/projects/:projectId/characters/relationships/suggest GET
-/api/projects/:projectId/worlds
-/api/projects/:projectId/worlds/:worldId/locations POST
-/api/projects/:projectId/worlds/locations/all      GET
-/api/projects/:projectId/assets
-/api/projects/:projectId/assets/stats              GET
-/api/projects/:projectId/stories/scripts
-/api/projects/:projectId/stories/scripts/:id/analyze POST
-/api/projects/:projectId/stories/outline           POST
-```
+## Route Map
+| Prefix | Router |
+|---|---|
+| `/api/projects` | projectsRouter |
+| `/api/projects/:id/brain` | brainRouter |
+| `/api/projects/:id/characters` | charactersRouter |
+| `/api/projects/:id/worlds` | worldsRouter |
+| `/api/projects/:id/assets` | assetsRouter |
+| `/api/projects/:id/stories` | storiesRouter |
+| `/api/projects/:id/graph` | knowledgeGraphRouter |
+| `/api/projects/:id/jobs` | generationJobsRouter |
+| `/api/projects/:id` | scenesRouter (/scenes + /episodes) |
 
-## AI Gateway
-- `callAI({ systemPrompt, messages, model, maxTokens, provider })` — unified interface
-- `parseJSON(text)` — strips markdown fences, safe JSON extraction from AI output
-- Provider config in `PROVIDERS` map — add new providers without touching agents
-- Default provider: `process.env.AI_PROVIDER || 'openai'`
-- OpenAI key: `OPENAI_API_KEY`; OpenRouter key: `OPENROUTER_API_KEY`
+## Key Design Rules
+- **All AI calls** go through `callAI()` in gateway.js — never raw fetch to LLM APIs
+- **Orchestrator dispatch** is the preferred entry point for AI tasks from controllers
+- **characterAgent exports `generateDNA`** (not `generateCharacterDNA`) — orchestrator METHOD_MAP handles this
+- **Soft delete everywhere** — `deleted_at IS NULL` guard on all queries after migration 002
+- **Rate limiter instances** must use unique (windowMs, max) pairs — keys are namespaced to prevent counter collision
+- **Brain context** is capped at 4000 chars before injection into AI calls
+- **Knowledge graph sync** happens automatically on character/world/location create (non-blocking, catches silently until migration 002 is applied)
 
-## Project Brain
-- One `project_brain` row per project (auto-created on project creation)
-- Sections: `story_bible`, `character_bible`, `world_bible`, `timeline`, `continuity_rules`, `voice_profiles`, `style_guide`
-- `memory_context` TEXT — compressed context string injected into every AI agent call
-- `brainService.buildContext(projectId)` — call before any agent invocation
-- `brainService.appendMemory(projectId, {...})` — agents log facts here after acting
+## Critical: Migration 002 Required
+Until `node database/migrate.js` is run (needs DATABASE_URL), the following tables do not exist:
+scenes, episodes, relationships, knowledge_graph_nodes, knowledge_graph_edges,
+timeline_events, continuity_rules, style_guides, generation_jobs, exports, brain_versions, users
 
-## Database Schema (key tables)
-- `projects` — UUID PK, title, genre, format, style, status
-- `project_brain` — UNIQUE(project_id), all bible sections as JSONB, memory_context TEXT
-- `characters` — UUID, visual_dna JSONB, personality JSONB, voice_profile JSONB, relationships JSONB, outfit_history JSONB, arc_progress INT
-- `character_history` — evolution log with before/after JSONB snapshots
-- `worlds` — UUID, rules JSONB[], atmosphere JSONB, history JSONB[]
-- `locations` — nested under worlds, visual_preset JSONB for artist reference
-- `assets` — central library: type (character|background|prop|audio|panel|style|voice), linked_id, usage_count
-- `ai_memory` — per-project agent memory log, importance 1–10
-- `storyboards` — panel_data JSONB[], agent_context JSONB snapshot
+The server starts without them but KG sync calls are wrapped in `.catch(() => {})` so they fail silently.
 
-## Key Decisions
-**Why mergeParams: true on all sub-routers:** Routes are nested under `/api/projects/:projectId/*`. Without mergeParams, controllers can't see `:projectId` from the parent router.
-
-**Why asyncWrap:** Express 4 doesn't catch async errors automatically. Every async route handler must be wrapped.
-
-**Why brain context is injected into every agent call:** Agents are stateless functions. The brain is the persistent memory. Calling `buildContext()` before each agent call ensures continuity without agents needing DB access directly.
-
-**Why assets have `linked_id`:** Assets can optionally link to the entity they represent (character portrait → characters.id, background → locations.id) for cross-referencing in the UI.
+## What Does NOT Exist Yet
+- Authentication (JWT/sessions) — users table exists but no auth middleware
+- File storage (no Replit Object Storage / S3 connected)
+- Vector/semantic search (embedding column on KG nodes is a placeholder)
+- Dialogue, Comic, Animation, Voice, Music, Export agents

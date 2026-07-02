@@ -6,8 +6,9 @@
  *   controllers/  → request/response handling
  *   services/     → business logic & DB access
  *   agents/       → AI specialists (Story, Character, World, Storyboard)
- *   agents/gateway.js → provider-agnostic AI interface (OpenAI / OpenRouter)
- *   middleware/   → error handling, validation
+ *   agents/orchestrator.js → multi-agent coordinator with job tracking
+ *   agents/gateway.js      → provider-agnostic AI interface
+ *   middleware/   → error handling, validation, rate limiting
  *   utils/        → logger
  */
 import express from 'express';
@@ -16,14 +17,19 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-import projectsRouter   from './routes/projects.js';
-import brainRouter      from './routes/brain.js';
-import charactersRouter from './routes/characters.js';
-import worldsRouter     from './routes/worlds.js';
-import assetsRouter     from './routes/assets.js';
-import storiesRouter    from './routes/stories.js';
+import projectsRouter    from './routes/projects.js';
+import brainRouter       from './routes/brain.js';
+import charactersRouter  from './routes/characters.js';
+import worldsRouter      from './routes/worlds.js';
+import assetsRouter      from './routes/assets.js';
+import storiesRouter     from './routes/stories.js';
+import knowledgeGraphRouter from './routes/knowledgeGraph.js';
+import generationJobsRouter from './routes/generationJobs.js';
+import scenesRouter      from './routes/scenes.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
+import { generalLimiter, aiLimiter } from './middleware/rateLimiter.js';
+import { getProviderHealth } from './agents/gateway.js';
 import logger from './utils/logger.js';
 
 dotenv.config();
@@ -48,59 +54,89 @@ app.use(express.static(join(__dirname, '../frontend'), {
   },
 }));
 
-// ── API routes (all project-scoped under /api/projects/:projectId) ──
+// ── Rate limiting ─────────────────────────────────────────
+// Apply general limiter to all API routes
+app.use('/api', generalLimiter);
+
+// ── Health / discovery ────────────────────────────────────
+app.get('/api', (_req, res) => {
+  res.json({
+    status:  'online',
+    version: '2.0.0',
+    name:    'Morphic Studio API',
+    ai: {
+      provider: process.env.AI_PROVIDER || 'openai',
+      gateway:  'active',
+      agents:   ['story', 'character', 'world', 'storyboard'],
+      orchestrator: 'active',
+    },
+    modules: [
+      'GET  /api/projects',
+      'POST /api/projects',
+      'GET  /api/projects/:id',
+      'GET  /api/projects/:projectId/brain',
+      'PUT  /api/projects/:projectId/brain/sections/:section',
+      'GET  /api/projects/:projectId/brain/memory',
+      'GET  /api/projects/:projectId/brain/versions',
+      'GET  /api/projects/:projectId/brain/search',
+      'POST /api/projects/:projectId/brain/lock',
+      'POST /api/projects/:projectId/brain/unlock',
+      'GET  /api/projects/:projectId/characters',
+      'POST /api/projects/:projectId/characters',
+      'GET  /api/projects/:projectId/worlds',
+      'POST /api/projects/:projectId/worlds',
+      'GET  /api/projects/:projectId/assets',
+      'GET  /api/projects/:projectId/assets/stats',
+      'POST /api/projects/:projectId/assets',
+      'GET  /api/projects/:projectId/stories/scripts',
+      'POST /api/projects/:projectId/stories/scripts',
+      'POST /api/projects/:projectId/stories/scripts/:scriptId/analyze',
+      'GET  /api/projects/:projectId/scenes',
+      'POST /api/projects/:projectId/scenes',
+      'GET  /api/projects/:projectId/episodes',
+      'POST /api/projects/:projectId/episodes',
+      'GET  /api/projects/:projectId/graph',
+      'GET  /api/projects/:projectId/graph/nodes',
+      'POST /api/projects/:projectId/graph/edges',
+      'GET  /api/projects/:projectId/jobs',
+      'POST /api/projects/:projectId/jobs/dispatch',
+    ],
+  });
+});
+
+// ── Provider health check ─────────────────────────────────
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status:    'ok',
+    uptime:    process.uptime(),
+    memory:    process.memoryUsage(),
+    providers: getProviderHealth(),
+    database:  process.env.DATABASE_URL ? 'configured' : 'not_set',
+  });
+});
+
+// ── API routes ────────────────────────────────────────────
 app.use('/api/projects',                                    projectsRouter);
 app.use('/api/projects/:projectId/brain',                   brainRouter);
 app.use('/api/projects/:projectId/characters',              charactersRouter);
 app.use('/api/projects/:projectId/worlds',                  worldsRouter);
 app.use('/api/projects/:projectId/assets',                  assetsRouter);
 app.use('/api/projects/:projectId/stories',                 storiesRouter);
-
-// ── Health / discovery ────────────────────────────────────
-app.get('/api', (_req, res) => {
-  res.json({
-    status: 'online',
-    version: '2.0.0',
-    name: 'Morphic Studio API',
-    ai: {
-      provider: process.env.AI_PROVIDER || 'openai',
-      gateway: 'active',
-      agents: ['story', 'character', 'world', 'storyboard'],
-    },
-    modules: [
-      'GET  /api/projects',
-      'GET  /api/projects/:id',
-      'POST /api/projects',
-      'GET  /api/projects/:projectId/brain',
-      'PUT  /api/projects/:projectId/brain/sections/:section',
-      'GET  /api/projects/:projectId/brain/memory',
-      'GET  /api/projects/:projectId/characters',
-      'POST /api/projects/:projectId/characters',
-      'POST /api/projects/:projectId/characters/:id/evolve',
-      'GET  /api/projects/:projectId/worlds',
-      'POST /api/projects/:projectId/worlds',
-      'POST /api/projects/:projectId/worlds/:worldId/locations',
-      'GET  /api/projects/:projectId/assets',
-      'POST /api/projects/:projectId/assets',
-      'GET  /api/projects/:projectId/stories/scripts',
-      'POST /api/projects/:projectId/stories/scripts',
-      'POST /api/projects/:projectId/stories/scripts/:scriptId/analyze',
-      'POST /api/projects/:projectId/stories/outline',
-    ],
-  });
-});
+app.use('/api/projects/:projectId/graph',                   knowledgeGraphRouter);
+app.use('/api/projects/:projectId/jobs',                    generationJobsRouter);
+app.use('/api/projects/:projectId',                         scenesRouter);  // /scenes and /episodes
 
 // ── Unknown /api/* → JSON 404 (must precede SPA catch-all) ──
 app.use('/api/*', (_req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// ── Catch-all → SPA index ────────────────────────────────
+// ── Catch-all → SPA index ─────────────────────────────────
 app.get('*', (_req, res) => {
   res.sendFile(join(__dirname, '../frontend/index.html'));
 });
 
-// ── Global error handler ─────────────────────────────────
+// ── Global error handler ──────────────────────────────────
 app.use(errorHandler);
 
 // ── Start ─────────────────────────────────────────────────
@@ -108,4 +144,6 @@ app.listen(PORT, '0.0.0.0', () => {
   logger.info(`🎬 Morphic Studio live on port ${PORT}`);
   logger.info(`   AI provider : ${process.env.AI_PROVIDER || 'openai'}`);
   logger.info(`   Database    : ${process.env.DATABASE_URL ? 'connected' : 'NOT SET — run: node database/setup.js after adding DATABASE_URL'}`);
+  logger.info(`   Rate limiting: active`);
+  logger.info(`   Orchestrator: active`);
 });
