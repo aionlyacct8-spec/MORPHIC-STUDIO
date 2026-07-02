@@ -1,206 +1,106 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import pkg from "pg";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+/**
+ * Morphic Studio — API Server v2
+ *
+ * Architecture:
+ *   routes/       → URL definitions
+ *   controllers/  → request/response handling
+ *   services/     → business logic & DB access
+ *   agents/       → AI specialists (Story, Character, World, Storyboard)
+ *   agents/gateway.js → provider-agnostic AI interface (OpenAI / OpenRouter)
+ *   middleware/   → error handling, validation
+ *   utils/        → logger
+ */
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+import projectsRouter   from './routes/projects.js';
+import brainRouter      from './routes/brain.js';
+import charactersRouter from './routes/characters.js';
+import worldsRouter     from './routes/worlds.js';
+import assetsRouter     from './routes/assets.js';
+import storiesRouter    from './routes/stories.js';
+
+import { errorHandler } from './middleware/errorHandler.js';
+import logger from './utils/logger.js';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname  = dirname(__filename);
 
-const app = express();
-const port = process.env.PORT || 5000;
-const { Pool } = pkg;
+const app  = express();
+const PORT = process.env.PORT || 5000;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
+// ── Middleware ────────────────────────────────────────────
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 
-// Serve frontend static files — disable cache in dev so the preview always gets fresh HTML
-app.use(express.static(join(__dirname, "../frontend"), {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith(".html") && process.env.NODE_ENV !== "production") {
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-      res.setHeader("Pragma", "no-cache");
+// Serve static frontend — no-cache for HTML in dev so preview always refreshes
+app.use(express.static(join(__dirname, '../frontend'), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html') && process.env.NODE_ENV !== 'production') {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
     }
-  }
+  },
 }));
 
-// Health check / API root
-app.get("/api", (req, res) => {
+// ── API routes (all project-scoped under /api/projects/:projectId) ──
+app.use('/api/projects',                                    projectsRouter);
+app.use('/api/projects/:projectId/brain',                   brainRouter);
+app.use('/api/projects/:projectId/characters',              charactersRouter);
+app.use('/api/projects/:projectId/worlds',                  worldsRouter);
+app.use('/api/projects/:projectId/assets',                  assetsRouter);
+app.use('/api/projects/:projectId/stories',                 storiesRouter);
+
+// ── Health / discovery ────────────────────────────────────
+app.get('/api', (_req, res) => {
   res.json({
-    status: "online",
-    message: "Morphic Studio API is running!",
-    version: "2.0.0",
-    endpoints: [
-      "POST /api/analyze-script",
-      "GET  /api/scripts",
-      "GET  /api/scripts/:id",
-      "GET  /api/storyboards/:scriptId",
-      "POST /api/characters",
-      "GET  /api/characters",
+    status: 'online',
+    version: '2.0.0',
+    name: 'Morphic Studio API',
+    ai: {
+      provider: process.env.AI_PROVIDER || 'openai',
+      gateway: 'active',
+      agents: ['story', 'character', 'world', 'storyboard'],
+    },
+    modules: [
+      'GET  /api/projects',
+      'GET  /api/projects/:id',
+      'POST /api/projects',
+      'GET  /api/projects/:projectId/brain',
+      'PUT  /api/projects/:projectId/brain/sections/:section',
+      'GET  /api/projects/:projectId/brain/memory',
+      'GET  /api/projects/:projectId/characters',
+      'POST /api/projects/:projectId/characters',
+      'POST /api/projects/:projectId/characters/:id/evolve',
+      'GET  /api/projects/:projectId/worlds',
+      'POST /api/projects/:projectId/worlds',
+      'POST /api/projects/:projectId/worlds/:worldId/locations',
+      'GET  /api/projects/:projectId/assets',
+      'POST /api/projects/:projectId/assets',
+      'GET  /api/projects/:projectId/stories/scripts',
+      'POST /api/projects/:projectId/stories/scripts',
+      'POST /api/projects/:projectId/stories/scripts/:scriptId/analyze',
+      'POST /api/projects/:projectId/stories/outline',
     ],
   });
 });
 
-// Analyze script + generate storyboard
-app.post("/api/analyze-script", async (req, res) => {
-  try {
-    const { title, scriptText } = req.body;
-
-    if (!scriptText || !title) {
-      return res.status(400).json({ error: "Missing title or scriptText in request body." });
-    }
-
-    console.log(`[Analyze] Saving script: "${title}"...`);
-
-    const scriptResult = await pool.query(
-      "INSERT INTO scripts (title, content) VALUES ($1, $2) RETURNING id, created_at",
-      [title, scriptText]
-    );
-    const scriptId = scriptResult.rows[0].id;
-
-    console.log(`[Analyze] Script saved (ID: ${scriptId}). Calling OpenRouter...`);
-
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are the AI Story Planner for Morphic Studio, a professional comic and animation production platform. Analyze scripts and produce detailed storyboard breakdowns.",
-          },
-          {
-            role: "user",
-            content: `Convert this script into a structured comic storyboard. For each scene or beat, provide:\n- PANEL: Panel number and shot type (WS/MS/MCU/CU/ECU/OTS)\n- VISUAL: Detailed visual description for the artist\n- DIALOGUE: Any spoken lines\n- ACTION: Character actions and camera notes\n- MOOD: Lighting and atmosphere\n\nScript:\n\n${scriptText}`,
-          },
-        ],
-        max_tokens: 1500,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      throw new Error(`OpenRouter error ${aiResponse.status}: ${errText}`);
-    }
-
-    const aiData = await aiResponse.json();
-    const storyboardText = aiData.choices[0].message.content;
-
-    await pool.query(
-      "INSERT INTO storyboards (script_id, panel_data) VALUES ($1, $2)",
-      [scriptId, JSON.stringify({ content: storyboardText, generated_at: new Date().toISOString() })]
-    );
-
-    console.log(`[Analyze] Storyboard generated and saved for script ${scriptId}`);
-
-    res.json({
-      success: true,
-      scriptId,
-      title,
-      storyboard: storyboardText,
-      createdAt: scriptResult.rows[0].created_at,
-    });
-  } catch (error) {
-    console.error("[Analyze] Error:", error.message);
-    res.status(500).json({ error: error.message || "Failed to process script." });
-  }
+// ── Catch-all → SPA index ────────────────────────────────
+app.get('*', (_req, res) => {
+  res.sendFile(join(__dirname, '../frontend/index.html'));
 });
 
-// List all scripts
-app.get("/api/scripts", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT id, title, created_at FROM scripts ORDER BY created_at DESC LIMIT 50"
-    );
-    res.json({ scripts: result.rows });
-  } catch (error) {
-    console.error("[Scripts] Error:", error.message);
-    res.status(500).json({ error: "Failed to fetch scripts." });
-  }
-});
+// ── Global error handler ─────────────────────────────────
+app.use(errorHandler);
 
-// Get a single script
-app.get("/api/scripts/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const scriptResult = await pool.query("SELECT * FROM scripts WHERE id = $1", [id]);
-    if (scriptResult.rows.length === 0) {
-      return res.status(404).json({ error: "Script not found." });
-    }
-    const storyboardResult = await pool.query(
-      "SELECT * FROM storyboards WHERE script_id = $1 ORDER BY created_at DESC LIMIT 1",
-      [id]
-    );
-    res.json({
-      script: scriptResult.rows[0],
-      storyboard: storyboardResult.rows[0] || null,
-    });
-  } catch (error) {
-    console.error("[Script] Error:", error.message);
-    res.status(500).json({ error: "Failed to fetch script." });
-  }
-});
-
-// Get storyboard for a script
-app.get("/api/storyboards/:scriptId", async (req, res) => {
-  try {
-    const { scriptId } = req.params;
-    const result = await pool.query(
-      "SELECT * FROM storyboards WHERE script_id = $1 ORDER BY created_at DESC",
-      [scriptId]
-    );
-    res.json({ storyboards: result.rows });
-  } catch (error) {
-    console.error("[Storyboards] Error:", error.message);
-    res.status(500).json({ error: "Failed to fetch storyboards." });
-  }
-});
-
-// Create a character
-app.post("/api/characters", async (req, res) => {
-  try {
-    const { name, role, description, traits } = req.body;
-    if (!name) return res.status(400).json({ error: "Character name is required." });
-    const result = await pool.query(
-      "INSERT INTO characters (name, description) VALUES ($1, $2) RETURNING *",
-      [name, JSON.stringify({ role, description, traits })]
-    );
-    res.json({ success: true, character: result.rows[0] });
-  } catch (error) {
-    console.error("[Characters] Error:", error.message);
-    res.status(500).json({ error: "Failed to create character." });
-  }
-});
-
-// List characters
-app.get("/api/characters", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM characters ORDER BY created_at DESC");
-    res.json({ characters: result.rows });
-  } catch (error) {
-    console.error("[Characters] Error:", error.message);
-    res.status(500).json({ error: "Failed to fetch characters." });
-  }
-});
-
-// Serve frontend pages (catch-all — must be last)
-app.get("*", (req, res) => {
-  res.sendFile(join(__dirname, "../frontend/index.html"));
-});
-
-app.listen(port, "0.0.0.0", () => {
-  console.log(`\n🎬 Morphic Studio is live on port ${port}`);
-  console.log(`   Frontend: http://localhost:${port}`);
-  console.log(`   API: http://localhost:${port}/api\n`);
+// ── Start ─────────────────────────────────────────────────
+app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`🎬 Morphic Studio live on port ${PORT}`);
+  logger.info(`   AI provider : ${process.env.AI_PROVIDER || 'openai'}`);
+  logger.info(`   Database    : ${process.env.DATABASE_URL ? 'connected' : 'NOT SET — run: node database/setup.js after adding DATABASE_URL'}`);
 });

@@ -1,0 +1,259 @@
+1. Missing Project Brain ⭐⭐⭐⭐⭐ (Highest Priority)
+
+Your blueprint says:
+
+Generate once.
+
+Reuse forever.
+
+Right now I don't see a central Project Brain.
+
+I would expect something like:
+
+Project
+
+├── Story Bible
+
+├── Character Bible
+
+├── World Bible
+
+├── Timeline
+
+├── Continuity
+
+├── Voice Profiles
+
+└── Style Guide
+
+Without this, AI cannot truly "remember" the project.
+
+2. Asset Library is not yet the heart of the platform
+
+The blueprint says everything revolves around reusable assets.
+
+Instead I currently see:
+
+Story
+
+↓
+
+Storyboard
+
+↓
+
+Comic
+
+I would rather see
+
+Story
+
+↓
+
+Assets
+
+↓
+
+Everything Else
+
+The Asset Library should become the central system.
+
+3. AI Orchestration
+
+I noticed the backend currently sends requests directly to a chat completion endpoint.
+
+Your long-term platform needs:
+
+AI Gateway
+
+↓
+
+Story Agent
+
+↓
+
+Character Agent
+
+↓
+
+World Agent
+
+↓
+
+Storyboard Agent
+
+↓
+
+Comic Agent
+
+↓
+
+Animation Agent
+
+Not one giant AI request.
+
+4. Character Memory
+
+Your blueprint says
+
+Characters evolve.
+
+Currently I don't see evidence of:
+
+Character history
+Personality evolution
+Relationship tracking
+Outfit history
+Voice history
+
+Those should become permanent database entities.
+
+5. World Builder
+
+You have a page for it.
+
+Great.
+
+But I don't yet see the backend architecture for reusable:
+
+Cities
+
+Countries
+
+Buildings
+
+Maps
+
+Roads
+
+Props
+
+Environment presets
+
+These should become reusable assets.
+
+6. OpenRouter
+
+I noticed something important in your backend.
+
+You mentioned switching to OpenRouter.
+
+However, the code currently calls:
+
+https://api.openai.com/v1/chat/completions
+
+So the backend doesn't yet match your intended AI provider abstraction.
+
+I recommend introducing an AI Gateway so you can switch providers without changing business logic.
+
+7. Backend responsibilities
+
+The server currently mixes:
+
+API routes
+AI calls
+Database logic
+
+As the project grows, split it into:
+
+routes/
+
+controllers/
+
+services/
+
+agents/
+
+database/
+
+middleware/
+
+utils/
+
+This will make the codebase much easier to maintain.
+
+Biggest architectural gap
+
+The blueprint describes an operating system for storytelling.
+
+The current code is closer to:
+
+Story
+
+↓
+
+AI
+
+↓
+
+Storyboard
+
+↓
+
+Save
+
+That's a good beginning—but not yet the reusable creative platform you envision.
+
+What I would build next
+
+If I were your lead architect, my next priorities would be:
+
+Phase 1
+
+✅ Authentication
+
+✅ Projects
+
+✅ Asset Library
+
+✅ Character Database
+
+These four create the foundation.
+
+Phase 2
+
+Story Bible
+
+Character Bible
+
+World Bible
+
+Timeline
+
+Memory
+
+Relationship Graph
+
+Phase 3
+
+AI Orchestrator
+
+Story Agent
+
+Character Agent
+
+World Agent
+
+Storyboard Agent
+
+Comic Agent
+
+Phase 4
+
+Comic Studio
+
+Motion Comic
+
+Animation
+
+Export
+
+Things I really like
+
+I also noticed the .agents/memory directory.
+
+That's actually a smart idea.
+
+It tells me you're already thinking about AI memory and architecture, not just UI.
+
+I would expand that concept into a proper memory subsystem rather than keeping it as documentation.

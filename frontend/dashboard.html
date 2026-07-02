@@ -235,9 +235,65 @@ tailwind.config = {
     <span class="tracking-wide">Memory Sync: Active</span>
   </div>
   <div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-5">
-    <span class="font-mono">AI Progress: 85%</span>
-    <div class="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden md:block"><div class="h-full bg-primary w-[85%] rounded-full shadow-[0_0_10px_rgba(192,193,255,0.5)]"></div></div>
+    <span id="dash-stats" class="font-mono">Loading…</span>
+    <div class="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden hidden md:block"><div id="dash-progress-bar" class="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(192,193,255,0.5)]" style="width:0%"></div></div>
   </div>
 </footer>
+
+<script>
+// ── Dashboard live data ─────────────────────────────────────────────────────
+(async function loadDashboardData() {
+  try {
+    // Resolve project
+    const stored = localStorage.getItem('morphic_project_id');
+    let pid = stored;
+    if (!pid) {
+      const r = await fetch('/api/projects');
+      const { projects } = await r.json();
+      if (projects && projects.length) {
+        pid = projects[0].id;
+        localStorage.setItem('morphic_project_id', pid);
+        // Update project title in breadcrumb
+        const titleEl = document.querySelector('nav a[href="/dashboard.html"]');
+        if (titleEl) titleEl.textContent = `Project: ${projects[0].title}`;
+      }
+    }
+    if (!pid) return;
+
+    // Load brain + character + asset counts in parallel
+    const [brainRes, charRes, assetRes] = await Promise.all([
+      fetch(`/api/projects/${pid}/brain`),
+      fetch(`/api/projects/${pid}/characters`),
+      fetch(`/api/projects/${pid}/assets`),
+    ]);
+
+    const { brain } = await brainRes.json();
+    const { characters } = await charRes.json();
+    const { assets } = await assetRes.json();
+
+    const charCount = characters.length;
+    const assetCount = assets.length;
+
+    // Update footer stats
+    const statsEl = document.getElementById('dash-stats');
+    if (statsEl) statsEl.textContent = `${charCount} Characters · ${assetCount} Assets`;
+
+    // Progress bar: sections of brain that have data
+    const brainSections = ['story_bible','character_bible','world_bible','timeline','continuity_rules','voice_profiles','style_guide','art_direction'];
+    const filled = brainSections.filter(s => brain[s] && JSON.stringify(brain[s]) !== '{}' && JSON.stringify(brain[s]) !== '[]').length;
+    const pct = Math.round((filled / brainSections.length) * 100);
+    const bar = document.getElementById('dash-progress-bar');
+    if (bar) bar.style.width = pct + '%';
+
+    // Show brain memory context in Story Bible panel if present
+    if (brain.memory_context) {
+      const storyPanel = document.querySelector('[data-brain-context]');
+      if (storyPanel) storyPanel.textContent = brain.memory_context;
+    }
+  } catch(e) {
+    console.warn('Dashboard data load failed:', e.message);
+  }
+})();
+</script>
 </body>
 </html>

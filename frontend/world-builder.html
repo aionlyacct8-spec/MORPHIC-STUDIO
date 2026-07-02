@@ -429,71 +429,186 @@ tailwind.config = {
       <button onclick="closeAddLocation()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="space-y-4">
-      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Location Name *</label><input type="text" placeholder="e.g. The Architect Tower…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
-      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Type</label><select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md"><option>Urban</option><option>Underground</option><option>Wilderness</option><option>Industrial</option><option>Digital</option><option>Cosmic</option></select></div>
-      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Era / Time Period</label><input type="text" placeholder="e.g. Neo-Veridia, 2084…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
-      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Description</label><textarea rows="3" placeholder="Describe this location's look, feel, and significance…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Location Name *</label><input id="loc-name-input" type="text" placeholder="e.g. The Architect Tower…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Type</label><select id="loc-type-select" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md"><option value="urban">Urban</option><option value="underground">Underground</option><option value="wilderness">Wilderness</option><option value="industrial">Industrial</option><option value="digital">Digital</option><option value="cosmic">Cosmic</option></select></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Era / Time Period</label><input id="loc-era-input" type="text" placeholder="e.g. Neo-Veridia, 2084…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/></div>
+      <div><label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Description</label><textarea id="loc-desc-input" rows="3" placeholder="Describe this location's look, feel, and significance…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea></div>
     </div>
     <div class="flex gap-3 mt-6">
       <button onclick="closeAddLocation()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
-      <button onclick="closeAddLocation()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Add Location</button>
+      <button id="loc-add-btn" onclick="createLocationAPI()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Add Location</button>
     </div>
   </div>
 </div>
 
 <script>
-const locationData = {
-  neoveridia: {
-    name: "Neo-Veridia", type: "Megacity", era: "2084, Late 21st Century",
-    icon: "location_city",
-    desc: "A rain-soaked cyberpunk megacity stratified by class, technology, and forgotten history. The upper levels gleam with neon wealth while the foundations rot in forgotten data and rogue AI.",
-    tags: ["Neon-lit","Rain-soaked","Stratified","Oppressive","Vertical"],
-    chars: ["Kael","Elara","Viktor","Maya"],
-    scenes: ["SC-01: The Drop","SC-05: Signal Loss","SC-06: The Exchange"]
-  },
-  undercity: {
-    name: "The Undercity — Sector 4", type: "Underground", era: "Sub-level 7, Neo-Veridia",
-    icon: "landscape",
-    desc: "The forgotten foundations of Neo-Veridia. Highly toxic, structurally unstable, populated by exiles and rogue synths. Active mnemonic nodes pulse with suppressed data from the Syndicate era.",
-    tags: ["Toxic","Claustrophobic","Bioluminescent","Dangerous","Humid"],
-    chars: ["Kael","Elara"],
-    scenes: ["SC-02: Alleyway Chase","SC-04: Betrayal","SC-07: The Reveal"]
-  },
-  den: {
-    name: "The Data Broker's Den", type: "Industrial", era: "Mid-Level 3, District 7",
-    icon: "storefront",
-    desc: "A repurposed signal relay station converted into a black market information hub. Holographic market stalls flicker between stolen data feeds. Neutral ground — no faction violence permitted inside.",
-    tags: ["Neutral Ground","Cramped","Tense","Smoky","Flickering"],
-    chars: ["Maya","Viktor"],
-    scenes: ["SC-03: Safehouse","SC-06: The Exchange"]
-  },
-  rain: {
-    name: "Rain District", type: "Urban", era: "Mid-Level 2, Neo-Veridia",
-    icon: "rainy",
-    desc: "Always raining. Mag-lev infrastructure overhead creates a permanent artificial night. Neon reflections puddle in cracked asphalt. People move fast and don't meet eyes.",
-    tags: ["Perpetual Night","Noir","Melancholy","Wet","Lonely"],
-    chars: ["Kael","Maya"],
-    scenes: ["SC-02: Alleyway Chase","SC-08: The Vanishing"]
+// ── API client ─────────────────────────────────────────────────────────────
+let PROJECT_ID = null;
+let WORLD_ID = null;
+const locationCache = {};  // id → location from API
+
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = `fixed bottom-16 left-1/2 -translate-x-1/2 z-[200] px-5 py-2.5 rounded-lg font-label-md text-[12px] shadow-xl
+    ${ok ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700/60' : 'bg-red-900/90 text-red-300 border border-red-700/60'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+async function getProjectId() {
+  if (PROJECT_ID) return PROJECT_ID;
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) { PROJECT_ID = stored; return PROJECT_ID; }
+  const res = await fetch('/api/projects');
+  const { projects } = await res.json();
+  if (projects && projects.length) {
+    PROJECT_ID = projects[0].id;
+    localStorage.setItem('morphic_project_id', PROJECT_ID);
   }
+  return PROJECT_ID;
+}
+
+async function loadWorlds() {
+  const pid = await getProjectId();
+  if (!pid) return;
+  try {
+    const res = await fetch(`/api/projects/${pid}/worlds`);
+    const { worlds } = await res.json();
+    if (!worlds.length) return;
+
+    // Use first world as the active world
+    const world = worlds[0];
+    WORLD_ID = world.id;
+
+    // Load its locations
+    const locRes = await fetch(`/api/projects/${pid}/worlds/${world.id}`);
+    const { locations } = await locRes.json();
+
+    if (locations && locations.length) {
+      renderLocationList(locations);
+      locations.forEach(l => { locationCache[l.id] = l; });
+      selectLocation(locations[0].id);
+    }
+  } catch (e) {
+    toast('Could not load world data.', false);
+  }
+}
+
+const TYPE_ICONS = {
+  urban: 'location_city', underground: 'landscape', wilderness: 'park',
+  industrial: 'factory', digital: 'hub', cosmic: 'public', default: 'place'
 };
+
+function renderLocationList(locations) {
+  const list = document.getElementById('location-list');
+  if (!list) return;
+  if (!locations.length) return;
+  list.innerHTML = locations.map(loc => {
+    const icon = TYPE_ICONS[loc.type?.toLowerCase()] ?? TYPE_ICONS.default;
+    return `
+    <div class="location-card group p-4 rounded-xl bg-surface-container-high/40 border border-white/5
+         hover:border-white/15 hover:bg-surface-container-high/70 transition-all cursor-pointer"
+         onclick="selectLocation('${loc.id}')">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary text-sm">${icon}</span>
+        </div>
+        <div class="overflow-hidden flex-1 min-w-0">
+          <h4 class="font-label-md text-sm text-on-surface font-bold group-hover:text-primary transition-colors truncate">${loc.name}</h4>
+          <p class="font-label-sm text-[10px] text-on-surface-variant/70 capitalize">${loc.type ?? 'Location'}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 function selectLocation(id) {
   document.querySelectorAll('.location-card').forEach(c => c.classList.remove('selected'));
-  const card = document.querySelector(`.location-card[onclick*="${id}"]`);
+  const card = document.querySelector(`.location-card[onclick="selectLocation('${id}')"]`);
   if (card) card.classList.add('selected');
-  const d = locationData[id];
+
+  const loc = locationCache[id];
+  if (!loc) return;
+
+  const atmos = loc.atmosphere ?? {};
+  const visual = loc.visual_preset ?? {};
+  const tags = [
+    ...(atmos.dominant_mood ? [atmos.dominant_mood] : []),
+    ...(atmos.climate ? [atmos.climate] : []),
+    ...(visual.architectural_style ? [visual.architectural_style] : []),
+  ];
+
   document.getElementById('detail-empty').classList.add('hidden');
   document.getElementById('detail-content').classList.remove('hidden');
-  document.getElementById('loc-name').textContent = d.name;
-  document.getElementById('loc-type').textContent = d.type;
-  document.getElementById('loc-era').textContent = d.era;
-  document.getElementById('loc-desc').textContent = d.desc;
-  document.getElementById('loc-icon').textContent = d.icon;
-  document.getElementById('loc-tags').innerHTML = d.tags.map(t => `<span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">${t}</span>`).join('');
-  document.getElementById('loc-chars').innerHTML = d.chars.map(c => `<div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[13px] text-on-surface-variant">person</span><span class="font-label-sm text-[10px] text-on-surface">${c}</span></div>`).join('');
-  document.getElementById('loc-scenes').innerHTML = d.scenes.map(s => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[12px] text-on-surface-variant">movie</span><span class="font-label-sm text-[9px] text-on-surface-variant">${s}</span></div>`).join('');
+  document.getElementById('loc-name').textContent = loc.name;
+  document.getElementById('loc-type').textContent = loc.type ?? '—';
+  document.getElementById('loc-era').textContent = loc.description ?? '—';
+  document.getElementById('loc-desc').textContent = loc.description ?? 'No description yet.';
+  document.getElementById('loc-icon').textContent = TYPE_ICONS[loc.type?.toLowerCase()] ?? TYPE_ICONS.default;
+  document.getElementById('loc-tags').innerHTML = tags.length
+    ? tags.map(t => `<span class="px-2 py-0.5 rounded-full bg-surface-bright/60 border border-white/5 font-label-sm text-[9px] text-on-surface-variant">${t}</span>`).join('')
+    : '';
+  document.getElementById('loc-chars').innerHTML = '<span class="font-label-sm text-[10px] text-on-surface-variant">No characters assigned yet.</span>';
+  document.getElementById('loc-scenes').innerHTML = '<div class="font-label-sm text-[10px] text-on-surface-variant p-2">No scenes set here yet.</div>';
 }
 
+// ── Create location via API ─────────────────────────────────────────────────
+async function createLocationAPI() {
+  const name = document.getElementById('loc-name-input').value.trim();
+  if (!name) { toast('Location name is required.', false); return; }
+
+  const pid = await getProjectId();
+  if (!WORLD_ID) {
+    // Need a world first — create one silently
+    const wRes = await fetch(`/api/projects/${pid}/worlds`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Primary World', type: 'fictional' }),
+    });
+    const { world } = await wRes.json();
+    WORLD_ID = world.id;
+  }
+
+  const type = document.getElementById('loc-type-select').value;
+  const era = document.getElementById('loc-era-input').value.trim();
+  const description = document.getElementById('loc-desc-input').value.trim();
+
+  const btn = document.getElementById('loc-add-btn');
+  btn.textContent = 'Adding…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/projects/${pid}/worlds/${WORLD_ID}/locations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, type, description: `${era ? era + '. ' : ''}${description}` }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error ?? 'Server error');
+    const { location } = await res.json();
+    locationCache[location.id] = location;
+
+    // Add card to list
+    const list = document.getElementById('location-list');
+    const icon = TYPE_ICONS[type] ?? TYPE_ICONS.default;
+    const div = document.createElement('div');
+    div.className = 'location-card group p-4 rounded-xl bg-surface-container-high/40 border border-white/5 hover:border-white/15 hover:bg-surface-container-high/70 transition-all cursor-pointer';
+    div.onclick = () => selectLocation(location.id);
+    div.innerHTML = `<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-primary text-sm">${icon}</span></div><div class="overflow-hidden flex-1 min-w-0"><h4 class="font-label-md text-sm text-on-surface font-bold group-hover:text-primary transition-colors truncate">${location.name}</h4><p class="font-label-sm text-[10px] text-on-surface-variant/70 capitalize">${type}</p></div></div>`;
+    list.appendChild(div);
+
+    closeAddLocation();
+    selectLocation(location.id);
+    toast(`"${location.name}" added to the world.`);
+  } catch(e) {
+    toast(e.message, false);
+  } finally {
+    btn.textContent = 'Add Location';
+    btn.disabled = false;
+  }
+}
+
+// ── Tabs & atmosphere ───────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.style.borderBottom = '2px solid transparent'; });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -506,10 +621,15 @@ function switchTab(tab) {
 function toggleAtmos(btn) { btn.classList.toggle('active'); }
 
 function openAddLocation() { document.getElementById('add-modal').classList.remove('hidden'); }
-function closeAddLocation() { document.getElementById('add-modal').classList.add('hidden'); }
+function closeAddLocation() {
+  document.getElementById('add-modal').classList.add('hidden');
+  document.getElementById('loc-name-input').value = '';
+  document.getElementById('loc-era-input').value = '';
+  document.getElementById('loc-desc-input').value = '';
+}
 document.getElementById('add-modal').addEventListener('click', function(e){ if(e.target===this) closeAddLocation(); });
 
-document.addEventListener('DOMContentLoaded', () => setTimeout(() => selectLocation('neoveridia'), 100));
+document.addEventListener('DOMContentLoaded', () => loadWorlds());
 </script>
 </body>
 </html>

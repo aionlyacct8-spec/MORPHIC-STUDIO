@@ -1,0 +1,51 @@
+From 79414da13f4465f100b300186574b474aa5eb861 Mon Sep 17 00:00:00 2001
+From: Replit Agent <agent@replit.com>
+Date: Wed, 1 Jul 2026 14:50:11 +0000
+Subject: [PATCH 3/4] Update Replit configuration and fix backend server
+
+Replit-Commit-Author: Agent
+---
+ .replit           | 6 +++---
+ backend/server.js | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/.replit b/.replit
+index b2dd4de..48776d7 100644
+--- a/.replit
++++ b/.replit
+@@ -8,8 +8,8 @@ channel = "stable-25_05"
+ packages = ["psmisc"]
+ 
+ [[ports]]
+-localPort = 3000
+-externalPort = 3000
++localPort = 5000
++externalPort = 80
+ 
+ [workflows]
+ runButton = "Project"
+@@ -30,7 +30,7 @@ author = "agent"
+ [[workflows.workflow.tasks]]
+ task = "shell.exec"
+ args = "node backend/server.js"
+-waitForPort = 3000
++waitForPort = 5000
+ 
+ [workflows.workflow.metadata]
+ outputType = "console"
+diff --git a/backend/server.js b/backend/server.js
+index 965dc00..2810f5f 100644
+--- a/backend/server.js
++++ b/backend/server.js
+@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
+ const __dirname = dirname(__filename);
+ 
+ const app = express();
+-const port = process.env.PORT || 3000;
++const port = process.env.PORT || 5000;
+ const { Pool } = pkg;
+ 
+ const pool = new Pool({
+-- 
+2.50.1
+

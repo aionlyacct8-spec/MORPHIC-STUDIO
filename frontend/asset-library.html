@@ -424,25 +424,139 @@ tailwind.config = {
     <div class="space-y-4">
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Asset Type</label>
-        <select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
-          <option>Character</option><option>Background</option><option>Prop</option><option>Audio</option><option>Panel</option>
+        <select id="asset-type-select" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
+          <option value="character">Character</option>
+          <option value="outfit">Outfit</option>
+          <option value="background">Background</option>
+          <option value="prop">Prop</option>
+          <option value="location">Location</option>
+          <option value="building">Building</option>
+          <option value="map">Map</option>
+          <option value="scene">Scene</option>
+          <option value="animation">Animation</option>
+          <option value="camera_preset">Camera Preset</option>
+          <option value="lighting">Lighting</option>
+          <option value="particle">Particle FX</option>
+          <option value="material">Material</option>
+          <option value="audio">Audio</option>
+          <option value="voice">Voice</option>
+          <option value="panel">Panel</option>
+          <option value="style">Style Ref</option>
         </select>
       </div>
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Asset Name</label>
-        <input type="text" placeholder="Enter asset name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
+        <input id="asset-name-input" type="text" placeholder="Enter asset name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
       </div>
     </div>
     <div class="flex gap-3 mt-6">
       <button onclick="closeUpload()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
-      <button onclick="closeUpload()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Upload</button>
+      <button id="asset-save-btn" onclick="saveAssetAPI()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all">Save Asset</button>
     </div>
   </div>
 </div>
 
 <script>
+// ── API client ─────────────────────────────────────────────────────────────
+let PROJECT_ID = null;
 let currentType = 'all';
+const assetCache = {};
 
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = `fixed bottom-16 left-1/2 -translate-x-1/2 z-[200] px-5 py-2.5 rounded-lg font-label-md text-[12px] shadow-xl
+    ${ok ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700/60' : 'bg-red-900/90 text-red-300 border border-red-700/60'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+async function getProjectId() {
+  if (PROJECT_ID) return PROJECT_ID;
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) { PROJECT_ID = stored; return PROJECT_ID; }
+  const res = await fetch('/api/projects');
+  const { projects } = await res.json();
+  if (projects && projects.length) {
+    PROJECT_ID = projects[0].id;
+    localStorage.setItem('morphic_project_id', PROJECT_ID);
+  }
+  return PROJECT_ID;
+}
+
+const TYPE_ICONS = {
+  character:'person', outfit:'checkroom', background:'landscape', prop:'category',
+  location:'place', building:'apartment', map:'map', scene:'movie',
+  animation:'animation', camera_preset:'photo_camera', lighting:'light_mode',
+  particle:'auto_fix_high', material:'texture', audio:'music_note',
+  voice:'record_voice_over', panel:'view_comfy', style:'palette', default:'attach_file'
+};
+
+async function loadAssets() {
+  const pid = await getProjectId();
+  if (!pid) return;
+  try {
+    const res = await fetch(`/api/projects/${pid}/assets`);
+    const { assets } = await res.json();
+    assets.forEach(a => { assetCache[a.id] = a; });
+    renderAssetGrid(assets);
+    updateFooterStats(assets);
+  } catch(e) {
+    toast('Could not load assets.', false);
+  }
+}
+
+function renderAssetGrid(assets) {
+  const grid = document.getElementById('asset-grid');
+  if (!grid) return;
+  if (!assets.length) {
+    document.getElementById('empty-state').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('empty-state').classList.add('hidden');
+
+  // Keep static demo cards if they exist, prepend API assets
+  const existingStatic = [...grid.querySelectorAll('.asset-card[data-static]')];
+
+  assets.forEach(a => {
+    if (grid.querySelector(`.asset-card[data-id="${a.id}"]`)) return; // already rendered
+    const icon = TYPE_ICONS[a.type] ?? TYPE_ICONS.default;
+    const card = document.createElement('div');
+    card.className = 'asset-card group relative rounded-xl bg-surface-container-high/50 border border-white/5 hover:border-white/15 overflow-hidden cursor-pointer transition-all duration-200';
+    card.dataset.id = a.id;
+    card.dataset.type = a.type;
+    card.dataset.name = a.name.toLowerCase();
+    card.onclick = () => openDetailFromAsset(card, a);
+    card.innerHTML = `
+      <div class="aspect-[4/3] bg-surface-variant/40 flex items-center justify-center relative">
+        ${a.thumbnail ? `<img src="${a.thumbnail}" class="w-full h-full object-cover" alt="${a.name}"/>` :
+          `<span class="material-symbols-outlined text-on-surface-variant/30 text-4xl">${icon}</span>`}
+        <div class="absolute top-2 left-2"><span class="px-1.5 py-0.5 rounded-sm bg-black/60 backdrop-blur-sm font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider">${a.type}</span></div>
+        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center"><span class="material-symbols-outlined text-[14px] text-primary">open_in_new</span></div>
+        </div>
+      </div>
+      <div class="p-3">
+        <h4 class="font-label-md text-sm text-on-surface font-bold truncate mb-0.5">${a.name}</h4>
+        <div class="flex justify-between items-center">
+          <span class="font-label-sm text-[10px] text-on-surface-variant">${a.usage_count ?? 0} uses</span>
+          <span class="font-label-sm text-[9px] text-on-surface-variant/60">v${a.version_number ?? 1}</span>
+        </div>
+      </div>`;
+    grid.insertBefore(card, existingStatic[0] ?? null);
+  });
+}
+
+function openDetailFromAsset(card, asset) {
+  openDetail(card, asset.name, asset.type, '—', `${asset.usage_count ?? 0} uses`, []);
+}
+
+function updateFooterStats(assets) {
+  const statsEl = document.querySelector('footer span.font-mono');
+  if (statsEl) statsEl.textContent = `${assets.length} Assets`;
+}
+
+// ── Filtering & view ────────────────────────────────────────────────────────
 function setType(t) {
   currentType = t;
   document.querySelectorAll('.type-tab').forEach(tab => {
@@ -471,7 +585,7 @@ function filterAssets() {
   let visible = 0;
   document.querySelectorAll('.asset-card').forEach(card => {
     const matchType = currentType === 'all' || card.dataset.type === currentType;
-    const matchSearch = !q || card.dataset.name.includes(q);
+    const matchSearch = !q || (card.dataset.name ?? '').includes(q);
     const show = matchType && matchSearch;
     card.style.display = show ? '' : 'none';
     if (show) visible++;
@@ -497,9 +611,45 @@ function closeDetail() {
   document.querySelectorAll('.asset-card').forEach(c => c.classList.remove('selected'));
 }
 
+// ── Save asset via API ──────────────────────────────────────────────────────
+async function saveAssetAPI() {
+  const name = document.getElementById('asset-name-input').value.trim();
+  if (!name) { toast('Asset name is required.', false); return; }
+  const type = document.getElementById('asset-type-select').value;
+
+  const btn = document.getElementById('asset-save-btn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try {
+    const pid = await getProjectId();
+    const res = await fetch(`/api/projects/${pid}/assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, type }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error ?? 'Server error');
+    const { asset } = await res.json();
+    assetCache[asset.id] = asset;
+    renderAssetGrid([asset]);
+    closeUpload();
+    toast(`"${asset.name}" added to the library.`);
+  } catch(e) {
+    toast(e.message, false);
+  } finally {
+    btn.textContent = 'Save Asset';
+    btn.disabled = false;
+  }
+}
+
 function openUpload() { document.getElementById('upload-modal').classList.remove('hidden'); }
-function closeUpload() { document.getElementById('upload-modal').classList.add('hidden'); }
+function closeUpload() {
+  document.getElementById('upload-modal').classList.add('hidden');
+  document.getElementById('asset-name-input').value = '';
+}
 document.getElementById('upload-modal').addEventListener('click', function(e){ if(e.target===this) closeUpload(); });
+
+document.addEventListener('DOMContentLoaded', () => loadAssets());
 </script>
 </body>
 </html>

@@ -404,84 +404,146 @@ tailwind.config = {
     <div class="space-y-4">
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Character Name *</label>
-        <input type="text" placeholder="Enter character name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
+        <input id="char-name-input" type="text" placeholder="Enter character name…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md"/>
       </div>
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Role</label>
-        <select class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
-          <option>Protagonist</option><option>Antagonist</option><option>Supporting</option><option>Minor</option>
+        <select id="char-role-select" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary/50 font-body-md">
+          <option value="protagonist">Protagonist</option><option value="antagonist">Antagonist</option><option value="supporting">Supporting</option><option value="minor">Minor</option>
         </select>
       </div>
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Appearance / Visual DNA</label>
-        <textarea rows="3" placeholder="Physical description used for AI generation consistency…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
+        <textarea id="char-appearance-input" rows="3" placeholder="Physical description used for AI generation consistency…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
       </div>
       <div>
         <label class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider block mb-1.5">Personality</label>
-        <textarea rows="2" placeholder="Core personality traits and motivations…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
+        <textarea id="char-personality-input" rows="2" placeholder="Core personality traits and motivations…" class="w-full bg-surface-container-high/60 border border-white/10 rounded-md px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-primary/50 font-body-md resize-none"></textarea>
       </div>
     </div>
     <div class="flex gap-3 mt-6">
       <button onclick="closeAddModal()" class="flex-1 py-2.5 border border-white/10 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-white/5 transition-colors">Cancel</button>
-      <button onclick="closeAddModal()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(192,193,255,0.3)]">Create Character</button>
+      <button id="char-create-btn" onclick="createCharacterAPI()" class="flex-1 py-2.5 bg-primary-container/90 text-on-primary-container rounded-md font-label-md text-label-md font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(192,193,255,0.3)]">Create Character</button>
     </div>
   </div>
 </div>
 
 <script>
-const charData = {
-  kael: {
-    name: "Kael", role: "Protagonist", roleLabel: "Arc-Runner / Investigator",
-    appearance: "Lean, weathered build. Short dark hair with scattered grey. Deep-set eyes that miss nothing. Synth-leather jacket over a worn field vest. Scarred knuckles. Moves with deliberate, economic precision.",
-    traits: ["Analytical","Determined","Guarded","Tactical","Haunted"],
-    arcStage: "Rising Action", arcPct: 68, tone: "Deep / Gravelly",
-    scenes: ["SC-01: The Drop","SC-02: Alleyway Chase","SC-03: Safehouse","SC-04: Betrayal"]
-  },
-  elara: {
-    name: "Elara", role: "Supporting", roleLabel: "Overwatch / Splicer",
-    appearance: "Compact frame. Neural-port implants at her temples. Sharp eyes behind holographic lenses. Often remote — her physical presence is rare; her voice is constant.",
-    traits: ["Loyal","Brilliant","Concerned","Conflicted","Precise"],
-    arcStage: "Establishment", arcPct: 42, tone: "Clear / Measured",
-    scenes: ["SC-01: The Drop","SC-03: Safehouse","SC-05: Signal Loss"]
-  },
-  viktor: {
-    name: "Viktor", role: "Antagonist", roleLabel: "The Director / Architect",
-    appearance: "Impeccably dressed. Silver hair swept back. Cold grey eyes. Moves like someone who has never needed to hurry. The kind of stillness that reads as threat.",
-    traits: ["Calculating","Ruthless","Patient","Visionary","Merciless"],
-    arcStage: "Introduction", arcPct: 25, tone: "Low / Commanding",
-    scenes: ["SC-04: Betrayal (referenced)","SC-07: The Reveal"]
-  },
-  maya: {
-    name: "Maya", role: "Supporting", roleLabel: "Data Broker / Informant",
-    appearance: "Small and fast. Layered dark clothing with hidden pockets. Constantly shifting eyes, always clocking exits. Neon-stripe tattoo behind left ear — Neon Reaper mark, partially burned off.",
-    traits: ["Cunning","Elusive","Self-interested","Adaptable","Streetwise"],
-    arcStage: "Introduction", arcPct: 15, tone: "Quick / Hushed",
-    scenes: ["SC-02: Alleyway Chase","SC-06: The Exchange"]
-  }
-};
-
+// ── API client ─────────────────────────────────────────────────────────────
+let PROJECT_ID = null;
+const charCache = {};  // id → character object from API
 let currentFilter = 'all';
 
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = `fixed bottom-16 left-1/2 -translate-x-1/2 z-[200] px-5 py-2.5 rounded-lg font-label-md text-[12px] shadow-xl transition-all
+    ${ok ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700/60' : 'bg-red-900/90 text-red-300 border border-red-700/60'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+async function getProjectId() {
+  if (PROJECT_ID) return PROJECT_ID;
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) { PROJECT_ID = stored; return PROJECT_ID; }
+  const res = await fetch('/api/projects');
+  const { projects } = await res.json();
+  if (projects && projects.length) {
+    PROJECT_ID = projects[0].id;
+    localStorage.setItem('morphic_project_id', PROJECT_ID);
+  }
+  return PROJECT_ID;
+}
+
+async function loadCharacters() {
+  const pid = await getProjectId();
+  if (!pid) return;
+  try {
+    const res = await fetch(`/api/projects/${pid}/characters`);
+    const { characters } = await res.json();
+    characters.forEach(c => { charCache[c.id] = c; });
+    renderCharacterList(characters);
+    if (characters.length) selectChar(characters[0].id);
+  } catch (e) {
+    toast('Could not load characters from server.', false);
+  }
+}
+
+function renderCharacterList(characters) {
+  const list = document.getElementById('char-list');
+  if (!list) return;
+  // Keep existing static cards (demo data) only if API returned nothing
+  if (characters.length === 0) return;
+
+  // Clear and repopulate with API data
+  list.innerHTML = characters.map(c => {
+    const roleColor = {protagonist:'primary',antagonist:'error',supporting:'tertiary',minor:'secondary'}[c.role] || 'secondary';
+    const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const arcPct = c.arc_progress ?? 0;
+    return `
+    <div class="char-card group relative p-4 rounded-xl bg-surface-container-high/50 border border-white/5
+         hover:border-white/15 hover:bg-surface-container-high/80 transition-all duration-200 cursor-pointer"
+         data-id="${c.id}" data-role="${c.role}" onclick="selectChar('${c.id}')">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-${roleColor}/20 border border-${roleColor}/30 flex items-center justify-center flex-shrink-0">
+          <span class="font-headline-md font-bold text-${roleColor} text-sm">${initials}</span>
+        </div>
+        <div class="overflow-hidden flex-1 min-w-0">
+          <div class="flex justify-between items-start gap-1">
+            <h3 class="font-label-md text-sm text-on-surface font-bold group-hover:text-primary transition-colors truncate">${c.name}</h3>
+          </div>
+          <p class="font-label-sm text-[10px] text-on-surface-variant/80 uppercase tracking-wide mt-0.5 capitalize">${c.role}</p>
+          <div class="mt-2 w-full h-1 bg-white/5 rounded-full overflow-hidden">
+            <div class="h-full bg-primary/60 rounded-full" style="width:${arcPct}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Character detail panel ──────────────────────────────────────────────────
 function selectChar(id) {
   document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
   const card = document.querySelector(`.char-card[data-id="${id}"]`);
   if (card) card.classList.add('selected');
-  const d = charData[id];
+
+  const c = charCache[id];
+  if (!c) return;
+
+  const visual = c.visual_dna ?? {};
+  const personality = c.personality ?? {};
+  const traits = personality.core_traits ?? personality.traits ?? [];
+  const arcPct = c.arc_progress ?? 0;
+  const tone = c.voice_profile?.tone ?? '—';
+  const appearance = [
+    visual.build, visual.height, visual.hair, visual.eyes, visual.skin, visual.style
+  ].filter(Boolean).join('. ') || c.notes || 'No appearance data yet.';
+
   document.getElementById('dna-empty').classList.add('hidden');
   document.getElementById('dna-content').classList.remove('hidden');
-  document.getElementById('dna-name').textContent = d.name;
-  document.getElementById('dna-role-label').textContent = d.roleLabel;
-  document.getElementById('dna-appearance').textContent = d.appearance;
-  document.getElementById('dna-tone').textContent = d.tone;
-  document.getElementById('dna-arc-stage').textContent = d.arcStage;
-  document.getElementById('dna-arc-pct').textContent = d.arcPct + '%';
-  document.getElementById('dna-arc-bar').style.width = d.arcPct + '%';
-  const traits = document.getElementById('dna-traits');
-  traits.innerHTML = d.traits.map(t => `<span class="px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 font-label-sm text-[10px] text-primary">${t}</span>`).join('');
-  const scenes = document.getElementById('dna-scenes');
-  scenes.innerHTML = d.scenes.map(s => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5 hover:border-white/10 transition-colors"><span class="material-symbols-outlined text-[13px] text-on-surface-variant">movie</span><span class="font-label-sm text-[10px] text-on-surface-variant">${s}</span></div>`).join('');
+  document.getElementById('dna-name').textContent = c.name;
+  document.getElementById('dna-role-label').textContent = c.role;
+  document.getElementById('dna-appearance').textContent = appearance;
+  document.getElementById('dna-tone').textContent = tone;
+  document.getElementById('dna-arc-stage').textContent = arcPct > 66 ? 'Rising Action' : arcPct > 33 ? 'Establishment' : 'Introduction';
+  document.getElementById('dna-arc-pct').textContent = arcPct + '%';
+  document.getElementById('dna-arc-bar').style.width = arcPct + '%';
+
+  const traitsEl = document.getElementById('dna-traits');
+  traitsEl.innerHTML = traits.length
+    ? traits.map(t => `<span class="px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 font-label-sm text-[10px] text-primary">${t}</span>`).join('')
+    : '<span class="text-on-surface-variant font-label-sm text-[10px]">No traits defined yet.</span>';
+
+  const scenesEl = document.getElementById('dna-scenes');
+  const outfits = c.outfit_history ?? [];
+  scenesEl.innerHTML = outfits.length
+    ? outfits.map(o => `<div class="flex items-center gap-2 p-2 rounded-md bg-surface/30 border border-white/5"><span class="material-symbols-outlined text-[13px] text-on-surface-variant">checkroom</span><span class="font-label-sm text-[10px] text-on-surface-variant">${typeof o === 'string' ? o : o.description ?? JSON.stringify(o)}</span></div>`).join('')
+    : '<div class="text-on-surface-variant font-label-sm text-[10px] p-2">No outfit history yet.</div>';
 }
 
+// ── Filtering ───────────────────────────────────────────────────────────────
 function setFilter(f) {
   currentFilter = f;
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -490,13 +552,13 @@ function setFilter(f) {
 }
 
 function filterCharacters() {
-  const query = document.getElementById('search-input').value.toLowerCase();
+  const q = document.getElementById('search-input').value.toLowerCase();
   let visible = 0;
   document.querySelectorAll('.char-card').forEach(card => {
     const role = card.dataset.role;
     const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
     const matchFilter = currentFilter === 'all' || role === currentFilter;
-    const matchSearch = !query || name.includes(query);
+    const matchSearch = !q || name.includes(q);
     const show = matchFilter && matchSearch;
     card.style.display = show ? '' : 'none';
     if (show) visible++;
@@ -509,15 +571,72 @@ function toggleExpr(btn) {
   btn.classList.add('active');
 }
 
+// ── Modals ──────────────────────────────────────────────────────────────────
 function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
-function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
+function closeAddModal() {
+  document.getElementById('add-modal').classList.add('hidden');
+  document.getElementById('char-name-input').value = '';
+  document.getElementById('char-appearance-input').value = '';
+  document.getElementById('char-personality-input').value = '';
+}
 
 document.getElementById('add-modal').addEventListener('click', function(e) {
   if (e.target === this) closeAddModal();
 });
 
-// Select first char on load
-document.addEventListener('DOMContentLoaded', () => setTimeout(() => selectChar('kael'), 100));
+// ── Create character via API ────────────────────────────────────────────────
+async function createCharacterAPI() {
+  const name = document.getElementById('char-name-input').value.trim();
+  if (!name) { toast('Character name is required.', false); return; }
+
+  const role = document.getElementById('char-role-select').value;
+  const appearanceText = document.getElementById('char-appearance-input').value.trim();
+  const personalityText = document.getElementById('char-personality-input').value.trim();
+
+  const btn = document.getElementById('char-create-btn');
+  btn.textContent = 'Creating…';
+  btn.disabled = true;
+
+  try {
+    const pid = await getProjectId();
+    const res = await fetch(`/api/projects/${pid}/characters`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, role,
+        visual_dna: appearanceText ? { description: appearanceText } : {},
+        personality: personalityText ? { notes: personalityText } : {},
+      }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error ?? 'Server error');
+    const { character } = await res.json();
+    charCache[character.id] = character;
+
+    // Add card to list
+    const list = document.getElementById('char-list');
+    const initials = character.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const div = document.createElement('div');
+    div.className = 'char-card group relative p-4 rounded-xl bg-surface-container-high/50 border border-white/5 hover:border-white/15 hover:bg-surface-container-high/80 transition-all duration-200 cursor-pointer';
+    div.dataset.id = character.id;
+    div.dataset.role = character.role;
+    div.onclick = () => selectChar(character.id);
+    div.innerHTML = `<div class="flex items-start gap-3"><div class="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0"><span class="font-headline-md font-bold text-primary text-sm">${initials}</span></div><div class="overflow-hidden flex-1 min-w-0"><h3 class="font-label-md text-sm text-on-surface font-bold group-hover:text-primary transition-colors">${character.name}</h3><p class="font-label-sm text-[10px] text-on-surface-variant/80 uppercase tracking-wide mt-0.5 capitalize">${character.role}</p></div></div>`;
+    list.appendChild(div);
+
+    closeAddModal();
+    selectChar(character.id);
+    toast(`"${character.name}" added to the project.`);
+    document.getElementById('empty-state').classList.add('hidden');
+  } catch (e) {
+    toast(e.message, false);
+  } finally {
+    btn.textContent = 'Create Character';
+    btn.disabled = false;
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => loadCharacters());
 </script>
 </body>
 </html>
