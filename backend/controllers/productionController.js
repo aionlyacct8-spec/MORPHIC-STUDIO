@@ -3,7 +3,10 @@ import { createError } from '../middleware/errorHandler.js';
 import eventBus from '../services/eventBus.js';
 import logger from '../utils/logger.js';
 import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
+<<<<<<< HEAD
 import { planScriptIntake } from '../services/storyIntakeService.js';
+=======
+>>>>>>> origin/main
 
 const log = logger.child('production');
 
@@ -63,6 +66,7 @@ async function getRow({ req, res, table, singular, idParam = 'id' }) {
   res.json({ [singular]: result.rows[0] });
 }
 
+<<<<<<< HEAD
 
 // ── Phase 1 Story Intake / Production Planner ───────────────────────────────
 
@@ -94,6 +98,8 @@ export async function planStoryIntake(req, res) {
   }
 }
 
+=======
+>>>>>>> origin/main
 // ── Chapters ────────────────────────────────────────────────────────────────
 
 export async function listChapters(req, res) {

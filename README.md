@@ -60,6 +60,7 @@ attached_assets/  Product/specification assets used during earlier planning
 ```
 
 
+<<<<<<< HEAD
 
 ## Phase 1 Workflow
 
@@ -71,6 +72,8 @@ The first production workflow is **Story Intake → Saved Production Plan**:
 4. The plan is stored in PostgreSQL so later comic, motion-comic, voice, and animation tools reuse the same records instead of regenerating from scratch.
 5. This deterministic planner works without an AI key; OpenRouter can be added next to improve analysis quality.
 
+=======
+>>>>>>> origin/main
 ## Story Production Foundation
 
 The core product direction is now represented in the backend data model:
@@ -102,7 +105,10 @@ All active product APIs are project-scoped unless noted.
 | `POST` | `/api/projects/:projectId/jobs/dispatch` | Dispatch an AI orchestration job. |
 | `GET/POST` | `/api/projects/:projectId/scenes` | List or create scenes. |
 | `GET/POST` | `/api/projects/:projectId/episodes` | List or create episodes. |
+<<<<<<< HEAD
 | `POST` | `/api/projects/:projectId/production/intake/plan` | Phase 1 script intake: save script, chapter, scenes, pages, panels, and continuity rules. |
+=======
+>>>>>>> origin/main
 | `GET/POST` | `/api/projects/:projectId/production/chapters` | List or create story/comic chapters. |
 | `GET/POST` | `/api/projects/:projectId/production/comic/pages` | List or create comic pages. |
 | `GET/POST` | `/api/projects/:projectId/production/comic/panels` | List or create reusable comic panels linked to scenes/assets. |
