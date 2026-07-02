@@ -3,6 +3,10 @@ import { createError } from '../middleware/errorHandler.js';
 import eventBus from '../services/eventBus.js';
 import logger from '../utils/logger.js';
 import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
+<<<<<<< HEAD
+import { planScriptIntake } from '../services/storyIntakeService.js';
+=======
+>>>>>>> origin/main
 
 const log = logger.child('production');
 
@@ -62,6 +66,40 @@ async function getRow({ req, res, table, singular, idParam = 'id' }) {
   res.json({ [singular]: result.rows[0] });
 }
 
+<<<<<<< HEAD
+
+// ── Phase 1 Story Intake / Production Planner ───────────────────────────────
+
+export async function planStoryIntake(req, res) {
+  const { projectId } = req.params;
+  const { title, scriptText, scriptId, chapterNumber, panelsPerPage } = req.body;
+
+  try {
+    const result = await planScriptIntake(projectId, {
+      title,
+      scriptText,
+      scriptId,
+      chapterNumber,
+      panelsPerPage,
+    });
+
+    res.status(201).json({
+      message: 'Story intake planned and saved.',
+      scriptId: result.saved.scriptId,
+      chapter: result.saved.chapter,
+      scenes: result.saved.scenes,
+      pages: result.saved.pages,
+      panels: result.saved.panels,
+      continuityRules: result.saved.continuityRules,
+      plan: result.plan,
+    });
+  } catch (err) {
+    throw createError(err.message === 'Script not found.' ? 404 : 400, err.message);
+  }
+}
+
+=======
+>>>>>>> origin/main
 // ── Chapters ────────────────────────────────────────────────────────────────
 
 export async function listChapters(req, res) {

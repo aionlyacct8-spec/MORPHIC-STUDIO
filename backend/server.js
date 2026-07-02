@@ -107,6 +107,7 @@ app.get('/api', (_req, res) => {
       'POST /api/projects/:projectId/graph/edges',
       'GET  /api/projects/:projectId/jobs',
       'POST /api/projects/:projectId/jobs/dispatch',
+      'POST /api/projects/:projectId/production/intake/plan',
       'GET  /api/projects/:projectId/production/chapters',
       'POST /api/projects/:projectId/production/chapters',
       'GET  /api/projects/:projectId/production/comic/pages',

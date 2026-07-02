@@ -78,6 +78,10 @@
  *   export:completed      { projectId, exportId, fileUrl }
  *
  * Production
+<<<<<<< HEAD
+ *   story:intake_planned { projectId, chapterId, scriptId }
+=======
+>>>>>>> origin/main
  *   chapter:created       { projectId, chapter }
  *   chapter:updated       { projectId, id, changes }
  *   comic_page:created    { projectId, page }
@@ -123,7 +127,11 @@ const EVENTS = new Set([
   'storyboard:generated', 'comic:generated', 'animation:generated',
   'voice:generated', 'export:completed',
   // Production
+<<<<<<< HEAD
+  'story:intake_planned', 'chapter:created', 'chapter:updated', 'comic_page:created',
+=======
   'chapter:created', 'chapter:updated', 'comic_page:created',
+>>>>>>> origin/main
   'comic_panel:created', 'voice_profile:created', 'animation_asset:created',
   // Memory
   'memory:appended', 'memory:expired',
