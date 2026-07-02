@@ -49,10 +49,11 @@ const PROVIDERS = {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
     }),
-    buildBody: ({ messages, model, maxTokens }) => ({
+    buildBody: ({ messages, model, maxTokens, temperature }) => ({
       model,
       messages,
       max_tokens: maxTokens,
+      ...(temperature != null ? { temperature } : {}),
     }),
     extractContent: (data) => data.choices?.[0]?.message?.content ?? '',
     extractUsage:   (data) => data.usage,
@@ -70,10 +71,11 @@ const PROVIDERS = {
       'X-Title': 'Morphic Studio',
       'Content-Type': 'application/json',
     }),
-    buildBody: ({ messages, model, maxTokens }) => ({
+    buildBody: ({ messages, model, maxTokens, temperature }) => ({
       model,
       messages,
       max_tokens: maxTokens,
+      ...(temperature != null ? { temperature } : {}),
     }),
     extractContent: (data) => data.choices?.[0]?.message?.content ?? '',
     extractUsage:   (data) => data.usage,
@@ -87,7 +89,7 @@ const PROVIDERS = {
     key: () => process.env.GEMINI_API_KEY,
     defaultModel: 'gemini-1.5-flash',
     headers: (_key) => ({ 'Content-Type': 'application/json' }),
-    buildBody: ({ messages, maxTokens }) => {
+    buildBody: ({ messages, maxTokens, temperature }) => {
       // Convert OpenAI-style messages to Gemini format
       const contents = messages
         .filter(m => m.role !== 'system')
@@ -99,7 +101,10 @@ const PROVIDERS = {
       const systemMsg = messages.find(m => m.role === 'system');
       const body = {
         contents,
-        generationConfig: { maxOutputTokens: maxTokens },
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          ...(temperature != null ? { temperature } : {}),
+        },
       };
       if (systemMsg) {
         body.system_instruction = { parts: [{ text: systemMsg.content }] };
@@ -156,7 +161,7 @@ export function getProviderHealth() {
 
 // ── Core call (single provider, one attempt) ──────────────────────────────────
 
-async function _callProvider(providerName, { messages, model, maxTokens, timeoutMs = 30_000 }) {
+async function _callProvider(providerName, { messages, model, maxTokens, temperature, timeoutMs = 30_000 }) {
   const p = PROVIDERS[providerName];
   if (!p) throw new Error(`Unknown AI provider: "${providerName}".`);
 
@@ -169,7 +174,7 @@ async function _callProvider(providerName, { messages, model, maxTokens, timeout
   const resolvedModel = model || p.defaultModel;
   const url = typeof p.url === 'function' ? `${p.url(resolvedModel)}?key=${key}` : p.url;
 
-  const body = p.buildBody({ messages, model: resolvedModel, maxTokens });
+  const body = p.buildBody({ messages, model: resolvedModel, maxTokens, temperature });
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -243,6 +248,7 @@ export async function callAI({
   messages = [],
   model,
   maxTokens = 2000,
+  temperature,
   provider: providerOverride,
   timeoutMs = 30_000,
 } = {}) {
@@ -265,7 +271,7 @@ export async function callAI({
   for (const providerName of chain) {
     try {
       const result = await _withRetry(
-        () => _callProvider(providerName, { messages: allMessages, model, maxTokens, timeoutMs }),
+        () => _callProvider(providerName, { messages: allMessages, model, maxTokens, temperature, timeoutMs }),
         { maxRetries: 2 }
       );
       return result;

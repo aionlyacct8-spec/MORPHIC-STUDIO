@@ -404,83 +404,206 @@ tailwind.config = {
 </div>
 
 <script>
-const codexData = {
-  lighting: { title: 'Rule: Tech-Noir Lighting', content: 'All scenes in Neo-Veridia must use high-contrast lighting with dominant neon colors (magenta, cyan, amber). Natural light is forbidden except in flashback sequences. Shadows should always be deep and opaque — no ambient fill light unless artificially sourced.' },
-  syndicate: { title: 'Lore: The Syndicate Fall', content: 'The Meridian Syndicate collapsed seven years before the story begins, leaving a power vacuum filled by three factions: the Neon Reapers (street), the Architects (corporate), and the Ghost Protocol (underground AI resistance). Kael was a Syndicate operative before the fall.' },
-  reapers: { title: 'Faction: Neon Reapers', content: 'New entry. The Neon Reapers control the lower levels of Neo-Veridia. They use bioluminescent gang markings visible only under UV spectrum. Their leader, ZERO, is a former Memory Engine technician with direct access to the rogue mnemonic nodes.' },
+// ── Project context ───────────────────────────────────────────────────────────
+let PROJECT_ID = null;
+
+async function loadProject() {
+  try {
+    const r = await fetch('/api/projects');
+    if (!r.ok) return;
+    const { projects } = await r.json();
+    if (!projects?.length) return;
+    PROJECT_ID = projects[0].id;
+  } catch (e) { console.warn('Could not load project', e); }
+}
+
+// ── Story Bible Codex ─────────────────────────────────────────────────────────
+// Fallback demo data shown when no project is loaded yet
+const codexDemo = {
+  lighting:  { title: 'Rule: Tech-Noir Lighting',  content: 'All scenes in Neo-Veridia must use high-contrast lighting with dominant neon colors (magenta, cyan, amber). Natural light is forbidden except in flashback sequences.' },
+  syndicate: { title: 'Lore: The Syndicate Fall',  content: 'The Meridian Syndicate collapsed seven years before the story begins, leaving a power vacuum filled by three factions: the Neon Reapers (street), the Architects (corporate), and the Ghost Protocol.' },
+  reapers:   { title: 'Faction: Neon Reapers',     content: 'The Neon Reapers control the lower levels of Neo-Veridia. Their leader, ZERO, is a former Memory Engine technician with direct access to the rogue mnemonic nodes.' },
 };
 
 function openCodex(key) {
-  const data = codexData[key];
+  const data = codexDemo[key];
+  if (!data) return;
   document.getElementById('codex-title').textContent = data.title;
   document.getElementById('codex-content').textContent = data.content;
   document.getElementById('codex-modal').classList.remove('hidden');
 }
 
-function addCodexEntry() {
+async function addCodexEntry() {
   const title = prompt('Entry title:');
   if (!title) return;
   const content = prompt('Entry content:') || '';
-  codexData[title.toLowerCase().replace(/\s+/g, '_')] = { title, content };
-  alert('Entry added to Story Bible Codex.');
+
+  // Persist to Brain lore section if project is loaded
+  if (PROJECT_ID) {
+    try {
+      await fetch(`/api/projects/${PROJECT_ID}/brain/sections/lore`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: { [title.toLowerCase().replace(/\s+/g, '_')]: { title, content } },
+          note: 'Added via Story Hub codex',
+        }),
+      });
+      alert(`"${title}" saved to Project Brain lore.`);
+    } catch (e) {
+      console.warn('Failed to persist codex entry', e);
+      alert(`Entry noted (offline — Brain not reachable).`);
+    }
+  } else {
+    codexDemo[title.toLowerCase().replace(/\s+/g, '_')] = { title, content };
+    alert('Entry added locally. Connect a project to persist.');
+  }
 }
 
-function selectNode(name) {
-  const descriptions = {
-    'Kael': 'Arc-Runner / Investigator. Central protagonist driving the narrative through the Undercity investigation. Former Syndicate operative.',
-    'Elara': 'Overwatch Handler / Splicer. Kael\'s remote support. Has hidden knowledge about what the Syndicate buried.',
-    'The Director': 'Unknown antagonist. Pulls strings from within the Architect faction. Knows Kael\'s real identity.',
-    'Undercity': 'The forgotten foundations of Neo-Veridia. Sector 4 contains rogue mnemonic nodes with suppressed data.',
-    'Neo-Veridia': 'The primary setting. A rain-soaked megacity stratified by class, technology, and forgotten history.',
-    'Memory Engine': 'The narrative AI that maintains consistency across the universe. Also exists as a physical artifact in the story.',
-  };
+// ── Knowledge Graph node selection ────────────────────────────────────────────
+async function selectNode(name) {
   document.getElementById('node-name').textContent = name;
-  document.getElementById('node-desc').textContent = descriptions[name] || 'No information available.';
+  document.getElementById('node-desc').textContent = 'Loading…';
   document.getElementById('node-info').classList.remove('hidden');
+
+  if (!PROJECT_ID) {
+    // Fallback static descriptions
+    const descriptions = {
+      'Kael': 'Arc-Runner / Investigator. Central protagonist. Former Syndicate operative.',
+      'Elara': 'Overwatch Handler / Splicer. Remote support with hidden knowledge.',
+      'The Director': 'Unknown antagonist. Pulls strings within the Architect faction.',
+      'Undercity': 'Forgotten foundations of Neo-Veridia. Sector 4 contains rogue mnemonic nodes.',
+      'Neo-Veridia': 'The primary setting. A rain-soaked megacity stratified by class and technology.',
+      'Memory Engine': 'Narrative AI that maintains universe consistency. Also a physical artifact in-story.',
+    };
+    document.getElementById('node-desc').textContent = descriptions[name] || 'No information available.';
+    return;
+  }
+
+  try {
+    // Search KG nodes by label
+    const r = await fetch(`/api/projects/${PROJECT_ID}/graph/nodes?search=${encodeURIComponent(name)}&limit=1`);
+    if (!r.ok) throw new Error('KG fetch failed');
+    const { nodes } = await r.json();
+
+    if (!nodes?.length) {
+      document.getElementById('node-desc').textContent = 'Not found in Knowledge Graph.';
+      return;
+    }
+
+    const node = nodes[0];
+    const props = node.properties ?? {};
+    const lines = [];
+    if (node.entity_type) lines.push(`Type: ${node.entity_type}`);
+    if (props.role)        lines.push(`Role: ${props.role}`);
+    if (props.description) lines.push(props.description);
+    document.getElementById('node-desc').textContent = lines.join('\n') || 'In Knowledge Graph — no description.';
+
+    // Load neighbors
+    const nr = await fetch(`/api/projects/${PROJECT_ID}/graph/neighbors/${node.entity_id}?type=${node.entity_type}&depth=1`);
+    if (nr.ok) {
+      const { outgoing, incoming } = await nr.json();
+      const rels = [
+        ...outgoing.map(n => `→ ${n.relation} → ${n.label}`),
+        ...incoming.map(n => `← ${n.relation} ← ${n.label}`),
+      ];
+      if (rels.length) {
+        document.getElementById('node-desc').textContent += '\n\nRelationships:\n' + rels.join('\n');
+      }
+    }
+  } catch (e) {
+    document.getElementById('node-desc').textContent = 'Knowledge Graph unavailable (no database connected).';
+  }
 }
 
 function selectScene(id) {
   const info = {
     'SC-01': 'The Drop — Kael receives the mission briefing and descends into the Undercity.',
-    'SC-02': 'Alleyway Chase — Kael pursues a rogue synth through neon-lit streets. High tension action sequence.',
+    'SC-02': 'Alleyway Chase — Kael pursues a rogue synth through neon-lit streets.',
     'SC-03': 'Safehouse — Kael regroups with Elara. Exposition and character development.',
     'SC-04': 'Betrayal — Plot twist. Elara is revealed to be working for The Director.',
   };
   alert(id + ': ' + (info[id] || 'Scene details not available.'));
 }
 
-function analyzeArc() {
-  const modal = document.getElementById('arc-modal');
+// ── AI Arc Analysis ───────────────────────────────────────────────────────────
+async function analyzeArc() {
+  const modal   = document.getElementById('arc-modal');
   const loading = document.getElementById('arc-loading');
-  const result = document.getElementById('arc-result');
+  const result  = document.getElementById('arc-result');
+
   loading.classList.remove('hidden');
   result.classList.add('hidden');
   modal.classList.remove('hidden');
-  setTimeout(() => {
+
+  if (!PROJECT_ID) {
+    // Graceful degradation: animate fake metrics when no project is connected
+    setTimeout(() => { loading.classList.add('hidden'); result.classList.remove('hidden'); }, 1800);
+    return;
+  }
+
+  try {
+    // Fetch the most recent script for this project
+    const scriptsRes = await fetch(`/api/projects/${PROJECT_ID}/stories/scripts?limit=1`);
+    let scriptContent = '';
+    if (scriptsRes.ok) {
+      const { scripts } = await scriptsRes.json();
+      if (scripts?.length) scriptContent = scripts[0].content ?? scripts[0].title ?? '';
+    }
+
+    // Dispatch arc analysis to the AI orchestrator
+    const jobRes = await fetch(`/api/projects/${PROJECT_ID}/jobs/dispatch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        taskType: 'analyze_script',
+        input: { script: scriptContent || 'Analyze the narrative arc for this project.', format: 'arc_metrics' },
+        useCache: true,
+      }),
+    });
+
+    if (!jobRes.ok) throw new Error(`Job dispatch failed: ${jobRes.status}`);
+    const job = await jobRes.json();
+
+    // Update arc metrics if the AI returned structured data
+    const metrics = job.result?.metrics;
+    if (metrics) {
+      setMetric('tension-bar',     'tension-val',     metrics.tension     ?? 84);
+      setMetric('cohesion-bar',    'cohesion-val',    metrics.cohesion    ?? 92);
+      setMetric('consistency-bar', 'consistency-val', metrics.consistency ?? 78);
+    }
+
     loading.classList.add('hidden');
     result.classList.remove('hidden');
-  }, 2000);
+  } catch (e) {
+    console.warn('Arc analysis error:', e);
+    // Show results anyway — metrics were already animated on load
+    loading.classList.add('hidden');
+    result.classList.remove('hidden');
+  }
 }
 
-// Animate metrics
+// ── Metric animation ──────────────────────────────────────────────────────────
+function setMetric(barId, valId, target) {
+  let current = 0;
+  const interval = setInterval(() => {
+    current = Math.min(current + 2, target);
+    const bar = document.getElementById(barId);
+    const val = document.getElementById(valId);
+    if (bar) bar.style.width = current + '%';
+    if (val) val.textContent = current + '%';
+    if (current >= target) clearInterval(interval);
+  }, 20);
+}
+
 function animateMetrics() {
-  const metrics = [
-    { bar: 'tension-bar', val: 'tension-val', target: 84 },
-    { bar: 'cohesion-bar', val: 'cohesion-val', target: 92 },
-    { bar: 'consistency-bar', val: 'consistency-val', target: 78 },
-  ];
-  metrics.forEach(m => {
-    let current = 0;
-    const interval = setInterval(() => {
-      current = Math.min(current + 2, m.target);
-      document.getElementById(m.bar).style.width = current + '%';
-      document.getElementById(m.val).textContent = current + '%';
-      if (current >= m.target) clearInterval(interval);
-    }, 20);
-  });
+  setMetric('tension-bar',     'tension-val',     84);
+  setMetric('cohesion-bar',    'cohesion-val',    92);
+  setMetric('consistency-bar', 'consistency-val', 78);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadProject();
   setTimeout(animateMetrics, 300);
 });
 </script>

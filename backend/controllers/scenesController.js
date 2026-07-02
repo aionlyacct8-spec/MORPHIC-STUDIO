@@ -6,6 +6,7 @@ import { query } from '../services/db.js';
 import { createError } from '../middleware/errorHandler.js';
 import eventBus from '../services/eventBus.js';
 import logger from '../utils/logger.js';
+import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
 
 const log = logger.child('scenes');
 
@@ -80,6 +81,15 @@ export async function createScene(req, res) {
 
   const scene = result.rows[0];
   eventBus.emit('scene:created', { projectId, scene });
+
+  // Sync scene to the knowledge graph (non-blocking)
+  syncEntityToGraph(projectId, {
+    entityId:   scene.id,
+    entityType: 'scene',
+    label:      scene.title ?? `Scene ${scene.scene_number ?? ''}`.trim(),
+    properties: { status: scene.status, mood: scene.mood, time_of_day: scene.time_of_day },
+  }).catch(err => log.debug('Scene KG sync skipped', { err: err.message }));
+
   log.info('Scene created', { id: scene.id, title });
   res.status(201).json({ scene });
 }

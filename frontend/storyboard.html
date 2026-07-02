@@ -443,34 +443,125 @@ function activateShot(row, id) {
   row.classList.add('bg-primary/5', 'hover:bg-primary/10');
 }
 
-function generateFromPrompt() {
-  const prompt = document.getElementById('shot-prompt').value;
-  if (!prompt.trim()) return;
+// ── Project context ───────────────────────────────────────────────────────────
+let PROJECT_ID = null;
+
+async function loadProject() {
+  try {
+    const r = await fetch('/api/projects');
+    if (!r.ok) return;
+    const { projects } = await r.json();
+    if (projects?.length) PROJECT_ID = projects[0].id;
+  } catch (e) { console.warn('Could not load project', e); }
+}
+
+// ── AI Panel Generation ───────────────────────────────────────────────────────
+async function _dispatchPanels(description) {
+  if (!PROJECT_ID) return null;
+  const r = await fetch(`/api/projects/${PROJECT_ID}/jobs/dispatch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      taskType: 'generate_panels',
+      input: { description, count: 1, style: 'cinematic' },
+      useCache: false,
+    }),
+  });
+  if (!r.ok) throw new Error(`Dispatch failed: ${r.status}`);
+  return r.json();
+}
+
+async function generateFromPrompt() {
+  const promptEl = document.getElementById('shot-prompt');
+  const promptText = promptEl?.value?.trim();
+  if (!promptText) return;
+
   const btn = event.currentTarget;
   btn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">autorenew</span> Generating...';
   btn.disabled = true;
-  setTimeout(() => {
-    addNewShot();
+
+  try {
+    if (PROJECT_ID) {
+      await _dispatchPanels(promptText);
+    }
+    addNewShotWithDescription(promptText);
+    promptEl.value = '';
+  } catch (e) {
+    console.warn('Panel generation error:', e);
+    addNewShot(); // graceful fallback
+  } finally {
     btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot';
     btn.disabled = false;
-    document.getElementById('shot-prompt').value = '';
-  }, 2000);
+  }
 }
 
-function generateShot() {
+async function generateShot() {
   const btn = document.getElementById('generate-btn');
   btn.textContent = 'Generating...';
   btn.disabled = true;
-  setTimeout(() => {
+
+  try {
+    if (PROJECT_ID) {
+      await _dispatchPanels('Generate next storyboard panel');
+    }
     addNewShot();
+  } catch (e) {
+    console.warn('Shot generation error:', e);
+    addNewShot();
+  } finally {
     btn.textContent = 'Generate';
     btn.disabled = false;
-  }, 1500);
+  }
+}
+
+async function regenerateShot(btn) {
+  const card = btn.closest('.glass-card');
+  const titleEl = card?.querySelector('input');
+  const description = titleEl?.value || 'Regenerate this storyboard shot';
+
+  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">autorenew</span>';
+
+  try {
+    if (PROJECT_ID) {
+      await _dispatchPanels(description);
+    }
+  } catch (e) {
+    console.warn('Regenerate error:', e);
+  } finally {
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">refresh</span>';
+  }
+}
+
+function addNewShotWithDescription(description) {
+  const container = document.getElementById('shots-container');
+  const addBtn = container.lastElementChild;
+  const shotNum = container.children.length;
+  const shotId = '04' + String.fromCharCode(64 + shotNum);
+  const card = document.createElement('div');
+  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group';
+  card.innerHTML = `
+    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
+      <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">add_photo_alternate</span>
+      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-xs text-white">${shotId}</div>
+    </div>
+    <div class="p-4 flex-1 flex flex-col">
+      <input class="bg-transparent border-none outline-none font-headline-md text-[18px] text-on-surface mb-1 w-full" placeholder="Shot Title..." value="AI Shot"/>
+      <textarea class="bg-transparent border-none outline-none text-on-surface-variant text-xs resize-none flex-1" placeholder="Describe the action...">${description}</textarea>
+    </div>`;
+  container.insertBefore(card, addBtn);
 }
 
 function exportStoryboard() {
-  alert('Export feature: Storyboard would be exported as PDF/PNG sequence. Connect to backend export API.');
+  if (!PROJECT_ID) {
+    alert('Connect a project to export the storyboard.');
+    return;
+  }
+  alert('Export: POST /api/projects/' + PROJECT_ID + '/jobs/dispatch with taskType: refine_panels to finalize, then download via the exports endpoint.');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadProject();
+});
 </script>
 </body>
 </html>

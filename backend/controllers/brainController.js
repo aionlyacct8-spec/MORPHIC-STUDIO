@@ -7,7 +7,7 @@ import {
   updateSection, setBrainSection,
   getMemory, appendMemory, searchMemory, expireMemory,
   getBrainVersions, restoreBrainVersion,
-  lockBrain, unlockBrain,
+  lockBrain, unlockBrain, assertUnlocked,
 } from '../services/brainService.js';
 import { createError } from '../middleware/errorHandler.js';
 import logger from '../utils/logger.js';
@@ -28,6 +28,9 @@ export async function updateSectionHandler(req, res) {
 
   if (data === undefined) throw createError(400, 'Missing "data" in request body.');
 
+  // Enforce brain lock — throws 409 if an AI generation has locked the brain
+  await assertUnlocked(projectId);
+
   const result = await updateSection(projectId, section, data, { note });
   log.info('Brain section updated via API', { projectId, section });
   res.json({ section, data: result, updated: true });
@@ -38,6 +41,9 @@ export async function setBrainSectionHandler(req, res) {
   const { data, note } = req.body;
 
   if (data === undefined) throw createError(400, 'Missing "data" in request body.');
+
+  // Enforce brain lock — throws 409 if an AI generation has locked the brain
+  await assertUnlocked(projectId);
 
   const result = await setBrainSection(projectId, section, data, { note });
   log.info('Brain section replaced via API', { projectId, section });

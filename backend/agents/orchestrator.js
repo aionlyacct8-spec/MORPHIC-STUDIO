@@ -188,34 +188,70 @@ export async function dispatch({ projectId, taskType, input = {}, useCache = tru
   const jobId = await _createJob(projectId, taskType, agentName, input);
   const startMs = Date.now();
 
+  // Method name map: task type → actual export name on the agent module
+  const METHOD_MAP = {
+    analyze_script:         'analyzeScript',
+    generate_outline:       'generateOutline',
+    expand_scene:           'expandScene',
+    generate_character_dna: 'generateDNA',        // characterAgent exports generateDNA
+    evolve_character:       'evolveCharacter',
+    suggest_relationships:  'suggestRelationships',
+    generate_world_bible:   'generateWorldBible',
+    generate_location:      'generateLocation',
+    build_timeline:         'buildTimeline',
+    generate_panels:        'generatePanels',
+    refine_panels:          'refinePanels',
+  };
+
+  const methodName = METHOD_MAP[taskType];
+  if (!methodName) throw new Error(`Unknown task type: "${taskType}"`);
+
+  const agentFn = agent[methodName];
+  if (typeof agentFn !== 'function') {
+    throw new Error(`Agent "${agentName}" does not export method "${methodName}" (task: "${taskType}")`);
+  }
+
+  // Per-dispatch timeout — 90 s for long-form AI generation
+  const DISPATCH_TIMEOUT_MS = 90_000;
+
+  /**
+   * _callWithRetry — retries the agent call up to maxAttempts times.
+   * Exponential backoff: 1 s, 2 s, 4 s …
+   * Only retries on errors that look transient (network, 429, 5xx).
+   */
+  async function _callWithRetry(fn, maxAttempts = 3) {
+    let lastErr;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastErr = err;
+        const isTransient =
+          err.name === 'AbortError' ||
+          (err.status && (err.status === 429 || err.status >= 500));
+        if (!isTransient || attempt === maxAttempts) break;
+        const delay = 1000 * Math.pow(2, attempt - 1);
+        log.warn(`Retry ${attempt}/${maxAttempts - 1} for ${taskType} in ${delay}ms`, { err: err.message });
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+    throw lastErr;
+  }
+
   try {
     log.info(`Dispatching ${taskType} → ${agentName}`, { projectId });
 
-    // Call the correct method on the agent
-    // Method name map: task type → actual export name on the agent module
-    const METHOD_MAP = {
-      analyze_script:         'analyzeScript',
-      generate_outline:       'generateOutline',
-      expand_scene:           'expandScene',
-      generate_character_dna: 'generateDNA',        // characterAgent exports generateDNA
-      evolve_character:       'evolveCharacter',
-      suggest_relationships:  'suggestRelationships',
-      generate_world_bible:   'generateWorldBible',
-      generate_location:      'generateLocation',
-      build_timeline:         'buildTimeline',
-      generate_panels:        'generatePanels',
-      refine_panels:          'refinePanels',
-    };
+    // Race the agent call against a hard timeout
+    const timeoutErr = new Error(`Dispatch timeout after ${DISPATCH_TIMEOUT_MS / 1000}s for ${taskType}`);
+    const timeoutP = new Promise((_, reject) =>
+      setTimeout(() => reject(timeoutErr), DISPATCH_TIMEOUT_MS)
+    );
 
-    const methodName = METHOD_MAP[taskType];
-    if (!methodName) throw new Error(`Unknown task type: "${taskType}"`);
+    const result = await Promise.race([
+      _callWithRetry(() => agentFn(enrichedInput)),
+      timeoutP,
+    ]);
 
-    const agentFn = agent[methodName];
-    if (typeof agentFn !== 'function') {
-      throw new Error(`Agent "${agentName}" does not export method "${methodName}" (task: "${taskType}")`);
-    }
-
-    const result = await agentFn(enrichedInput);
     const durationMs = Date.now() - startMs;
 
     // Store job result
