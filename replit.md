@@ -8,7 +8,7 @@ An AI-powered creative OS for storytelling — enabling individual creators and 
 
 ```bash
 npm install
-node backend/server.js
+npm start
 ```
 
 The app runs on port **5000**. The workflow `Start application` handles this automatically.
@@ -48,15 +48,16 @@ frontend/
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL connection string | ⚠️ Not set — app starts but DB calls fail |
 | `OPENROUTER_API_KEY` | AI storyboard generation | ⚠️ Not set — AI features disabled |
-| `SESSION_SECRET` | Session signing | ✅ Configured |
+| `CORS_ORIGIN` | Optional CORS allow-list | Optional |
+| `REQUIRE_API_KEY` / `API_KEY` | Optional API-key guard for deployments | Optional |
 
-To fully enable the app, provision a Replit PostgreSQL database (sets `DATABASE_URL` automatically), then run `node database/setup.js` to create tables.
+To fully enable the app, provision a Replit PostgreSQL database (sets `DATABASE_URL` automatically), then run `npm run setup` to apply the base schema, run migrations, and seed demo data.
 
 ## Tech Stack
 
 - **Backend:** Node.js + Express (ESM), `pg` for PostgreSQL
 - **Frontend:** Standalone HTML pages with Tailwind CSS (CDN), Material Symbols, EB Garamond + Hanken Grotesk + JetBrains Mono fonts
-- **AI:** OpenRouter API (GPT-4o-mini) for script → storyboard generation
+- **AI:** Provider gateway for OpenAI, OpenRouter, and Gemini
 - **Platform:** Replit
 
 ## Design System
@@ -69,12 +70,27 @@ To fully enable the app, provision a Replit PostgreSQL database (sets `DATABASE_
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/analyze-script` | Analyze script + generate storyboard (needs OPENROUTER_API_KEY) |
-| GET | `/api/scripts` | List all scripts |
-| GET | `/api/scripts/:id` | Get script by ID |
-| GET | `/api/storyboards/:scriptId` | Get storyboards for a script |
-| POST | `/api/characters` | Create a character |
-| GET | `/api/characters` | List characters |
+| GET | `/api` | API discovery/status |
+| GET | `/api/health` | Runtime/provider/database health |
+| GET/POST | `/api/projects` | List or create projects |
+| GET/PATCH/DELETE | `/api/projects/:id` | Read, update, or soft-delete a project |
+| GET | `/api/projects/:projectId/brain` | Read Project Brain |
+| PUT/PATCH | `/api/projects/:projectId/brain/sections/:section` | Update a Project Brain section |
+| GET/POST | `/api/projects/:projectId/characters` | List or create characters |
+| GET/POST | `/api/projects/:projectId/worlds` | List or create worlds |
+| GET/POST | `/api/projects/:projectId/assets` | List or create assets |
+| GET/POST | `/api/projects/:projectId/stories/scripts` | List or create scripts |
+| GET/POST | `/api/projects/:projectId/graph/nodes` | List or upsert graph nodes |
+| POST | `/api/projects/:projectId/jobs/dispatch` | Dispatch an AI orchestration job |
+| GET/POST | `/api/projects/:projectId/scenes` | List or create scenes |
+| GET/POST | `/api/projects/:projectId/episodes` | List or create episodes |
+| POST | `/api/projects/:projectId/production/intake/plan` | Phase 1 script intake planner |
+| GET/POST | `/api/projects/:projectId/production/chapters` | List or create chapters |
+| GET/POST | `/api/projects/:projectId/production/comic/pages` | List or create comic pages |
+| GET/POST | `/api/projects/:projectId/production/comic/panels` | List or create reusable comic panels |
+| GET/POST | `/api/projects/:projectId/production/voices` | List or create reusable character voice profiles |
+| GET/POST | `/api/projects/:projectId/production/motion/sequences` | List or create motion-comic slideshow sequences |
+| GET/POST | `/api/projects/:projectId/production/animation/assets` | List or create animation rigs, body parts, poses, and presets |
 
 ## User Preferences
 

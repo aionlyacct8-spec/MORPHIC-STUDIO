@@ -135,6 +135,28 @@ tailwind.config = {
       <div class="flex-1 overflow-y-auto px-margin-desktop py-16 lg:px-32 xl:px-48 scrollbar-hide relative z-10">
         <article class="max-w-3xl mx-auto space-y-10 font-body-lg text-body-lg text-on-surface/85 leading-[1.8] pb-32">
           <h2 class="font-headline-lg text-[72px] leading-tight font-bold mb-16 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 tracking-tight">The Descent</h2>
+
+          <section class="mb-12 rounded-2xl border border-primary/20 bg-primary/5 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.25)]">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+              <div>
+                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary font-label-sm text-[10px] uppercase tracking-widest mb-3">
+                  <span class="material-symbols-outlined text-[14px]">auto_awesome</span> Phase 1 Story Intake
+                </div>
+                <h3 class="font-headline-md text-[26px] text-on-surface mb-2">Paste a script. Save the reusable production plan.</h3>
+                <p class="font-body-md text-sm text-on-surface-variant max-w-2xl">This creates a saved script, chapter, scenes, comic pages, panels, and continuity rules so characters, locations, voices, and assets can be reused instead of regenerated.</p>
+              </div>
+              <button onclick="planStoryIntake()" id="story-intake-btn" class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-sm hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(192,193,255,0.25)] shrink-0">
+                Plan & Save
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              <input id="story-intake-title" class="md:col-span-2 bg-surface-container-low border border-white/10 rounded-lg px-3 py-2 text-sm text-on-surface focus:border-primary focus:ring-primary/20" placeholder="Chapter title" value="Chapter 1: The Descent" />
+              <input id="story-intake-number" class="bg-surface-container-low border border-white/10 rounded-lg px-3 py-2 text-sm text-on-surface focus:border-primary focus:ring-primary/20" placeholder="Chapter #" type="number" value="1" min="1" />
+            </div>
+            <textarea id="story-intake-script" class="w-full min-h-[180px] bg-surface-container-low border border-white/10 rounded-xl p-4 text-sm text-on-surface font-body-md focus:border-primary focus:ring-primary/20" placeholder="Paste your script here. Example: SCENE 1 - Neon alley... KAEL: We go below tonight."></textarea>
+            <div id="story-intake-result" class="mt-4 hidden rounded-xl border border-white/10 bg-surface-container-low/70 p-4 text-sm"></div>
+          </section>
+
           <p>The rain fell not in drops, but in sheets of grey static, dissolving the edges of the neon-soaked city. Kael stood at the precipice of the lower levels, the hum of the mag-lev trains vibrating through his synth-leather boots.</p>
           <p>"You sure about this?" Elara's voice crackled through his earpiece, thin and strained with interference. "The Memory Engines down there haven't been calibrated in decades."</p>
           <div class="my-14 py-8 border-y border-white/5 relative bg-gradient-to-r from-primary/5 to-transparent rounded-r-2xl">
@@ -241,6 +263,72 @@ tailwind.config = {
 </footer>
 
 <script>
+
+// ── Phase 1 Story Intake planner ────────────────────────────────────────────
+async function resolveProjectId() {
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) return stored;
+  const r = await fetch('/api/projects');
+  const { projects } = await r.json();
+  if (projects?.length) {
+    localStorage.setItem('morphic_project_id', projects[0].id);
+    return projects[0].id;
+  }
+  return null;
+}
+
+async function planStoryIntake() {
+  const btn = document.getElementById('story-intake-btn');
+  const resultEl = document.getElementById('story-intake-result');
+  const title = document.getElementById('story-intake-title').value.trim() || 'Untitled Chapter';
+  const chapterNumber = parseInt(document.getElementById('story-intake-number').value || '1', 10);
+  const scriptText = document.getElementById('story-intake-script').value.trim();
+
+  if (!scriptText) {
+    resultEl.classList.remove('hidden');
+    resultEl.className = 'mt-4 rounded-xl border border-error/30 bg-error/10 p-4 text-sm text-error';
+    resultEl.textContent = 'Paste a script first so Morphic can plan scenes, pages, and panels.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Planning…';
+  resultEl.classList.remove('hidden');
+  resultEl.className = 'mt-4 rounded-xl border border-white/10 bg-surface-container-low/70 p-4 text-sm text-on-surface-variant';
+  resultEl.textContent = 'Analyzing script and saving reusable production records…';
+
+  try {
+    const projectId = await resolveProjectId();
+    if (!projectId) throw new Error('No project found. Create a project first.');
+
+    const res = await fetch(`/api/projects/${projectId}/production/intake/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, chapterNumber, scriptText, panelsPerPage: 4 }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Planning failed.');
+
+    resultEl.className = 'mt-4 rounded-xl border border-emerald-400/30 bg-emerald-950/30 p-4 text-sm text-emerald-200';
+    resultEl.innerHTML = `
+      <div class="font-label-md text-[12px] uppercase tracking-widest mb-2">Saved Production Plan</div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.scenes.length}</strong><span>Scenes</span></div>
+        <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.pages.length}</strong><span>Comic Pages</span></div>
+        <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.panels.length}</strong><span>Reusable Panels</span></div>
+        <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.continuityRules.length}</strong><span>Continuity Rules</span></div>
+      </div>
+      <p class="mt-3 text-xs">Chapter saved: ${data.chapter.title}. Open Storyboard or Comic Studio next to build from these saved records.</p>`;
+  } catch (e) {
+    resultEl.className = 'mt-4 rounded-xl border border-error/30 bg-error/10 p-4 text-sm text-error';
+    resultEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Plan & Save';
+  }
+}
+
 // ── Dashboard live data ─────────────────────────────────────────────────────
 (async function loadDashboardData() {
   try {

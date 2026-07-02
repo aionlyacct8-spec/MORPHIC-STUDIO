@@ -26,9 +26,11 @@ import storiesRouter     from './routes/stories.js';
 import knowledgeGraphRouter from './routes/knowledgeGraph.js';
 import generationJobsRouter from './routes/generationJobs.js';
 import scenesRouter      from './routes/scenes.js';
+import productionRouter  from './routes/production.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { generalLimiter, aiLimiter } from './middleware/rateLimiter.js';
+import { optionalApiKeyAuth } from './middleware/auth.js';
 import { getProviderHealth } from './agents/gateway.js';
 import logger from './utils/logger.js';
 
@@ -41,7 +43,11 @@ const app  = express();
 const PORT = process.env.PORT || 5000;
 
 // ── Middleware ────────────────────────────────────────────
-app.use(cors());
+const corsOptions = process.env.CORS_ORIGIN
+  ? { origin: process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean) }
+  : undefined;
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '5mb' }));
 
 // Serve static frontend — no-cache for HTML in dev so preview always refreshes
@@ -57,6 +63,7 @@ app.use(express.static(join(__dirname, '../frontend'), {
 // ── Rate limiting ─────────────────────────────────────────
 // Apply general limiter to all API routes
 app.use('/api', generalLimiter);
+app.use('/api', optionalApiKeyAuth);
 
 // ── Health / discovery ────────────────────────────────────
 app.get('/api', (_req, res) => {
@@ -100,6 +107,14 @@ app.get('/api', (_req, res) => {
       'POST /api/projects/:projectId/graph/edges',
       'GET  /api/projects/:projectId/jobs',
       'POST /api/projects/:projectId/jobs/dispatch',
+      'POST /api/projects/:projectId/production/intake/plan',
+      'GET  /api/projects/:projectId/production/chapters',
+      'POST /api/projects/:projectId/production/chapters',
+      'GET  /api/projects/:projectId/production/comic/pages',
+      'POST /api/projects/:projectId/production/comic/panels',
+      'GET  /api/projects/:projectId/production/motion/sequences',
+      'GET  /api/projects/:projectId/production/voices',
+      'GET  /api/projects/:projectId/production/animation/assets',
     ],
   });
 });
@@ -124,6 +139,7 @@ app.use('/api/projects/:projectId/assets',                  assetsRouter);
 app.use('/api/projects/:projectId/stories',                 storiesRouter);
 app.use('/api/projects/:projectId/graph',                   knowledgeGraphRouter);
 app.use('/api/projects/:projectId/jobs',                    generationJobsRouter);
+app.use('/api/projects/:projectId/production',              productionRouter);
 app.use('/api/projects/:projectId',                         scenesRouter);  // /scenes and /episodes
 
 // ── Unknown /api/* → JSON 404 (must precede SPA catch-all) ──
