@@ -90,6 +90,11 @@ app.get('/api', (_req, res) => {
   });
 });
 
+// ── Unknown /api/* → JSON 404 (must precede SPA catch-all) ──
+app.use('/api/*', (_req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
 // ── Catch-all → SPA index ────────────────────────────────
 app.get('*', (_req, res) => {
   res.sendFile(join(__dirname, '../frontend/index.html'));

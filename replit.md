@@ -11,7 +11,7 @@ npm install
 node backend/server.js
 ```
 
-The app runs on port **3000**. The workflow `Start application` handles this automatically.
+The app runs on port **5000**. The workflow `Start application` handles this automatically.
 
 ## Project Structure
 
