@@ -38,6 +38,7 @@ ${scriptText}
 Return a JSON object: { "panels": [...], "summary": "...", "themes": [...], "pacing_notes": "..." }`
     }],
     maxTokens: 2500,
+    timeoutMs: 120000,
   });
 
   const parsed = parseJSON(result.content);

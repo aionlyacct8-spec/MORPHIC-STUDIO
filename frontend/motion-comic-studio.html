@@ -290,5 +290,129 @@ tailwind.config = {
     </div>
   </main>
 </div>
+
+<script>
+// ── Motion Comic Studio — Backend Integration ──────────────────────────────
+async function resolveProjectId() {
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) return stored;
+  const r = await fetch('/api/projects');
+  const { projects } = await r.json();
+  if (projects?.length) {
+    localStorage.setItem('morphic_project_id', projects[0].id);
+    return projects[0].id;
+  }
+  return null;
+}
+
+let currentSequences = [];
+let currentChapters = [];
+
+async function loadMotionComicData() {
+  try {
+    const projectId = await resolveProjectId();
+    if (!projectId) return;
+
+    // Load chapters, sequences, and comic pages in parallel
+    const [chaptersRes, sequencesRes, pagesRes] = await Promise.all([
+      fetch(`/api/projects/${projectId}/production/chapters`),
+      fetch(`/api/projects/${projectId}/production/motion/sequences`),
+      fetch(`/api/projects/${projectId}/production/comic/pages`),
+    ]);
+
+    const chaptersData = await chaptersRes.json();
+    const sequencesData = await sequencesRes.json();
+    const pagesData = await pagesRes.json();
+
+    currentChapters = chaptersData.chapters || [];
+    currentSequences = sequencesData.motion_comic_sequences || [];
+    const pages = pagesData.comic_pages || [];
+
+    // Update the Director's Console sidebar with real data
+    updateDirectorsConsole(currentChapters, currentSequences, pages);
+
+    console.log('Motion Comic Studio loaded:', {
+      chapters: currentChapters.length,
+      sequences: currentSequences.length,
+      pages: pages.length,
+    });
+  } catch (err) {
+    console.warn('Motion Comic data load failed:', err.message);
+  }
+}
+
+function updateDirectorsConsole(chapters, sequences, pages) {
+  // Find the scene intelligence or directors console panel and update with real counts
+  const statsEls = document.querySelectorAll('[data-stat]');
+  statsEls.forEach(el => {
+    const stat = el.dataset.stat;
+    if (stat === 'chapters') el.textContent = chapters.length;
+    if (stat === 'sequences') el.textContent = sequences.length;
+    if (stat === 'pages') el.textContent = pages.length;
+  });
+
+  // If there's no sequence yet, show a "Create First Sequence" prompt
+  if (sequences.length === 0 && chapters.length > 0) {
+    const canvas = document.querySelector('main .flex-1');
+    if (canvas) {
+      const banner = document.createElement('div');
+      banner.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-surface-container-high/95 border border-primary/30 rounded-xl p-4 backdrop-blur-xl flex items-center gap-4 shadow-lg';
+      banner.innerHTML = `
+        <span class="material-symbols-outlined text-primary text-2xl">movie_creation</span>
+        <div>
+          <p class="text-sm text-on-surface font-bold">Ready to create your first Motion Comic sequence</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">You have ${chapters.length} chapter(s) and ${pages.length || 0} comic pages ready to animate.</p>
+        </div>
+        <button onclick="createSequenceFromChapter()" class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-sm hover:opacity-90 transition-opacity shrink-0">
+          Create Sequence
+        </button>
+      `;
+      canvas.style.position = 'relative';
+      canvas.appendChild(banner);
+    }
+  }
+}
+
+async function createSequenceFromChapter() {
+  try {
+    const projectId = await resolveProjectId();
+    if (!projectId) throw new Error('No project found.');
+    if (!currentChapters.length) throw new Error('No chapters found. Run Story Intake first.');
+
+    const chapter = currentChapters[0]; // Use first chapter for now
+
+    // Get comic pages for this chapter
+    const pagesRes = await fetch(`/api/projects/${projectId}/production/comic/pages?chapter_id=${chapter.id}`);
+    const pagesData = await pagesRes.json();
+    const pageIds = (pagesData.comic_pages || []).map(p => p.id);
+
+    const res = await fetch(`/api/projects/${projectId}/production/motion/sequences`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chapter_id: chapter.id,
+        title: `Motion Comic: ${chapter.title}`,
+        playback_mode: 'slideshow',
+        transition: 'fade',
+        page_ids: pageIds,
+        audio_asset_ids: [],
+        duration_ms: pageIds.length * 3000,
+        metadata: { created_from: 'motion_comic_studio', auto_generated: true },
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create sequence.');
+
+    alert(`✅ Sequence created: "${chapter.title}" with ${pageIds.length} pages!`);
+    location.reload();
+  } catch (err) {
+    alert('⚠️ ' + err.message);
+  }
+}
+
+// Load on page init
+loadMotionComicData();
+</script>
 </body>
 </html>

@@ -312,20 +312,95 @@ async function planStoryIntake() {
 
     resultEl.className = 'mt-4 rounded-xl border border-emerald-400/30 bg-emerald-950/30 p-4 text-sm text-emerald-200';
     resultEl.innerHTML = `
-      <div class="font-label-md text-[12px] uppercase tracking-widest mb-2">Saved Production Plan</div>
+      <div class="font-label-md text-[12px] uppercase tracking-widest mb-2">✅ Phase 1 — Production Plan Saved</div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
         <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.scenes.length}</strong><span>Scenes</span></div>
         <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.pages.length}</strong><span>Comic Pages</span></div>
         <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.panels.length}</strong><span>Reusable Panels</span></div>
         <div class="rounded-lg bg-black/20 p-3"><strong class="block text-on-surface">${data.continuityRules.length}</strong><span>Continuity Rules</span></div>
       </div>
-      <p class="mt-3 text-xs">Chapter saved: ${data.chapter.title}. Open Storyboard or Comic Studio next to build from these saved records.</p>`;
+      <p class="mt-3 text-xs">Chapter saved: ${data.chapter.title}. Open Storyboard or Comic Studio next to build from these saved records.</p>
+      <div class="mt-4 pt-4 border-t border-emerald-400/20">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-primary text-lg">auto_awesome</span>
+          <span class="font-label-md text-[12px] text-primary uppercase tracking-widest">Phase 2 — AI Enhancement Available</span>
+        </div>
+        <p class="text-[11px] text-emerald-200/70 mb-3">Let AI analyze your script deeper: extract character DNA profiles, enrich locations, detect themes/conflicts/arcs, and update your Story Bible.</p>
+        <button onclick="runPhase2Enhancement('${data.chapter.id}', '${data.scriptId}')" id="phase2-btn" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary to-tertiary text-on-primary font-label-md text-sm hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(192,193,255,0.25)] flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">neurology</span>
+          AI Enhance — Analyze Script
+        </button>
+        <div id="phase2-result" class="mt-3 hidden"></div>
+      </div>`;
   } catch (e) {
     resultEl.className = 'mt-4 rounded-xl border border-error/30 bg-error/10 p-4 text-sm text-error';
     resultEl.textContent = e.message;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Plan & Save';
+  }
+}
+
+// ── Phase 2 AI Enhancement ──────────────────────────────────────────────────
+async function runPhase2Enhancement(chapterId, scriptId) {
+  const btn = document.getElementById('phase2-btn');
+  const resultEl = document.getElementById('phase2-result');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> AI Analyzing… (this may take 30-60 seconds)';
+  resultEl.classList.remove('hidden');
+  resultEl.className = 'mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs text-primary/90';
+  resultEl.innerHTML = '<div class="flex items-center gap-2"><span class="material-symbols-outlined text-sm animate-pulse">neurology</span> AI agents are analyzing your script, generating character DNA, and building location details…</div>';
+
+  try {
+    const projectId = await resolveProjectId();
+    if (!projectId) throw new Error('No project found.');
+
+    const res = await fetch(`/api/projects/${projectId}/production/intake/enhance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chapterId, scriptId }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Phase 2 enhancement failed.');
+
+    resultEl.className = 'mt-3 rounded-lg border border-emerald-400/30 bg-emerald-950/30 p-4 text-xs text-emerald-200';
+
+    let analysisHTML = '';
+    if (data.script_analysis) {
+      const a = data.script_analysis;
+      analysisHTML = `
+        <div class="mb-3">
+          <div class="font-label-md text-[11px] uppercase tracking-widest text-primary mb-1">Script Analysis</div>
+          ${a.themes?.length ? `<p class="mb-1"><strong>Themes:</strong> ${a.themes.join(', ')}</p>` : ''}
+          ${a.conflicts?.length ? `<p class="mb-1"><strong>Conflicts:</strong> ${a.conflicts.join(', ')}</p>` : ''}
+          ${a.tone ? `<p class="mb-1"><strong>Tone:</strong> ${a.tone}</p>` : ''}
+          ${a.summary ? `<p class="mb-1"><strong>Summary:</strong> ${a.summary}</p>` : ''}
+        </div>`;
+    }
+
+    resultEl.innerHTML = `
+      <div class="font-label-md text-[12px] uppercase tracking-widest mb-2">✅ Phase 2 — AI Enhancement Complete</div>
+      ${analysisHTML}
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <div class="rounded-lg bg-black/20 p-3">
+          <strong class="block text-on-surface">${data.characters_processed}</strong>
+          <span>Characters ${data.characters?.map(c => c.name).join(', ') || ''}</span>
+        </div>
+        <div class="rounded-lg bg-black/20 p-3">
+          <strong class="block text-on-surface">${data.locations_processed}</strong>
+          <span>Locations ${data.locations?.map(l => l.name).join(', ') || ''}</span>
+        </div>
+      </div>
+      ${data.errors?.length ? `<p class="mt-2 text-amber-300/80 text-[10px]">${data.errors.length} minor issue(s) during enhancement — core analysis succeeded.</p>` : ''}
+      <p class="mt-3 text-[11px]">Your Story Bible, Character DNA profiles, and World Bible have been updated. Open Character Manager or World Builder to review.</p>`;
+  } catch (e) {
+    resultEl.className = 'mt-3 rounded-lg border border-error/30 bg-error/10 p-3 text-xs text-error';
+    resultEl.textContent = '⚠️ ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">neurology</span> AI Enhance — Analyze Script';
   }
 }
 

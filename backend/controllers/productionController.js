@@ -2,11 +2,9 @@ import { query } from '../services/db.js';
 import { createError } from '../middleware/errorHandler.js';
 import eventBus from '../services/eventBus.js';
 import logger from '../utils/logger.js';
-import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
-<<<<<<< HEAD
 import { planScriptIntake } from '../services/storyIntakeService.js';
-=======
->>>>>>> origin/main
+import { enhanceIntake } from '../services/storyIntakePhase2.js';
+import { syncEntityToGraph } from '../services/knowledgeGraphService.js';
 
 const log = logger.child('production');
 
@@ -66,8 +64,6 @@ async function getRow({ req, res, table, singular, idParam = 'id' }) {
   res.json({ [singular]: result.rows[0] });
 }
 
-<<<<<<< HEAD
-
 // ── Phase 1 Story Intake / Production Planner ───────────────────────────────
 
 export async function planStoryIntake(req, res) {
@@ -98,8 +94,33 @@ export async function planStoryIntake(req, res) {
   }
 }
 
-=======
->>>>>>> origin/main
+// ── Phase 2 AI-Enhanced Story Intake ────────────────────────────────────────
+
+export async function enhanceStoryIntake(req, res) {
+  const { projectId } = req.params;
+  const { chapterId, scriptId } = req.body;
+
+  if (!chapterId || !scriptId) {
+    throw createError(400, 'Both chapterId and scriptId are required for Phase 2 enhancement.');
+  }
+
+  try {
+    const results = await enhanceIntake(projectId, { chapterId, scriptId });
+
+    res.json({
+      message: 'Phase 2 AI enhancement complete.',
+      script_analysis: results.script_analysis,
+      characters_processed: results.characters.length,
+      characters: results.characters.map(c => ({ name: c.name, action: c.action })),
+      locations_processed: results.locations.length,
+      locations: results.locations.map(l => ({ name: l.name })),
+      errors: results.errors,
+    });
+  } catch (err) {
+    throw createError(500, `Phase 2 enhancement failed: ${err.message}`);
+  }
+}
+
 // ── Chapters ────────────────────────────────────────────────────────────────
 
 export async function listChapters(req, res) {

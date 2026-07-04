@@ -224,7 +224,9 @@ async function _withRetry(fn, { maxRetries = 2, baseDelayMs = 800 } = {}) {
       lastErr = err;
       const retryable = err.status === 429
         || (err.status >= 500 && err.status < 600)
-        || err.name === 'AbortError';
+        || err.name === 'AbortError'
+        || err.message === 'fetch failed'
+        || err.message.includes('fetch');
       if (!retryable || attempt === maxRetries) break;
       const delay = baseDelayMs * Math.pow(2, attempt);
       log.warn(`Retry ${attempt + 1}/${maxRetries} in ${delay}ms`, { status: err.status });

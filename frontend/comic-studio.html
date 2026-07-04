@@ -221,5 +221,86 @@ tailwind.config = {
     </aside>
   </main>
 </div>
+
+<script>
+// ── Comic Studio — Backend Integration ──────────────────────────────────────
+async function resolveProjectId() {
+  const stored = localStorage.getItem('morphic_project_id');
+  if (stored) return stored;
+  const r = await fetch('/api/projects');
+  const { projects } = await r.json();
+  if (projects?.length) {
+    localStorage.setItem('morphic_project_id', projects[0].id);
+    return projects[0].id;
+  }
+  return null;
+}
+
+async function loadComicStudioData() {
+  try {
+    const projectId = await resolveProjectId();
+    if (!projectId) return;
+
+    // Load chapters, pages, and panels
+    const [chaptersRes, pagesRes, panelsRes] = await Promise.all([
+      fetch(`/api/projects/${projectId}/production/chapters`),
+      fetch(`/api/projects/${projectId}/production/comic/pages`),
+      fetch(`/api/projects/${projectId}/production/comic/panels`),
+    ]);
+
+    const { chapters } = await chaptersRes.json();
+    const { comic_pages } = await pagesRes.json();
+    const { comic_panels } = await panelsRes.json();
+
+    console.log('Comic Studio loaded:', {
+      chapters: chapters?.length || 0,
+      pages: comic_pages?.length || 0,
+      panels: comic_panels?.length || 0,
+    });
+
+    // Populate the Page Sequence bar with real pages
+    if (comic_pages?.length > 0) {
+      const sequenceBar = document.getElementById('page-sequence-bar');
+      if (sequenceBar) {
+        sequenceBar.innerHTML = comic_pages.map((page, i) => `
+          <div class="shrink-0 w-14 h-20 border ${i === 0 ? 'border-primary bg-primary/10' : 'border-white/10 bg-surface-container hover:border-white/30'} rounded cursor-pointer flex flex-col items-center justify-center text-center transition-all" data-page-id="${page.id}">
+            <span class="text-[8px] font-mono text-on-surface-variant mb-0.5">P${page.page_number}</span>
+            <span class="text-[10px] text-on-surface">${page.layout || 'grid'}</span>
+            <div class="text-[7px] text-primary/70 mt-0.5">${page.status || 'draft'}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Update Script View with real panel descriptions
+    if (comic_panels?.length > 0) {
+      const scriptView = document.querySelector('[data-script-view]') || document.querySelector('.font-body-md.text-sm.text-on-surface-variant.space-y-4');
+      if (scriptView) {
+        scriptView.innerHTML = comic_panels.slice(0, 8).map(panel => {
+          let html = `<p><strong class="text-on-surface">PANEL ${panel.panel_number}:</strong> ${panel.description || 'No description'}</p>`;
+          const dialogue = typeof panel.dialogue === 'string' ? JSON.parse(panel.dialogue || '[]') : (panel.dialogue || []);
+          if (dialogue.length > 0) {
+            html += dialogue.map(d =>
+              `<p class="pl-4 italic">${d.character_name || 'NARRATOR'}: "${d.text}"</p>`
+            ).join('');
+          }
+          return html;
+        }).join('');
+      }
+    }
+
+    // Update chapter info in the Director's Console
+    if (chapters?.length > 0) {
+      const chapterLabel = document.querySelector('[data-chapter-label]');
+      if (chapterLabel) chapterLabel.textContent = chapters[0].title;
+    }
+  } catch (err) {
+    console.warn('Comic Studio data load failed:', err.message);
+  }
+}
+
+// Load on page init
+loadComicStudioData();
+</script>
 </body>
 </html>

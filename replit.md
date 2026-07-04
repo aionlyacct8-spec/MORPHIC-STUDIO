@@ -84,10 +84,7 @@ To fully enable the app, provision a Replit PostgreSQL database (sets `DATABASE_
 | POST | `/api/projects/:projectId/jobs/dispatch` | Dispatch an AI orchestration job |
 | GET/POST | `/api/projects/:projectId/scenes` | List or create scenes |
 | GET/POST | `/api/projects/:projectId/episodes` | List or create episodes |
-<<<<<<< HEAD
 | POST | `/api/projects/:projectId/production/intake/plan` | Phase 1 script intake planner |
-=======
->>>>>>> origin/main
 | GET/POST | `/api/projects/:projectId/production/chapters` | List or create chapters |
 | GET/POST | `/api/projects/:projectId/production/comic/pages` | List or create comic pages |
 | GET/POST | `/api/projects/:projectId/production/comic/panels` | List or create reusable comic panels |

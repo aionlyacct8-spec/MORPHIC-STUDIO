@@ -4,12 +4,10 @@ import * as ctrl from '../controllers/productionController.js';
 
 const router = Router({ mergeParams: true });
 
-<<<<<<< HEAD
 // Phase 1 story intake / production planning
 router.post('/intake/plan', asyncWrap(ctrl.planStoryIntake));
-
-=======
->>>>>>> origin/main
+// Phase 2 AI-enhanced story intake
+router.post('/intake/enhance', asyncWrap(ctrl.enhanceStoryIntake));
 // Chapters
 router.get('/chapters', asyncWrap(ctrl.listChapters));
 router.get('/chapters/:id', asyncWrap(ctrl.getChapter));
