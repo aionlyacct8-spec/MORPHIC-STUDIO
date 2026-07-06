@@ -32,6 +32,7 @@ import systemRouter      from './routes/system.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { generalLimiter, aiLimiter } from './middleware/rateLimiter.js';
 import { optionalApiKeyAuth } from './middleware/auth.js';
+import { previewModeNotice, demoModeApi } from './middleware/demoMode.js';
 import { getProviderHealth } from './agents/gateway.js';
 import { getRuntimeConfig } from './services/configService.js';
 import { getQueueHealth } from './services/queueService.js';
@@ -67,7 +68,9 @@ app.use(express.static(join(__dirname, '../frontend'), {
 // ── Rate limiting ─────────────────────────────────────────
 // Apply general limiter to all API routes
 app.use('/api', generalLimiter);
+app.use(previewModeNotice);
 app.use('/api', optionalApiKeyAuth);
+app.use(demoModeApi);
 
 // ── Health / discovery ────────────────────────────────────
 app.get('/api', (_req, res) => {
