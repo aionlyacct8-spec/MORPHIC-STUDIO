@@ -10,7 +10,7 @@ Morphic Studio is an AI-assisted story, comic, and animation workspace. This rep
 - **Database:** PostgreSQL via `pg`
 - **Frontend:** Static HTML pages with Tailwind CSS CDN and inline browser JavaScript
 - **AI:** Provider gateway for OpenAI, OpenRouter, and Gemini-compatible chat generation
-- **Deployment:** Replit workflow on port `5000`
+- **Deployment:** Platform-neutral Node web process via `npm start` / `Procfile`; configurable with `HOST` and `PORT`
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ npm run setup
 npm start
 ```
 
-The app listens on `PORT` or `5000` by default.
+The app listens on `PORT` or `5000` by default and binds to `HOST` or `0.0.0.0`.
 
 ## Scripts
 
@@ -42,10 +42,12 @@ See `.env.example` for the full template.
 |---|---:|---|
 | `DATABASE_URL` | Yes for DB-backed endpoints | PostgreSQL connection string. |
 | `PORT` | No | Server port; defaults to `5000`. |
+| `HOST` | No | Server bind address; defaults to `0.0.0.0`. |
 | `AI_PROVIDER` | No | `openai`, `openrouter`, or `gemini`; defaults to `openai`. |
 | `OPENAI_API_KEY` | Provider-dependent | Required when using OpenAI. |
 | `OPENROUTER_API_KEY` | Provider-dependent | Required when using OpenRouter. |
 | `GEMINI_API_KEY` | Provider-dependent | Required when using Gemini. |
+| `APP_URL` | Recommended | Public app URL used in AI provider metadata; defaults locally to `http://localhost:5000` when unset. |
 | `CORS_ORIGIN` | No | Comma-separated allowed origins. If unset, CORS remains permissive for local/prototype use. |
 | `REQUIRE_API_KEY` / `API_KEY` | No | Optional API-key guard for hardened deployments. |
 
@@ -59,7 +61,9 @@ frontend/     Static HTML studio pages
 attached_assets/  Product/specification assets used during earlier planning
 ```
 
+## Deployment Guide
 
+See [Deployment Guide](./DEPLOYMENT.md) for platform-neutral runtime, environment, database, and process setup instructions.
 
 ## Planning Documents
 
