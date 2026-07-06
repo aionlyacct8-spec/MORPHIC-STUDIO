@@ -30,7 +30,7 @@ The app listens on `PORT` or `5000` by default.
 |---|---|
 | `npm start` | Run the API/static frontend server. |
 | `npm run dev` | Run the server with `nodemon`. |
-| `npm run setup` | Apply base schema, run migrations, and seed the demo project if needed. |
+| `npm run setup` | Apply base schema and run migrations. It does not seed demo projects by default. |
 | `npm run migrate` | Run pending SQL migrations only. |
 | `npm run check` | Syntax-check backend and database JavaScript files. |
 
@@ -60,6 +60,10 @@ attached_assets/  Product/specification assets used during earlier planning
 ```
 
 
+
+## Planning Documents
+
+- [Morphic Studio Master Roadmap](./MORPHIC_STUDIO_MASTER_ROADMAP.md) tracks the cleanup tasks, character consistency/asset-library next step, and phased build plan for the AI comic and animation production pipeline.
 
 ## Phase 1 Workflow
 
