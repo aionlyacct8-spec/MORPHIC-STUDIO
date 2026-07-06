@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Morphic Studio — Open Source Roadmap Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: '#c0c1ff', 'on-primary': '#1000a9', 'primary-container': '#8083ff',
+        background: '#051424', 'on-background': '#d4e4fa', surface: '#051424',
+        'on-surface': '#d4e4fa', 'surface-variant': '#273647', 'on-surface-variant': '#c7c4d7',
+        'surface-container-lowest': '#010f1f', 'surface-container-low': '#0d1c2d',
+        'surface-container': '#122131', 'surface-container-high': '#1c2b3c',
+        'surface-container-highest': '#273647', outline: '#908fa0', tertiary: '#c4c6ce', error: '#ffb4ab'
+      },
+      fontFamily: {
+        'display-lg': ['EB Garamond', 'serif'], 'headline-lg': ['EB Garamond', 'serif'],
+        'headline-md': ['EB Garamond', 'serif'], 'body-lg': ['Hanken Grotesk', 'sans-serif'],
+        'body-md': ['Hanken Grotesk', 'sans-serif'], 'label-md': ['JetBrains Mono', 'monospace'],
+        'label-sm': ['JetBrains Mono', 'monospace']
+      }
+    }
+  }
+}
+</script>
+<style>
+  .glass-panel { background: rgba(18,33,49,0.72); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); border: 1px solid rgba(255,255,255,0.09); }
+  .roadmap-card { background: rgba(18,33,49,0.68); border: 1px solid rgba(255,255,255,0.08); }
+  .ready-pill { background: rgba(16,185,129,0.12); color: #86efac; border: 1px solid rgba(16,185,129,0.25); }
+  .wait-pill { background: rgba(251,191,36,0.12); color: #fde68a; border: 1px solid rgba(251,191,36,0.25); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen selection:bg-primary selection:text-on-primary">
+<nav class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-xl border-b border-white/10">
+  <div class="h-20 px-5 md:px-16 max-w-[1440px] mx-auto flex items-center justify-between">
+    <a href="/index.html" class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">movie_filter</span>
+      <span class="font-headline-md text-[26px] text-on-surface">Morphic Studio</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6 font-label-md text-sm">
+      <a href="/dashboard.html" class="text-on-surface-variant hover:text-primary transition-colors">Dashboard</a>
+      <a href="/asset-library.html" class="text-on-surface-variant hover:text-primary transition-colors">Asset Library</a>
+      <a href="/open-source-roadmap.html" class="text-primary">Open Source Roadmap</a>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-28 pb-20 px-5 md:px-16 max-w-[1440px] mx-auto">
+  <section class="relative overflow-hidden rounded-3xl glass-panel p-8 md:p-12 mb-10">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(192,193,255,0.16),transparent_45%)] pointer-events-none"></div>
+    <div class="relative z-10 max-w-4xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/25 bg-primary/10 text-primary font-label-sm text-[11px] uppercase tracking-widest mb-6">
+        <span class="material-symbols-outlined text-[16px]">hub</span> Preview Page
+      </div>
+      <h1 class="font-display-lg text-[42px] md:text-[68px] leading-[1.05] tracking-[-0.02em] mb-6">Open-source integration roadmap.</h1>
+      <p class="font-body-lg text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">We are ready to start the <strong class="text-on-surface">planning and evaluation layer</strong> for open-source tools. We should not connect heavy engines directly until each workflow has stable save/load data contracts.</p>
+    </div>
+  </section>
+
+  <section class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 mb-10">
+    <div class="roadmap-card rounded-2xl p-6 md:p-8">
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-headline-md text-[30px] mb-2">Are we ready?</h2>
+          <p class="text-on-surface-variant">Yes for roadmap, GitHub repo intake, license checks, and architecture planning. Not yet for full engine wiring until the related Morphic records are stable.</p>
+        </div>
+        <span class="wait-pill px-3 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-widest whitespace-nowrap">Plan first</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4">
+          <div class="ready-pill inline-flex px-2.5 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-widest mb-3">Ready now</div>
+          <ul class="space-y-2 text-sm text-on-surface-variant">
+            <li>• Add GitHub repo input/evaluation UI.</li>
+            <li>• Research license, activity, and fit.</li>
+            <li>• Map each tool to Asset Library records.</li>
+            <li>• Decide cloud/local execution strategy.</li>
+          </ul>
+        </div>
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4">
+          <div class="wait-pill inline-flex px-2.5 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-widest mb-3">Wait before</div>
+          <ul class="space-y-2 text-sm text-on-surface-variant">
+            <li>• Installing heavy engines into production.</li>
+            <li>• Connecting render/export buttons.</li>
+            <li>• Rewriting frontend to React.</li>
+            <li>• Adding Blender/ComfyUI jobs without storage.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="roadmap-card rounded-2xl p-6 md:p-8">
+      <h2 class="font-headline-md text-[30px] mb-2">GitHub open-source input</h2>
+      <p class="text-on-surface-variant text-sm mb-5">Paste a GitHub URL or package name to preview what information Morphic must collect before integration.</p>
+      <label for="repo-input" class="font-label-sm text-[11px] uppercase tracking-widest text-primary block mb-2">GitHub repo or package</label>
+      <div class="flex gap-2 mb-4">
+        <input id="repo-input" class="flex-1 bg-surface-container-low border border-white/10 rounded-lg px-4 py-3 text-sm text-on-surface focus:border-primary focus:ring-primary/20" placeholder="https://github.com/comfy-org/ComfyUI"/>
+        <button onclick="previewRepoPlan()" class="px-5 py-3 rounded-lg bg-primary text-on-primary font-label-md text-sm hover:opacity-90 transition-opacity">Preview</button>
+      </div>
+      <div id="repo-preview" class="rounded-xl border border-white/10 bg-surface-container-low/60 p-4 text-sm text-on-surface-variant">
+        Add a repo to see the required checks: purpose, workflow, license, storage, execution, data records, and first safe milestone.
+      </div>
+    </div>
+  </section>
+
+  <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-5 mb-10">
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">image</span>
+      <h3 class="font-headline-md text-[24px] mb-2">ComfyUI</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Future image workflow engine for characters, backgrounds, outfits, props, and panel art.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after Asset Library + prompt/workflow metadata.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">deployed_code</span>
+      <h3 class="font-headline-md text-[24px] mb-2">Blender</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Future animation/render layer for rigs, bones, camera, lighting, and scene rendering.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after animation asset contracts.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">movie</span>
+      <h3 class="font-headline-md text-[24px] mb-2">FFmpeg</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Future media assembly/export engine for motion-comic videos, audio mixing, compression, and final files.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after motion cues + storage.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">record_voice_over</span>
+      <h3 class="font-headline-md text-[24px] mb-2">TTS / voice</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Voice providers should attach to saved voice profiles, dialogue, audio assets, and character records.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after voice profile UI.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">face</span>
+      <h3 class="font-headline-md text-[24px] mb-2">SadTalker / lip sync</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Possible talking-head lip-sync layer, but only if it fits the chosen character animation direction.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after voice audio exists.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">smart_toy</span>
+      <h3 class="font-headline-md text-[24px] mb-2">OpenHands</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Developer-side engineering assistant for maintaining and extending Morphic, not an end-user studio module.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Use as build helper, not creative engine.</p>
+    </article>
+  </section>
+
+  <section class="roadmap-card rounded-2xl p-6 md:p-8">
+    <h2 class="font-headline-md text-[30px] mb-5">Safe integration roadmap</h2>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="rounded-xl border border-white/10 bg-black/20 p-4"><strong class="text-primary font-label-md text-sm">1. Save/load contracts</strong><p class="text-sm text-on-surface-variant mt-2">Define exactly what panels, assets, voices, cues, and rigs save to PostgreSQL.</p></div>
+      <div class="rounded-xl border border-white/10 bg-black/20 p-4"><strong class="text-primary font-label-md text-sm">2. Repo evaluation</strong><p class="text-sm text-on-surface-variant mt-2">Check license, hardware, cloud needs, API shape, security, and output files.</p></div>
+      <div class="rounded-xl border border-white/10 bg-black/20 p-4"><strong class="text-primary font-label-md text-sm">3. Adapter module</strong><p class="text-sm text-on-surface-variant mt-2">Build a replaceable service layer so tools can change without breaking Morphic.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+function repoNameFromInput(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return 'No repo entered';
+  try {
+    const url = new URL(trimmed);
+    return url.hostname.includes('github.com') ? url.pathname.replace(/^\//, '') : trimmed;
+  } catch (_err) {
+    return trimmed;
+  }
+}
+
+function inferWorkflow(name) {
+  const lower = name.toLowerCase();
+  if (lower.includes('comfy')) return 'Image generation / visual workflow';
+  if (lower.includes('blender')) return 'Animation, rigging, camera, render';
+  if (lower.includes('ffmpeg')) return 'Media assembly and export';
+  if (lower.includes('tts') || lower.includes('coqui')) return 'Voice generation / speech assets';
+  if (lower.includes('sadtalker') || lower.includes('lip')) return 'Facial animation / lip sync';
+  if (lower.includes('openhands')) return 'Developer automation, not user-facing studio feature';
+  return 'Needs owner decision: asset, comic, motion-comic, animation, voice, auth, or export';
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+}
+
+function previewRepoPlan() {
+  const value = document.getElementById('repo-input').value;
+  const name = repoNameFromInput(value);
+  const workflow = inferWorkflow(name);
+  const safeName = escapeHtml(name);
+  const safeWorkflow = escapeHtml(workflow);
+  const preview = document.getElementById('repo-preview');
+  preview.innerHTML = `
+    <div class="font-label-md text-[11px] uppercase tracking-widest text-primary mb-3">Integration intake preview</div>
+    <div class="space-y-2">
+      <p><strong class="text-on-surface">Repo/package:</strong> ${safeName}</p>
+      <p><strong class="text-on-surface">Likely workflow:</strong> ${safeWorkflow}</p>
+      <p><strong class="text-on-surface">Before adding:</strong> confirm license, hardware/cloud needs, storage path, security risk, and which Morphic record it writes back to.</p>
+      <p><strong class="text-on-surface">First safe milestone:</strong> create an adapter plan and save a test output as an Asset Library record before connecting any big UI button.</p>
+    </div>`;
+}
+</script>
+<script src="/morphic-ui.js"></script>
+</body>
+</html>
