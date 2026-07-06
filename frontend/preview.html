@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Morphic Studio Local Preview</title>
+<style>
+  :root { color-scheme: dark; --bg:#051424; --panel:#0d1c2d; --panel2:#122131; --text:#d4e4fa; --muted:#9fb0c8; --primary:#c0c1ff; --green:#7ee787; --warn:#f6c177; --border:rgba(255,255,255,.12); }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:radial-gradient(circle at top, rgba(128,131,255,.18), transparent 34rem), var(--bg); color:var(--text); }
+  a { color:inherit; }
+  .wrap { width:min(1120px, calc(100% - 32px)); margin:0 auto; padding:32px 0 56px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 0 42px; }
+  .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.03em; font-size:22px; }
+  .logo { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; background:linear-gradient(135deg, rgba(192,193,255,.28), rgba(192,193,255,.06)); border:1px solid var(--border); box-shadow:0 0 32px rgba(192,193,255,.18); }
+  .pill { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background:rgba(13,28,45,.72); border-radius:999px; padding:8px 12px; color:var(--muted); font-size:13px; }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--warn); box-shadow:0 0 12px currentColor; }
+  .dot.ok { background:var(--green); }
+  .hero { display:grid; grid-template-columns:1.12fr .88fr; gap:24px; align-items:stretch; }
+  .card { border:1px solid var(--border); background:linear-gradient(180deg, rgba(18,33,49,.84), rgba(5,20,36,.78)); border-radius:28px; box-shadow:0 28px 80px rgba(0,0,0,.34); backdrop-filter:blur(18px); }
+  .intro { padding:44px; }
+  h1 { margin:0 0 16px; font-family:Georgia, 'Times New Roman', serif; font-size:clamp(42px, 7vw, 76px); line-height:.96; letter-spacing:-.055em; }
+  p { color:var(--muted); line-height:1.65; font-size:17px; margin:0; }
+  .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:0 18px; border-radius:14px; text-decoration:none; font-weight:750; border:1px solid var(--border); background:rgba(255,255,255,.06); }
+  .btn.primary { background:var(--primary); color:#07006c; border-color:transparent; box-shadow:0 0 28px rgba(192,193,255,.24); }
+  .status { padding:28px; }
+  .status h2, .links h2 { margin:0 0 18px; font-size:18px; letter-spacing:.02em; text-transform:uppercase; color:var(--primary); }
+  .check { display:flex; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+  .check:last-child { border-bottom:0; }
+  code { color:#fff; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.08); padding:2px 6px; border-radius:7px; }
+  .links { margin-top:24px; padding:28px; }
+  .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; }
+  .tile { text-decoration:none; padding:18px; border-radius:18px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); min-height:92px; transition:.18s ease; }
+  .tile:hover { transform:translateY(-2px); border-color:rgba(192,193,255,.38); background:rgba(192,193,255,.08); }
+  .tile strong { display:block; margin-bottom:8px; }
+  .tile span { display:block; color:var(--muted); font-size:13px; line-height:1.4; }
+  .note { margin-top:18px; color:var(--muted); font-size:14px; }
+  @media (max-width: 860px) { .hero { grid-template-columns:1fr; } .intro { padding:30px; } .grid { grid-template-columns:repeat(2, minmax(0,1fr)); } header { align-items:flex-start; flex-direction:column; } }
+  @media (max-width: 520px) { .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><div class="logo">🎬</div><span>Morphic Studio</span></div>
+      <div class="pill"><span id="top-dot" class="dot"></span><span id="top-status">Checking local preview…</span></div>
+    </header>
+
+    <section class="hero">
+      <div class="card intro">
+        <div class="pill" style="margin-bottom:20px"><span class="dot ok"></span>Local Preview Mode</div>
+        <h1>Your creative studio is running locally.</h1>
+        <p>This preview launcher is intentionally self-contained, so it works even when external font/CDN requests are blocked. Use it to enter the main Morphic Studio pages and verify that the Express API/static frontend are alive.</p>
+        <div class="actions">
+          <a class="btn primary" href="dashboard.html">Open Studio Dashboard</a>
+          <a class="btn" href="index.html">Open Landing Page</a>
+          <a class="btn" href="/api/health">View API Health</a>
+        </div>
+      </div>
+
+      <aside class="card status">
+        <h2>Runtime checks</h2>
+        <div class="check"><span>Frontend</span><strong id="frontend-status">Checking…</strong></div>
+        <div class="check"><span>API health</span><strong id="api-status">Checking…</strong></div>
+        <div class="check"><span>Preview project</span><strong id="project-status">Checking…</strong></div>
+        <div class="check"><span>Database</span><strong id="db-status">Checking…</strong></div>
+        <p class="note">If database says <code>not_set</code>, this preview still works with demo responses. Set <code>DATABASE_URL</code> only when you need persistent saved data.</p>
+      </aside>
+    </section>
+
+    <section class="card links">
+      <h2>Preview pages</h2>
+      <div class="grid">
+        <a class="tile" href="new-project.html"><strong>New Project</strong><span>Create a demo universe.</span></a>
+        <a class="tile" href="story-hub.html"><strong>Story Hub</strong><span>Story bible and graph tools.</span></a>
+        <a class="tile" href="character-manager.html"><strong>Characters</strong><span>Character DNA and profiles.</span></a>
+        <a class="tile" href="world-builder.html"><strong>World Builder</strong><span>Locations, lore, and rules.</span></a>
+        <a class="tile" href="asset-library.html"><strong>Assets</strong><span>Reusable creative assets.</span></a>
+        <a class="tile" href="storyboard.html"><strong>Storyboard</strong><span>Panels, shots, and continuity.</span></a>
+        <a class="tile" href="comic-studio.html"><strong>Comic Studio</strong><span>Comic pages and panels.</span></a>
+        <a class="tile" href="motion-comic-studio.html"><strong>Motion Comic</strong><span>Sequences and production.</span></a>
+      </div>
+    </section>
+  </div>
+
+<script>
+const text = (id, value, ok = true) => {
+  const el = document.getElementById(id);
+  el.textContent = value;
+  el.style.color = ok ? 'var(--green)' : 'var(--warn)';
+};
+async function boot() {
+  text('frontend-status', 'OK');
+  try {
+    const health = await fetch('/api/health').then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+    text('api-status', 'OK');
+    text('db-status', health.database || 'unknown', health.database !== 'error');
+
+    const projects = await fetch('/api/projects').then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+    const count = Array.isArray(projects.projects) ? projects.projects.length : 0;
+    text('project-status', `${count} available`, count > 0);
+    document.getElementById('top-dot').classList.add('ok');
+    document.getElementById('top-status').textContent = 'Preview link verified';
+  } catch (error) {
+    text('api-status', error.message, false);
+    text('project-status', 'Unavailable', false);
+    document.getElementById('top-status').textContent = 'Preview needs server restart';
+  }
+}
+boot();
+</script>
+</body>
+</html>
