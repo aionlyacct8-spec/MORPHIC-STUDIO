@@ -12,6 +12,20 @@ function list(name, fallback = []) {
   return value.split(',').map(item => item.trim()).filter(Boolean);
 }
 
+function number(name, fallback) {
+  const value = process.env[name];
+  if (value === undefined || value === '') return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+export function getServerConfig() {
+  return {
+    host: process.env.HOST || '0.0.0.0',
+    port: number('PORT', 5000),
+  };
+}
+
 export function getFeatureFlags() {
   return {
     nextFrontend: bool('FEATURE_NEXT_FRONTEND'),
@@ -59,7 +73,7 @@ export function getAiKeyStatus() {
 export function getRuntimeConfig() {
   return {
     nodeEnv: process.env.NODE_ENV || 'development',
-    port: Number(process.env.PORT || 5000),
+    server: getServerConfig(),
     logLevel: process.env.LOG_LEVEL || 'info',
     corsConfigured: Boolean(process.env.CORS_ORIGIN),
     apiKeyRequired: bool('REQUIRE_API_KEY'),

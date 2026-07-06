@@ -34,7 +34,7 @@ import { generalLimiter, aiLimiter } from './middleware/rateLimiter.js';
 import { optionalApiKeyAuth } from './middleware/auth.js';
 import { previewModeNotice, demoModeApi } from './middleware/demoMode.js';
 import { getProviderHealth } from './agents/gateway.js';
-import { getRuntimeConfig } from './services/configService.js';
+import { getRuntimeConfig, getServerConfig } from './services/configService.js';
 import { getQueueHealth } from './services/queueService.js';
 import { getStorageHealth } from './services/storageService.js';
 import logger from './utils/logger.js';
@@ -45,7 +45,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
 const app  = express();
-const PORT = process.env.PORT || 5000;
+const serverConfig = getServerConfig();
 
 // ── Middleware ────────────────────────────────────────────
 const corsOptions = process.env.CORS_ORIGIN
@@ -171,8 +171,8 @@ app.get('*', (_req, res) => {
 app.use(errorHandler);
 
 // ── Start ─────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`🎬 Morphic Studio live on port ${PORT}`);
+app.listen(serverConfig.port, serverConfig.host, () => {
+  logger.info(`🎬 Morphic Studio live at http://${serverConfig.host}:${serverConfig.port}`);
   logger.info(`   AI provider : ${process.env.AI_PROVIDER || 'openai'}`);
   logger.info(`   Database    : ${process.env.DATABASE_URL ? 'connected' : 'NOT SET — run: node database/setup.js after adding DATABASE_URL'}`);
   logger.info(`   Rate limiting: active`);

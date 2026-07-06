@@ -16,6 +16,10 @@ import logger from '../utils/logger.js';
 
 const log = logger.child('gateway');
 
+function getAppUrl() {
+  return process.env.APP_URL || 'http://localhost:5000';
+}
+
 // ── Cost estimates (USD per 1K tokens) ───────────────────────────────────────
 
 const COST_PER_1K = {
@@ -67,7 +71,7 @@ const PROVIDERS = {
     defaultModel: 'openai/gpt-4o-mini',
     headers: (key) => ({
       Authorization: `Bearer ${key}`,
-      'HTTP-Referer': process.env.APP_URL ?? 'https://morphic-studio.replit.app',
+      'HTTP-Referer': getAppUrl(),
       'X-Title': 'Morphic Studio',
       'Content-Type': 'application/json',
     }),
