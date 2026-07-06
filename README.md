@@ -24,6 +24,49 @@ npm start
 
 The app listens on `PORT` or `5000` by default and binds to `HOST` or `0.0.0.0`.
 
+
+## Local Preview
+
+If Chrome shows `localhost refused to connect` or `127.0.0.1 refused to connect`, the Node server is not running. Start the preview server first and keep that terminal open:
+
+```bash
+npm install
+npm run preview
+```
+
+Then open:
+
+```text
+http://localhost:5000/preview.html
+```
+
+The app can render in lightweight preview mode without a database, but real projects, saved story brain data, characters, worlds, assets, and production records need PostgreSQL. To connect Supabase:
+
+1. Create a Supabase project.
+2. In Supabase, open **Project Settings → Database** and copy the pooled PostgreSQL connection string.
+3. Copy `.env.example` to `.env`.
+4. Replace `DATABASE_URL` in `.env` with the Supabase connection string. Use the URL-encoded password Supabase provides.
+5. Run `npm run setup` once to create tables and run migrations.
+6. Run `npm run preview` and open `http://localhost:5000/preview.html`.
+
+
+
+### Supabase SQL Editor setup without terminal access
+
+If you cannot run `npm run setup`, open Supabase **SQL Editor**, create a new query, paste `database/supabase_setup.sql`, and run it. That SQL bundle applies the same base schema and migrations used by the Node setup script.
+
+## Sharing a Preview With Other People
+
+`localhost` only works in the browser that is running on the same machine or cloud workspace as the Node server. It is not a shareable internet URL. If someone else needs to view the site, deploy the app or use your cloud IDE's forwarded port / preview URL for port `5000`. The shared URL will look like an HTTPS workspace/deployment URL, not `localhost`.
+
+For deployment, keep the same web process:
+
+```bash
+npm start
+```
+
+The included `Procfile` also declares the production web process as `web: npm start`, so Node hosts that understand Procfiles can expose the app publicly after installing dependencies and setting environment variables.
+
 ## Scripts
 
 | Script | Purpose |
