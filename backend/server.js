@@ -27,11 +27,15 @@ import knowledgeGraphRouter from './routes/knowledgeGraph.js';
 import generationJobsRouter from './routes/generationJobs.js';
 import scenesRouter      from './routes/scenes.js';
 import productionRouter  from './routes/production.js';
+import systemRouter      from './routes/system.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { generalLimiter, aiLimiter } from './middleware/rateLimiter.js';
 import { optionalApiKeyAuth } from './middleware/auth.js';
 import { getProviderHealth } from './agents/gateway.js';
+import { getRuntimeConfig } from './services/configService.js';
+import { getQueueHealth } from './services/queueService.js';
+import { getStorageHealth } from './services/storageService.js';
 import logger from './utils/logger.js';
 
 dotenv.config();
@@ -107,6 +111,10 @@ app.get('/api', (_req, res) => {
       'POST /api/projects/:projectId/graph/edges',
       'GET  /api/projects/:projectId/jobs',
       'POST /api/projects/:projectId/jobs/dispatch',
+      'GET  /api/system/config',
+      'GET  /api/system/queues',
+      'GET  /api/system/storage',
+      'POST /api/system/projects/:projectId/storage/objects',
       'POST /api/projects/:projectId/production/intake/plan',
       'GET  /api/projects/:projectId/production/chapters',
       'POST /api/projects/:projectId/production/chapters',
@@ -120,17 +128,21 @@ app.get('/api', (_req, res) => {
 });
 
 // ── Provider health check ─────────────────────────────────
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
   res.json({
     status:    'ok',
     uptime:    process.uptime(),
     memory:    process.memoryUsage(),
     providers: getProviderHealth(),
     database:  process.env.DATABASE_URL ? 'configured' : 'not_set',
+    config:    getRuntimeConfig(),
+    queue:     getQueueHealth(),
+    storage:   await getStorageHealth(),
   });
 });
 
 // ── API routes ────────────────────────────────────────────
+app.use('/api/system',                                      systemRouter);
 app.use('/api/projects',                                    projectsRouter);
 app.use('/api/projects/:projectId/brain',                   brainRouter);
 app.use('/api/projects/:projectId/characters',              charactersRouter);

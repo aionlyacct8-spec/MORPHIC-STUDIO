@@ -340,17 +340,47 @@ function updateSummary() {
   document.getElementById('summary-genre').textContent = genre;
 }
 
-function initializeUniverse() {
+async function initializeUniverse() {
   const btn = document.getElementById('next-btn');
-  btn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span> Initializing...';
+  const title = document.getElementById('projectName').value.trim();
+  const description = document.getElementById('projectDesc').value.trim();
+  const format = document.getElementById('projectType').value;
+  const genre = document.getElementById('projectGenre').value;
+
+  if (!title) {
+    currentStep = 1;
+    document.querySelectorAll('.step-panel').forEach(panel => panel.classList.add('hidden'));
+    document.getElementById('step-1').classList.remove('hidden');
+    updateStepUI();
+    document.getElementById('projectName').focus();
+    btn.textContent = 'Continue';
+    alert('Enter a project title to create a clean project.');
+    return;
+  }
+
+  btn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span> Creating project...';
   btn.disabled = true;
   const bar = document.getElementById('progress-bar');
   bar.style.width = '100%';
-  setTimeout(() => {
-    sessionStorage.setItem('projectName', document.getElementById('projectName').value || 'My Project');
+
+  try {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, genre, format, style: null }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Project creation failed.');
+
+    localStorage.setItem('morphic_project_id', data.project.id);
     window.location.href = 'dashboard.html';
-  }, 2000);
+  } catch (error) {
+    btn.disabled = false;
+    btn.innerHTML = 'Initialize Universe <span class="material-symbols-outlined">auto_awesome</span>';
+    alert(error.message);
+  }
 }
+
 </script>
 </body>
 </html>
