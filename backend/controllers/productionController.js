@@ -30,10 +30,10 @@ async function listRows({ req, res, table, collection, filters = [], orderBy }) 
   const params = [projectId];
   let i = 2;
 
-  if (!['motion_comic_cues'].includes(table)) sql += ' AND deleted_at IS NULL';
+  if (!['motion_comic_cues', 'workflow_stages'].includes(table)) sql += ' AND deleted_at IS NULL';
 
   for (const filter of filters) {
-    const value = req.query[filter.queryKey];
+    const value = req.query[filter.queryKey] ?? (filter.alias ? req.query[filter.alias] : undefined);
     if (value !== undefined && value !== '') {
       sql += ` AND ${filter.column} = $${i++}`;
       params.push(value);
@@ -128,7 +128,7 @@ export async function listChapters(req, res) {
     req, res,
     table: 'chapters',
     collection: 'chapters',
-    filters: [{ queryKey: 'status', column: 'status' }, { queryKey: 'episodeId', column: 'episode_id' }],
+    filters: [{ queryKey: 'status', column: 'status' }, { queryKey: 'episodeId', alias: 'episode_id', column: 'episode_id' }],
     orderBy: 'chapter_number ASC NULLS LAST, created_at ASC',
   });
 }
@@ -205,7 +205,7 @@ export async function listComicPages(req, res) {
     req, res,
     table: 'comic_pages',
     collection: 'pages',
-    filters: [{ queryKey: 'chapterId', column: 'chapter_id' }, { queryKey: 'status', column: 'status' }],
+    filters: [{ queryKey: 'chapterId', alias: 'chapter_id', column: 'chapter_id' }, { queryKey: 'status', column: 'status' }],
     orderBy: 'page_number ASC, created_at ASC',
   });
 }
@@ -276,9 +276,9 @@ export async function listComicPanels(req, res) {
     table: 'comic_panels',
     collection: 'panels',
     filters: [
-      { queryKey: 'chapterId', column: 'chapter_id' },
-      { queryKey: 'pageId', column: 'page_id' },
-      { queryKey: 'sceneId', column: 'scene_id' },
+      { queryKey: 'chapterId', alias: 'chapter_id', column: 'chapter_id' },
+      { queryKey: 'pageId', alias: 'page_id', column: 'page_id' },
+      { queryKey: 'sceneId', alias: 'scene_id', column: 'scene_id' },
       { queryKey: 'status', column: 'status' },
     ],
     orderBy: 'panel_number ASC, created_at ASC',
@@ -359,6 +359,62 @@ export async function deleteComicPanel(req, res) {
   res.json({ deleted: id });
 }
 
+
+// ── Workflow Stages ─────────────────────────────────────────────────────────
+
+export async function listWorkflowStages(req, res) {
+  return listRows({
+    req, res,
+    table: 'workflow_stages',
+    collection: 'workflowStages',
+    filters: [
+      { queryKey: 'chapterId', alias: 'chapter_id', column: 'chapter_id' },
+      { queryKey: 'status', column: 'status' },
+    ],
+    orderBy: 'updated_at DESC',
+  });
+}
+
+export async function updateWorkflowStage(req, res) {
+  const { projectId, stageKey } = req.params;
+  const {
+    chapter_id, status, input_refs, output_refs, metadata,
+  } = req.body;
+
+  const existing = await query(
+    `SELECT id FROM workflow_stages
+     WHERE project_id = $1 AND stage_key = $2 AND (($3::uuid IS NULL AND chapter_id IS NULL) OR chapter_id = $3::uuid)
+     ORDER BY updated_at DESC LIMIT 1`,
+    [projectId, stageKey, chapter_id ?? null]
+  );
+
+  const stageStatus = status ?? 'in_progress';
+  const isComplete = ['complete', 'completed', 'approved'].includes(stageStatus);
+
+  if (existing.rows.length) {
+    const result = await query(
+      `UPDATE workflow_stages SET
+         status = COALESCE($1, status), input_refs = COALESCE($2, input_refs),
+         output_refs = COALESCE($3, output_refs), metadata = COALESCE($4, metadata),
+         started_at = COALESCE(started_at, NOW()),
+         completed_at = CASE WHEN $5 THEN NOW() ELSE completed_at END,
+         updated_at = NOW()
+       WHERE id = $6 AND project_id = $7 RETURNING *`,
+      [stageStatus, input_refs ? json(input_refs, []) : null, output_refs ? json(output_refs, []) : null, metadata ? json(metadata, {}) : null, isComplete, existing.rows[0].id, projectId]
+    );
+    return res.json({ workflowStage: result.rows[0] });
+  }
+
+  const result = await query(
+    `INSERT INTO workflow_stages
+       (project_id, chapter_id, stage_key, status, input_refs, output_refs, metadata, started_at, completed_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),CASE WHEN $8 THEN NOW() ELSE NULL END) RETURNING *`,
+    [projectId, chapter_id ?? null, stageKey, stageStatus, json(input_refs, []), json(output_refs, []), json(metadata, {}), isComplete]
+  );
+
+  res.status(201).json({ workflowStage: result.rows[0] });
+}
+
 // ── Voice Profiles ──────────────────────────────────────────────────────────
 
 export async function listVoiceProfiles(req, res) {
@@ -366,7 +422,7 @@ export async function listVoiceProfiles(req, res) {
     req, res,
     table: 'voice_profiles',
     collection: 'voiceProfiles',
-    filters: [{ queryKey: 'characterId', column: 'character_id' }],
+    filters: [{ queryKey: 'characterId', alias: 'character_id', column: 'character_id' }],
     orderBy: 'is_default DESC, created_at DESC',
   });
 }
@@ -434,7 +490,7 @@ export async function listMotionSequences(req, res) {
     req, res,
     table: 'motion_comic_sequences',
     collection: 'sequences',
-    filters: [{ queryKey: 'chapterId', column: 'chapter_id' }, { queryKey: 'status', column: 'status' }],
+    filters: [{ queryKey: 'chapterId', alias: 'chapter_id', column: 'chapter_id' }, { queryKey: 'status', column: 'status' }],
     orderBy: 'created_at DESC',
   });
 }
@@ -541,7 +597,7 @@ export async function listAnimationAssets(req, res) {
     req, res,
     table: 'animation_assets',
     collection: 'animationAssets',
-    filters: [{ queryKey: 'characterId', column: 'character_id' }, { queryKey: 'assetKind', column: 'asset_kind' }],
+    filters: [{ queryKey: 'characterId', alias: 'character_id', column: 'character_id' }, { queryKey: 'assetKind', column: 'asset_kind' }],
     orderBy: 'created_at DESC',
   });
 }

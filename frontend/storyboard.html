@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/api.js"></script>
 <script>
 tailwind.config = {
   darkMode:"class",
@@ -68,8 +69,8 @@ tailwind.config = {
       <span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
       <input class="bg-transparent border-none text-on-surface focus:ring-0 text-sm w-40 font-label-sm placeholder:text-on-surface-variant/50 outline-none" placeholder="Search assets..." type="text"/>
     </div>
-    <button onclick="exportStoryboard()" class="px-4 py-2 bg-surface-container-high border border-white/20 text-on-surface rounded font-label-md text-label-md hover:bg-surface-variant transition-colors">Export</button>
-    <button onclick="generateShot()" id="generate-btn" class="px-6 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]">Generate</button>
+    <button onclick="markStoryboardReviewed()" class="px-4 py-2 bg-surface-container-high border border-white/20 text-on-surface rounded font-label-md text-label-md hover:bg-surface-variant transition-colors">Mark Reviewed</button>
+    <button onclick="generateShot(event)" id="generate-btn" class="px-6 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]">Generate</button>
     <div class="flex items-center gap-1 border-l border-white/10 pl-4">
       <a href="dashboard.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">edit_note</span></a>
       <a href="story-hub.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">hub</span></a>
@@ -348,7 +349,7 @@ tailwind.config = {
       <div class="pt-4 border-t border-white/5">
         <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px] mb-3">Generate New Shot</h4>
         <textarea id="shot-prompt" class="w-full bg-surface-container border border-white/5 rounded-lg px-3 py-2.5 text-on-surface text-xs font-body-md focus:border-primary focus:outline-none transition-colors resize-none" placeholder="Describe the shot you want to generate..." rows="3"></textarea>
-        <button onclick="generateFromPrompt()" class="mt-2 w-full py-2.5 bg-primary text-on-primary rounded font-label-sm text-label-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
+        <button onclick="generateFromPrompt(event)" class="mt-2 w-full py-2.5 bg-primary text-on-primary rounded font-label-sm text-label-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
           <span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot
         </button>
       </div>
@@ -368,6 +369,172 @@ tailwind.config = {
 </div>
 
 <script>
+const storyboardState = {
+  project: null,
+  pages: [],
+  panels: [],
+  activePanelId: null,
+};
+
+const shotTypeLabels = {
+  ws: 'Wide Shot',
+  wide: 'Wide Shot',
+  establishing: 'Establishing',
+  mcu: 'Med Close-Up',
+  medium: 'Medium',
+  cu: 'Close-Up',
+  close: 'Close-Up',
+  ots: 'Over Shoulder',
+  insert: 'Insert',
+};
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function setStatus(message, tone = 'primary') {
+  const el = document.getElementById('storyboard-status');
+  if (!el) return;
+  el.textContent = message;
+  el.className = `font-label-sm text-label-sm uppercase tracking-widest text-xs ${tone === 'error' ? 'text-red-300' : tone === 'success' ? 'text-emerald-400' : 'text-primary'}`;
+}
+
+function getPanelPage(panel) {
+  return storyboardState.pages.find(page => page.id === panel.page_id);
+}
+
+function normalizeDialogue(dialogue) {
+  if (Array.isArray(dialogue)) {
+    return dialogue.map(line => [line.character_name || line.speaker, line.text].filter(Boolean).join(': ')).join('\n');
+  }
+  return dialogue || '';
+}
+
+function panelDisplayId(panel) {
+  const page = getPanelPage(panel);
+  const pageNumber = page?.page_number || '—';
+  return `P${pageNumber}.${panel.panel_number}`;
+}
+
+function renderStoryboard() {
+  renderHeader();
+  renderCards();
+  renderShotTable();
+}
+
+function renderHeader() {
+  const title = storyboardState.project?.title || 'Storyboard Review';
+  const pageCount = storyboardState.pages.length;
+  const panelCount = storyboardState.panels.length;
+  const approvedCount = storyboardState.panels.filter(panel => panel.status === 'approved').length;
+  document.querySelector('main h2').textContent = title;
+  document.querySelector('main h2').nextElementSibling.textContent = `${pageCount} saved page${pageCount === 1 ? '' : 's'} · ${panelCount} saved panel${panelCount === 1 ? '' : 's'} · ${approvedCount} reviewed`;
+}
+
+function renderCards() {
+  const container = document.getElementById('shots-container');
+  if (!container) return;
+
+  if (!storyboardState.panels.length) {
+    container.innerHTML = `
+      <div class="w-full h-full flex items-center justify-center text-center px-8">
+        <div class="glass-panel rounded-xl p-8 max-w-xl">
+          <span class="material-symbols-outlined text-6xl text-primary/40 mb-3">timeline</span>
+          <h3 class="font-headline-md text-[24px] text-on-surface mb-2">No saved storyboard panels yet</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-4">Run story intake from the writing dashboard first. This review board now reads saved comic pages and panels from the backend instead of static mock cards.</p>
+          <a href="dashboard.html" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded font-label-md text-label-md">Open Story Intake</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = storyboardState.panels.map(panel => renderPanelCard(panel)).join('') + renderAddPanelCard();
+}
+
+function renderPanelCard(panel) {
+  const page = getPanelPage(panel);
+  const isActive = storyboardState.activePanelId === panel.id;
+  const shotType = panel.shot_type || 'medium';
+  const cameraAngle = panel.camera_angle || '';
+  return `
+    <form data-panel-id="${panel.id}" onsubmit="savePanel(event, '${panel.id}')" class="glass-card shrink-0 w-[380px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[520px] cursor-default ${isActive ? 'ring-2 ring-primary' : ''}">
+      <div class="relative h-44 w-full shrink-0 bg-gradient-to-br from-surface-container-high to-surface-container-lowest">
+        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent"></div>
+        <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-white text-xs">${escapeHtml(panelDisplayId(panel))}</div>
+        <div class="absolute top-3 right-3 bg-primary/90 text-on-primary px-2 py-0.5 rounded font-label-sm text-xs font-bold">${escapeHtml(shotType.toUpperCase())}</div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">${panel.image_asset_id ? 'image' : 'photo_camera'}</span>
+        </div>
+        <button type="button" onclick="activatePanel('${panel.id}')" class="absolute bottom-3 right-3 px-3 py-1 bg-surface-container/90 border border-white/10 rounded text-[10px] text-on-surface font-label-sm hover:text-primary">Review</button>
+      </div>
+      <div class="p-4 flex-1 flex flex-col gap-3 overflow-y-auto timeline-scroll">
+        <div>
+          <div class="flex justify-between gap-2 items-start mb-1">
+            <h3 class="font-headline-md text-[18px] text-on-surface">${escapeHtml(page?.title || `Page ${page?.page_number || '—'}`)}</h3>
+            <span class="font-label-sm text-[10px] text-on-surface-variant uppercase">${escapeHtml(panel.status || 'draft')}</span>
+          </div>
+          <p class="font-label-sm text-[10px] text-on-surface-variant font-mono">${escapeHtml(page?.layout || 'saved layout')}</p>
+        </div>
+        <label class="block">
+          <span class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest">Description</span>
+          <textarea name="description" rows="4" class="mt-1 w-full bg-surface-container-low border border-white/10 rounded px-2 py-2 text-on-surface text-xs resize-none focus:border-primary focus:outline-none">${escapeHtml(panel.description || '')}</textarea>
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block">
+            <span class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest">Shot Type</span>
+            <input name="shot_type" value="${escapeHtml(shotType)}" class="mt-1 w-full bg-surface-container-low border border-white/10 rounded px-2 py-1.5 text-on-surface text-xs focus:border-primary focus:outline-none" />
+          </label>
+          <label class="block">
+            <span class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest">Camera Angle</span>
+            <input name="camera_angle" value="${escapeHtml(cameraAngle)}" class="mt-1 w-full bg-surface-container-low border border-white/10 rounded px-2 py-1.5 text-on-surface text-xs focus:border-primary focus:outline-none" />
+          </label>
+        </div>
+        <label class="block">
+          <span class="text-[9px] text-on-surface-variant/70 uppercase tracking-widest">Continuity Notes</span>
+          <textarea name="continuity_notes" rows="2" class="mt-1 w-full bg-surface-container-low border border-white/10 rounded px-2 py-2 text-on-surface text-xs resize-none focus:border-primary focus:outline-none">${escapeHtml(panel.continuity_notes || '')}</textarea>
+        </label>
+        ${normalizeDialogue(panel.dialogue) ? `<div class="bg-surface-container-low p-2.5 rounded border-l-2 border-primary/50"><span class="font-label-sm text-[10px] text-primary block mb-1">DIALOGUE</span><p class="text-on-surface text-xs whitespace-pre-line italic">${escapeHtml(normalizeDialogue(panel.dialogue))}</p></div>` : ''}
+        <div class="mt-auto pt-3 border-t border-white/5 flex justify-between items-center gap-2">
+          <span class="font-label-sm text-[10px] text-on-surface-variant/60">Updated ${panel.updated_at ? new Date(panel.updated_at).toLocaleDateString() : '—'}</span>
+          <button class="px-3 py-1.5 bg-primary text-on-primary rounded font-label-sm text-[10px] hover:opacity-90" type="submit">Save Panel</button>
+        </div>
+      </div>
+    </form>`;
+}
+
+function renderAddPanelCard() {
+  return `
+    <button onclick="addNewShot()" class="shrink-0 w-[360px] rounded-xl border-2 border-dashed border-white/10 hover:border-primary/50 bg-white/3 snap-center flex flex-col h-full max-h-[480px] cursor-pointer transition-colors group items-center justify-center">
+      <div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center mb-3 group-hover:bg-primary/20 group-hover:text-primary transition-colors text-on-surface-variant">
+        <span class="material-symbols-outlined text-2xl">add_photo_alternate</span>
+      </div>
+      <span class="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Add Saved Panel</span>
+      <span class="text-[10px] text-on-surface-variant/50 mt-2 text-center px-8">Creates a real draft comic panel tied to the latest saved page.</span>
+    </button>`;
+}
+
+function renderShotTable() {
+  const body = document.getElementById('shot-table-body');
+  if (!body) return;
+  body.innerHTML = storyboardState.panels.map(panel => {
+    const active = storyboardState.activePanelId === panel.id;
+    const shotType = panel.shot_type || 'medium';
+    return `
+      <tr class="border-b border-white/5 ${active ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-white/5'} transition-colors cursor-pointer" onclick="activatePanel('${panel.id}')">
+        <td class="py-2.5 pl-2 ${active ? 'text-primary font-bold' : 'text-on-surface-variant'}">${escapeHtml(panelDisplayId(panel))}</td>
+        <td class="py-2.5 text-primary">${escapeHtml(shotTypeLabels[shotType.toLowerCase()] || shotType)}</td>
+        <td class="py-2.5 text-on-surface truncate max-w-[240px]">${escapeHtml(panel.description || 'No description saved yet.')}</td>
+        <td class="py-2.5 text-on-surface-variant/80 text-[10px]">${escapeHtml(panel.camera_angle || panel.continuity_notes || '—')}</td>
+        <td class="py-2.5 text-right pr-3 text-on-surface-variant font-mono">${escapeHtml(panel.status || 'draft')}</td>
+      </tr>`;
+  }).join('');
+}
+
 function setView(view) {
   const boardView = document.getElementById('board-view');
   const scriptView = document.getElementById('script-view');
@@ -386,180 +553,181 @@ function setView(view) {
   }
 }
 
-function addNewShot() {
-  const container = document.getElementById('shots-container');
-  const addBtn = container.lastElementChild;
-  const shotNum = container.children.length;
-  const shotId = '04' + String.fromCharCode(64 + shotNum);
-  const card = document.createElement('div');
-  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group';
-  card.innerHTML = `
-    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
-      <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">add_photo_alternate</span>
-      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-xs text-white">${shotId}</div>
-    </div>
-    <div class="p-4 flex-1 flex flex-col">
-      <input class="bg-transparent border-none outline-none font-headline-md text-[18px] text-on-surface mb-1 w-full" placeholder="Shot Title..." value="New Shot"/>
-      <textarea class="bg-transparent border-none outline-none text-on-surface-variant text-xs resize-none flex-1" placeholder="Describe the action..."></textarea>
-    </div>`;
-  container.insertBefore(card, addBtn);
-}
-
-function regenerateShot(btn) {
-  const card = btn.closest('.glass-card');
-  const imgDiv = card.querySelector('.relative.h-48');
-  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">autorenew</span>';
-  setTimeout(() => {
-    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">refresh</span>';
-  }, 1500);
-}
-
-function acceptAISuggestion(btn) {
-  const card = btn.closest('.glass-card');
-  card.classList.remove('border-primary/20', 'bg-primary/3');
-  card.classList.add('ring-1', 'ring-primary/30');
-  btn.textContent = '✓ Accepted';
-  btn.disabled = true;
-  btn.className = 'flex-1 py-2 bg-emerald-400/10 text-emerald-400 border border-emerald-400/30 rounded font-label-sm text-[10px]';
-}
-
-function insertOTS() {
-  const container = document.getElementById('shots-container');
-  const addBtn = container.lastElementChild;
-  const card = document.createElement('div');
-  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab border border-tertiary/30';
-  card.innerHTML = `
-    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
-      <span class="material-symbols-outlined text-5xl text-tertiary/30">switch_camera</span>
-      <div class="absolute top-3 left-3 bg-black/60 px-2 py-0.5 rounded border border-white/10 text-xs text-white">OTS Insert</div>
-      <div class="absolute top-3 right-3 bg-tertiary/20 text-tertiary px-2 py-0.5 rounded text-[10px] border border-tertiary/30">OTS</div>
-    </div>
-    <div class="p-4 flex-1 flex flex-col"><h3 class="font-headline-md text-[18px] text-on-surface mb-1">OTS — Neon Sign</h3><p class="text-on-surface-variant text-xs">Over-the-shoulder shot past the MOMO'S NOODLES sign, bridging from wide to close-up of Vance.</p></div>`;
-  container.insertBefore(card, addBtn);
-}
-
-function activateShot(row, id) {
-  document.querySelectorAll('#shot-table-body tr').forEach(r => r.classList.remove('bg-primary/5', 'hover:bg-primary/10'));
-  row.classList.add('bg-primary/5', 'hover:bg-primary/10');
-}
-
-// ── Project context ───────────────────────────────────────────────────────────
-let PROJECT_ID = null;
-
 async function loadProject() {
+  setStatus('Loading saved storyboard…');
   try {
-    const r = await fetch('/api/projects');
-    if (!r.ok) return;
-    const { projects } = await r.json();
-    if (projects?.length) PROJECT_ID = projects[0].id;
-  } catch (e) { console.warn('Could not load project', e); }
+    storyboardState.project = await window.MorphicApi.getActiveProject();
+    if (!storyboardState.project?.id) {
+      setStatus('No active project', 'error');
+      renderStoryboard();
+      return;
+    }
+    await loadStoryboard();
+  } catch (error) {
+    console.warn('Could not load storyboard', error);
+    setStatus(error.message || 'Could not load storyboard', 'error');
+  }
 }
 
-// ── AI Panel Generation ───────────────────────────────────────────────────────
+async function loadStoryboard() {
+  const projectId = storyboardState.project.id;
+  const [{ pages }, { panels }] = await Promise.all([
+    window.MorphicApi.listComicPages(projectId, { limit: 200 }),
+    window.MorphicApi.listComicPanels(projectId, { limit: 200 }),
+  ]);
+  storyboardState.pages = pages || [];
+  storyboardState.panels = panels || [];
+  storyboardState.activePanelId = storyboardState.activePanelId || storyboardState.panels[0]?.id || null;
+  renderStoryboard();
+  setStatus(storyboardState.panels.length ? 'Saved panels loaded' : 'Ready for story intake', storyboardState.panels.length ? 'success' : 'primary');
+}
+
+function activatePanel(panelId) {
+  storyboardState.activePanelId = panelId;
+  renderStoryboard();
+}
+
+async function savePanel(event, panelId) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const payload = Object.fromEntries(new FormData(form).entries());
+  payload.status = 'edited';
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  try {
+    const { panel } = await window.MorphicApi.updateComicPanel(storyboardState.project.id, panelId, payload);
+    storyboardState.panels = storyboardState.panels.map(item => item.id === panel.id ? panel : item);
+    setStatus('Panel metadata saved', 'success');
+    renderStoryboard();
+  } catch (error) {
+    console.warn('Panel save failed', error);
+    setStatus(error.message || 'Panel save failed', 'error');
+    button.disabled = false;
+    button.textContent = 'Save Panel';
+  }
+}
+
+async function addNewShot() {
+  if (!storyboardState.project?.id) return;
+  const page = storyboardState.pages.at(-1);
+  if (!page) {
+    setStatus('Run story intake before adding panels', 'error');
+    return;
+  }
+  const panelNumber = storyboardState.panels.length + 1;
+  setStatus('Creating saved panel…');
+  try {
+    const { panel } = await window.MorphicApi.createComicPanel(storyboardState.project.id, {
+      chapter_id: page.chapter_id,
+      page_id: page.id,
+      panel_number: panelNumber,
+      shot_type: 'medium',
+      camera_angle: 'story-driven',
+      description: 'New storyboard panel. Add action, framing, and continuity notes.',
+      continuity_notes: 'Created from Storyboard Review.',
+      status: 'draft',
+    });
+    storyboardState.panels.push(panel);
+    storyboardState.activePanelId = panel.id;
+    renderStoryboard();
+    setStatus('Draft panel saved', 'success');
+  } catch (error) {
+    console.warn('Create panel failed', error);
+    setStatus(error.message || 'Create panel failed', 'error');
+  }
+}
+
+async function markStoryboardReviewed() {
+  if (!storyboardState.project?.id || !storyboardState.panels.length) return;
+  setStatus('Marking storyboard reviewed…');
+  const chapterIds = [...new Set(storyboardState.panels.map(panel => panel.chapter_id).filter(Boolean))];
+  try {
+    await Promise.all([
+      ...storyboardState.panels.map(panel => window.MorphicApi.updateComicPanel(storyboardState.project.id, panel.id, { status: 'approved' })),
+      ...storyboardState.pages.map(page => window.MorphicApi.updateComicPage(storyboardState.project.id, page.id, { status: 'storyboarded' })),
+      ...chapterIds.map(chapter_id => window.MorphicApi.updateWorkflowStage(storyboardState.project.id, 'storyboard_review', {
+        chapter_id,
+        status: 'complete',
+        input_refs: storyboardState.panels.filter(panel => panel.chapter_id === chapter_id).map(panel => ({ type: 'comic_panel', id: panel.id })),
+        output_refs: storyboardState.pages.filter(page => page.chapter_id === chapter_id).map(page => ({ type: 'comic_page', id: page.id })),
+        metadata: { reviewedPanelCount: storyboardState.panels.filter(panel => panel.chapter_id === chapter_id).length },
+      })),
+    ]);
+    await loadStoryboard();
+    setStatus('Storyboard reviewed and workflow stage saved', 'success');
+  } catch (error) {
+    console.warn('Review save failed', error);
+    setStatus(error.message || 'Review save failed', 'error');
+  }
+}
+
 async function _dispatchPanels(description) {
-  if (!PROJECT_ID) return null;
-  const r = await fetch(`/api/projects/${PROJECT_ID}/jobs/dispatch`, {
+  if (!storyboardState.project?.id) return null;
+  const r = await fetch(`/api/projects/${storyboardState.project.id}/jobs/dispatch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      taskType: 'generate_panels',
-      input: { description, count: 1, style: 'cinematic' },
-      useCache: false,
-    }),
+    body: JSON.stringify({ taskType: 'generate_panels', input: { description, count: 1, style: 'cinematic' }, useCache: false }),
   });
   if (!r.ok) throw new Error(`Dispatch failed: ${r.status}`);
   return r.json();
 }
 
-async function generateFromPrompt() {
+async function generateFromPrompt(event) {
   const promptEl = document.getElementById('shot-prompt');
   const promptText = promptEl?.value?.trim();
   if (!promptText) return;
-
   const btn = event.currentTarget;
-  btn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">autorenew</span> Generating...';
+  btn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">autorenew</span> Queuing...';
   btn.disabled = true;
-
   try {
-    if (PROJECT_ID) {
-      await _dispatchPanels(promptText);
-    }
-    addNewShotWithDescription(promptText);
+    await _dispatchPanels(promptText);
     promptEl.value = '';
+    setStatus('Generation job queued for saved panel prompt', 'success');
   } catch (e) {
     console.warn('Panel generation error:', e);
-    addNewShot(); // graceful fallback
+    setStatus(e.message || 'Generation dispatch failed', 'error');
   } finally {
     btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot';
     btn.disabled = false;
   }
 }
 
-async function generateShot() {
-  const btn = document.getElementById('generate-btn');
-  btn.textContent = 'Generating...';
+async function generateShot(event) {
+  const activePanel = storyboardState.panels.find(panel => panel.id === storyboardState.activePanelId);
+  if (!activePanel) return addNewShot();
+  const btn = event?.currentTarget || document.getElementById('generate-btn');
+  btn.textContent = 'Queuing...';
   btn.disabled = true;
-
   try {
-    if (PROJECT_ID) {
-      await _dispatchPanels('Generate next storyboard panel');
-    }
-    addNewShot();
+    await _dispatchPanels(activePanel.description || 'Generate next storyboard panel');
+    setStatus('Generation job queued from active saved panel', 'success');
   } catch (e) {
     console.warn('Shot generation error:', e);
-    addNewShot();
+    setStatus(e.message || 'Generation dispatch failed', 'error');
   } finally {
     btn.textContent = 'Generate';
     btn.disabled = false;
   }
 }
 
-async function regenerateShot(btn) {
-  const card = btn.closest('.glass-card');
-  const titleEl = card?.querySelector('input');
-  const description = titleEl?.value || 'Regenerate this storyboard shot';
-
-  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">autorenew</span>';
-
-  try {
-    if (PROJECT_ID) {
-      await _dispatchPanels(description);
-    }
-  } catch (e) {
-    console.warn('Regenerate error:', e);
-  } finally {
-    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">refresh</span>';
-  }
-}
-
-function addNewShotWithDescription(description) {
-  const container = document.getElementById('shots-container');
-  const addBtn = container.lastElementChild;
-  const shotNum = container.children.length;
-  const shotId = '04' + String.fromCharCode(64 + shotNum);
-  const card = document.createElement('div');
-  card.className = 'glass-card shrink-0 w-[360px] rounded-xl overflow-hidden snap-center flex flex-col h-full max-h-[480px] cursor-grab group';
-  card.innerHTML = `
-    <div class="relative h-48 w-full shrink-0 bg-surface-container-lowest flex items-center justify-center">
-      <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">add_photo_alternate</span>
-      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 font-label-sm text-xs text-white">${shotId}</div>
-    </div>
-    <div class="p-4 flex-1 flex flex-col">
-      <input class="bg-transparent border-none outline-none font-headline-md text-[18px] text-on-surface mb-1 w-full" placeholder="Shot Title..." value="AI Shot"/>
-      <textarea class="bg-transparent border-none outline-none text-on-surface-variant text-xs resize-none flex-1" placeholder="Describe the action...">${description}</textarea>
-    </div>`;
-  container.insertBefore(card, addBtn);
-}
-
 function exportStoryboard() {
-  if (!PROJECT_ID) {
+  if (!storyboardState.project?.id) {
     alert('Connect a project to export the storyboard.');
     return;
   }
-  alert('Export: POST /api/projects/' + PROJECT_ID + '/jobs/dispatch with taskType: refine_panels to finalize, then download via the exports endpoint.');
+  markStoryboardReviewed();
 }
 
+function acceptAISuggestion(btn) { btn.closest('.glass-card')?.remove(); }
+function insertOTS() { addNewShot(); }
+function activateShot(_row, _id) {}
+function addNewShotWithDescription(_description) { addNewShot(); }
+function regenerateShot(_btn) { generateShot(); }
+
 document.addEventListener('DOMContentLoaded', () => {
+  const statusWrap = document.querySelector('.flex.items-center.gap-2.text-primary');
+  if (statusWrap) statusWrap.querySelector('span:last-child').id = 'storyboard-status';
   loadProject();
 });
 </script>

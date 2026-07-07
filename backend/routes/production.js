@@ -28,6 +28,11 @@ router.post('/comic/panels', asyncWrap(ctrl.createComicPanel));
 router.patch('/comic/panels/:id', asyncWrap(ctrl.updateComicPanel));
 router.delete('/comic/panels/:id', asyncWrap(ctrl.deleteComicPanel));
 
+
+// Workflow stages
+router.get('/workflow/stages', asyncWrap(ctrl.listWorkflowStages));
+router.patch('/workflow/stages/:stageKey', asyncWrap(ctrl.updateWorkflowStage));
+
 // Voices
 router.get('/voices', asyncWrap(ctrl.listVoiceProfiles));
 router.get('/voices/:id', asyncWrap(ctrl.getVoiceProfile));

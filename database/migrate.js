@@ -8,6 +8,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import pg from 'pg';
+import { getPgPoolConfig } from './pgOptions.js';
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ function requireDatabaseUrl() {
 
 export async function migrate({ pool: externalPool } = {}) {
   requireDatabaseUrl();
-  const pool = externalPool ?? new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = externalPool ?? new Pool(getPgPoolConfig());
   const shouldClose = !externalPool;
 
   try {
