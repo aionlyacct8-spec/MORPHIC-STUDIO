@@ -117,6 +117,8 @@ app.get('/api', (_req, res) => {
       'GET  /api/system/config',
       'GET  /api/system/queues',
       'GET  /api/system/storage',
+      'GET  /api/system/open-source/catalog',
+      'POST /api/system/open-source/evaluate',
       'POST /api/system/projects/:projectId/storage/objects',
       'POST /api/projects/:projectId/production/intake/plan',
       'GET  /api/projects/:projectId/production/chapters',

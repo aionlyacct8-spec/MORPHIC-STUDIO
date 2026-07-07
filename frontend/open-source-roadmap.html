@@ -60,8 +60,40 @@ tailwind.config = {
         <span class="material-symbols-outlined text-[16px]">hub</span> Preview Page
       </div>
       <h1 class="font-display-lg text-[42px] md:text-[68px] leading-[1.05] tracking-[-0.02em] mb-6">Open-source integration roadmap.</h1>
-      <p class="font-body-lg text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">We are ready to start the <strong class="text-on-surface">planning and evaluation layer</strong> for open-source tools. We should not connect heavy engines directly until each workflow has stable save/load data contracts.</p>
+      <p class="font-body-lg text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">Yes — Morphic should be <strong class="text-on-surface">open-source-ready by design</strong>. Phase 1 locks down save/load data contracts and a transparent integration plan. Phase 2 wires AI enhancement and replaceable open-source adapters only after the core creator pipeline is stable.</p>
     </div>
+  </section>
+
+
+
+  <section class="grid lg:grid-cols-2 gap-6 mb-10">
+    <article class="roadmap-card rounded-2xl p-6 md:p-8 border-primary/20">
+      <div class="inline-flex items-center gap-2 ready-pill px-3 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-widest mb-4">
+        <span class="material-symbols-outlined text-[14px]">looks_one</span> Phase 1 — Do now
+      </div>
+      <h2 class="font-headline-md text-[30px] mb-3">Open-source-ready website foundation</h2>
+      <p class="text-on-surface-variant text-sm leading-relaxed mb-5">Build the website around data ownership first. The creator should be able to save a project, script, scenes, panels, characters, worlds, assets, workflow stages, and provider settings before any heavy engine is attached.</p>
+      <ul class="space-y-3 text-sm text-on-surface-variant">
+        <li class="flex gap-3"><span class="material-symbols-outlined text-primary text-[18px]">database</span><span><strong class="text-on-surface">Save/load contracts:</strong> every screen reads and writes Morphic records, not static mock data.</span></li>
+        <li class="flex gap-3"><span class="material-symbols-outlined text-primary text-[18px]">fact_check</span><span><strong class="text-on-surface">License intake:</strong> every open-source tool must pass license, security, hardware, and output-format checks before use.</span></li>
+        <li class="flex gap-3"><span class="material-symbols-outlined text-primary text-[18px]">account_tree</span><span><strong class="text-on-surface">Adapter architecture:</strong> define a small service boundary so ComfyUI, Fabric.js, Konva.js, PixiJS, Redis/BullMQ, Socket.IO, OpenTimelineIO, and OpenColorIO can be swapped or postponed later.</span></li>
+        <li class="flex gap-3"><span class="material-symbols-outlined text-primary text-[18px]">inventory_2</span><span><strong class="text-on-surface">Asset Library first:</strong> every generated file must come back as an asset/storage object before export buttons are enabled.</span></li>
+      </ul>
+    </article>
+
+    <article class="roadmap-card rounded-2xl p-6 md:p-8">
+      <div class="inline-flex items-center gap-2 wait-pill px-3 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-widest mb-4">
+        <span class="material-symbols-outlined text-[14px]">looks_two</span> Phase 2 — Next
+      </div>
+      <h2 class="font-headline-md text-[30px] mb-3">AI enhancement + open-source adapters</h2>
+      <p class="text-on-surface-variant text-sm leading-relaxed mb-5">After Phase 1 data is reliable, connect the AI-enhanced intake flow and start with thin adapters that create test assets instead of running every heavy workflow at once.</p>
+      <div class="grid sm:grid-cols-2 gap-3 text-sm">
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4"><strong class="text-primary block mb-1">ComfyUI</strong><span class="text-on-surface-variant">Primary visual generation for characters, backgrounds, style workflows, comics, and animation assets.</span></div>
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4"><strong class="text-primary block mb-1">Canvas stack</strong><span class="text-on-surface-variant">Fabric.js, Konva.js, and PixiJS for editing, layers, GPU previews, and rich editor tools.</span></div>
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4"><strong class="text-primary block mb-1">Runtime stack</strong><span class="text-on-surface-variant">Next.js, React, Node.js, Redis, BullMQ, and Socket.IO for app, queues, and real-time progress.</span></div>
+        <div class="rounded-xl bg-black/20 border border-white/10 p-4"><strong class="text-primary block mb-1">Research additions</strong><span class="text-on-surface-variant">OpenTimelineIO and OpenColorIO stay on the research list until timeline/color workflows need them.</span></div>
+      </div>
+    </article>
   </section>
 
   <section class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 mb-10">
@@ -89,7 +121,7 @@ tailwind.config = {
             <li>• Installing heavy engines into production.</li>
             <li>• Connecting render/export buttons.</li>
             <li>• Rewriting frontend to React.</li>
-            <li>• Adding Blender/ComfyUI jobs without storage.</li>
+            <li>• Adding ComfyUI or queue jobs without storage.</li>
           </ul>
         </div>
       </div>
@@ -113,38 +145,44 @@ tailwind.config = {
     <article class="roadmap-card rounded-2xl p-6">
       <span class="material-symbols-outlined text-primary mb-4">image</span>
       <h3 class="font-headline-md text-[24px] mb-2">ComfyUI</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Future image workflow engine for characters, backgrounds, outfits, props, and panel art.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after Asset Library + prompt/workflow metadata.</p>
+      <p class="text-sm text-on-surface-variant mb-4">Primary visual generation engine for characters, backgrounds, style workflows, custom pipelines, comic assets, and animation assets.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Primary visual engine.</p>
     </article>
     <article class="roadmap-card rounded-2xl p-6">
-      <span class="material-symbols-outlined text-primary mb-4">deployed_code</span>
-      <h3 class="font-headline-md text-[24px] mb-2">Blender</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Future animation/render layer for rigs, bones, camera, lighting, and scene rendering.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after animation asset contracts.</p>
+      <span class="material-symbols-outlined text-primary mb-4">draw</span>
+      <h3 class="font-headline-md text-[24px] mb-2">Fabric.js / Konva.js / PixiJS</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Canvas editing, object manipulation, layer tools, selection tools, GPU rendering, and animation previews.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Canvas and graphics stack.</p>
     </article>
     <article class="roadmap-card rounded-2xl p-6">
-      <span class="material-symbols-outlined text-primary mb-4">movie</span>
-      <h3 class="font-headline-md text-[24px] mb-2">FFmpeg</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Future media assembly/export engine for motion-comic videos, audio mixing, compression, and final files.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after motion cues + storage.</p>
+      <span class="material-symbols-outlined text-primary mb-4">language</span>
+      <h3 class="font-headline-md text-[24px] mb-2">Next.js / React</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Future frontend framework and UI library for the main Morphic Studio website experience.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Web framework plan.</p>
     </article>
     <article class="roadmap-card rounded-2xl p-6">
-      <span class="material-symbols-outlined text-primary mb-4">record_voice_over</span>
-      <h3 class="font-headline-md text-[24px] mb-2">TTS / voice</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Voice providers should attach to saved voice profiles, dialogue, audio assets, and character records.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after voice profile UI.</p>
+      <span class="material-symbols-outlined text-primary mb-4">dns</span>
+      <h3 class="font-headline-md text-[24px] mb-2">Node.js / Redis / BullMQ</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Runtime, caching, session storage, queue backend, background jobs, and AI task processing.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Backend and queue stack.</p>
     </article>
     <article class="roadmap-card rounded-2xl p-6">
-      <span class="material-symbols-outlined text-primary mb-4">face</span>
-      <h3 class="font-headline-md text-[24px] mb-2">SadTalker / lip sync</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Possible talking-head lip-sync layer, but only if it fits the chosen character animation direction.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Add after voice audio exists.</p>
+      <span class="material-symbols-outlined text-primary mb-4">sync_alt</span>
+      <h3 class="font-headline-md text-[24px] mb-2">Socket.IO</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Live collaboration, real-time updates, and progress tracking for queued AI and production tasks.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Real-time communication.</p>
     </article>
     <article class="roadmap-card rounded-2xl p-6">
+      <span class="material-symbols-outlined text-primary mb-4">science</span>
+      <h3 class="font-headline-md text-[24px] mb-2">OpenTimelineIO / OpenColorIO</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Research additions for timeline interoperability and consistent color management across comics, animation, and rendering.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Research list, not core yet.</p>
+    </article>
+    <article class="roadmap-card rounded-2xl p-6 xl:col-span-3">
       <span class="material-symbols-outlined text-primary mb-4">smart_toy</span>
-      <h3 class="font-headline-md text-[24px] mb-2">OpenHands</h3>
-      <p class="text-sm text-on-surface-variant mb-4">Developer-side engineering assistant for maintaining and extending Morphic, not an end-user studio module.</p>
-      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Use as build helper, not creative engine.</p>
+      <h3 class="font-headline-md text-[24px] mb-2">Development assistants and skills</h3>
+      <p class="text-sm text-on-surface-variant mb-4">Antigravity, Codex, Claude Code, Jules, and planned Claude Code skills support the development workflow only. They are not embedded in the creator-facing website.</p>
+      <p class="font-label-sm text-[10px] uppercase tracking-widest text-primary">Dev workflow only: Memory, OKF Knowledge, Groundrules, Blueprint.</p>
     </article>
   </section>
 
@@ -159,47 +197,60 @@ tailwind.config = {
 </main>
 
 <script>
-function repoNameFromInput(value) {
-  const trimmed = value.trim();
-  if (!trimmed) return 'No repo entered';
-  try {
-    const url = new URL(trimmed);
-    return url.hostname.includes('github.com') ? url.pathname.replace(/^\//, '') : trimmed;
-  } catch (_err) {
-    return trimmed;
-  }
-}
-
-function inferWorkflow(name) {
-  const lower = name.toLowerCase();
-  if (lower.includes('comfy')) return 'Image generation / visual workflow';
-  if (lower.includes('blender')) return 'Animation, rigging, camera, render';
-  if (lower.includes('ffmpeg')) return 'Media assembly and export';
-  if (lower.includes('tts') || lower.includes('coqui')) return 'Voice generation / speech assets';
-  if (lower.includes('sadtalker') || lower.includes('lip')) return 'Facial animation / lip sync';
-  if (lower.includes('openhands')) return 'Developer automation, not user-facing studio feature';
-  return 'Needs owner decision: asset, comic, motion-comic, animation, voice, auth, or export';
-}
-
 function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+  return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
 }
 
-function previewRepoPlan() {
-  const value = document.getElementById('repo-input').value;
-  const name = repoNameFromInput(value);
-  const workflow = inferWorkflow(name);
-  const safeName = escapeHtml(name);
-  const safeWorkflow = escapeHtml(workflow);
+function list(items = []) {
+  return items.map(item => `<li class="flex gap-2"><span class="text-primary">•</span><span>${escapeHtml(item)}</span></li>`).join('');
+}
+
+function renderPlan(plan) {
   const preview = document.getElementById('repo-preview');
   preview.innerHTML = `
-    <div class="font-label-md text-[11px] uppercase tracking-widest text-primary mb-3">Integration intake preview</div>
-    <div class="space-y-2">
-      <p><strong class="text-on-surface">Repo/package:</strong> ${safeName}</p>
-      <p><strong class="text-on-surface">Likely workflow:</strong> ${safeWorkflow}</p>
-      <p><strong class="text-on-surface">Before adding:</strong> confirm license, hardware/cloud needs, storage path, security risk, and which Morphic record it writes back to.</p>
-      <p><strong class="text-on-surface">First safe milestone:</strong> create an adapter plan and save a test output as an Asset Library record before connecting any big UI button.</p>
+    <div class="font-label-md text-[11px] uppercase tracking-widest text-primary mb-3">Phase 2 adapter plan</div>
+    <div class="space-y-3">
+      <p><strong class="text-on-surface">Repo/package:</strong> ${escapeHtml(plan.repo || plan.name)}</p>
+      <p><strong class="text-on-surface">Workflow:</strong> ${escapeHtml(plan.workflow)}</p>
+      <p><strong class="text-on-surface">Adapter:</strong> <code class="px-2 py-0.5 rounded bg-black/30 border border-white/10">${escapeHtml(plan.adapter)}</code></p>
+      <p><strong class="text-on-surface">Decision:</strong> ${escapeHtml(plan.decision)}</p>
+      <div>
+        <strong class="text-on-surface block mb-1">Writes back to:</strong>
+        <div class="flex flex-wrap gap-2">${(plan.writesTo || []).map(item => `<span class="px-2 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label-sm text-[10px]">${escapeHtml(item)}</span>`).join('')}</div>
+      </div>
+      <div>
+        <strong class="text-on-surface block mb-1">Required checks:</strong>
+        <ul class="space-y-1">${list(plan.requiredChecks)}</ul>
+      </div>
+      <p><strong class="text-on-surface">First safe milestone:</strong> ${escapeHtml(plan.firstMilestone)}</p>
+      <div>
+        <strong class="text-on-surface block mb-1">Phase order:</strong>
+        <ol class="space-y-1 list-decimal list-inside">${(plan.phaseOrder || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol>
+      </div>
     </div>`;
+}
+
+async function previewRepoPlan() {
+  const repo = document.getElementById('repo-input').value.trim();
+  const preview = document.getElementById('repo-preview');
+  if (!repo) {
+    preview.textContent = 'Add a GitHub repo or package first.';
+    return;
+  }
+
+  preview.innerHTML = '<span class="text-primary">Evaluating open-source adapter plan…</span>';
+  try {
+    const response = await fetch('/api/system/open-source/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Evaluation failed.');
+    renderPlan(data.plan);
+  } catch (error) {
+    preview.innerHTML = `<span class="text-error">${escapeHtml(error.message)} Start the Express server to use backend-powered Phase 2 evaluation.</span>`;
+  }
 }
 </script>
 <script src="/morphic-ui.js"></script>
