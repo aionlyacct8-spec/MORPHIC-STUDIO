@@ -3,6 +3,7 @@ import { createError } from '../middleware/errorHandler.js';
 import { getRuntimeConfig } from '../services/configService.js';
 import { getQueueHealth } from '../services/queueService.js';
 import { getStorageHealth, saveBase64Object } from '../services/storageService.js';
+import { evaluateOpenSourceTool, listOpenSourceCatalog } from '../services/openSourceService.js';
 
 export function getConfig(_req, res) {
   res.json({ config: getRuntimeConfig() });
@@ -14,6 +15,16 @@ export async function getStorageStatus(_req, res) {
 
 export function getQueueStatus(_req, res) {
   res.json({ queue: getQueueHealth() });
+}
+
+export function getOpenSourceCatalog(_req, res) {
+  res.json(listOpenSourceCatalog());
+}
+
+export function evaluateOpenSource(req, res) {
+  const { repo } = req.body;
+  if (!repo) throw createError(400, 'repo is required.');
+  res.json({ plan: evaluateOpenSourceTool(repo) });
 }
 
 export async function uploadProjectObject(req, res) {
