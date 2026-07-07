@@ -51,6 +51,19 @@ export function getStorageConfig() {
   };
 }
 
+
+export function getComfyUiConfig() {
+  return {
+    mode: process.env.COMFYUI_MODE || 'simulated',
+    baseUrl: process.env.COMFYUI_BASE_URL || '',
+    workflowPath: process.env.COMFYUI_WORKFLOW_PATH || '',
+    clientId: process.env.COMFYUI_CLIENT_ID || '',
+    requestTimeoutMs: number('COMFYUI_REQUEST_TIMEOUT_MS', 30000),
+    pollIntervalMs: number('COMFYUI_POLL_INTERVAL_MS', 1000),
+    maxPolls: number('COMFYUI_MAX_POLLS', 120),
+  };
+}
+
 export function getQueueConfig() {
   return {
     provider: process.env.QUEUE_PROVIDER || 'memory',
@@ -80,6 +93,7 @@ export function getRuntimeConfig() {
     features: getFeatureFlags(),
     storage: getStorageConfig(),
     queue: getQueueConfig(),
+    comfyui: getComfyUiConfig(),
     aiKeys: getAiKeyStatus(),
   };
 }

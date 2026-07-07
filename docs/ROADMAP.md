@@ -9,9 +9,12 @@
 ## Phase 2 — Open-source adapters
 
 - ComfyUI adapter for visual generation.
-- Fabric.js/Konva.js/PixiJS editor adapter plan for canvas and previews.
+- MinIO/S3-compatible storage for generated files and thumbnails.
 - Redis/BullMQ queue runtime for long-running jobs.
+- Fabric.js/Konva.js/PixiJS/tldraw editor adapter plan for canvas and previews.
+- Remotion plan for motion-comic/slideshow rendering from saved panels, voices, and timing.
 - Socket.IO progress events for real-time status.
+- Canon Validation Engine for checking scripts against saved character, world, relationship, and timeline memory before generation.
 - Research OpenTimelineIO for timeline interoperability.
 - Research OpenColorIO for color-management consistency.
 

@@ -35,6 +35,8 @@ const demoStore = {
   chapters: [],
   pages: [],
   panels: [],
+  assets: [],
+  generationJobs: [],
   workflowStages: [],
 };
 
@@ -187,6 +189,106 @@ function upsertWorkflowStage(stageKey, body = {}) {
   return payload;
 }
 
+function planPreviewComfyUiPanel(req) {
+  const panelId = req.body?.panelId;
+  const panel = demoStore.panels.find(item => item.id === panelId && item.project_id === demoProject.id);
+  if (!panel) return null;
+
+  const timestamp = Date.now();
+  const outputUrl = `mock://comfyui/panels/${panel.id}/test-${timestamp}.png`;
+  const payload = {
+    engine: 'comfyui',
+    workflow: 'comfyui_panel_plan_v1',
+    mode: 'simulated_planning',
+    prompt: panel.description || 'Storyboard panel concept art, cinematic composition.',
+    parameters: { steps: 20, cfgScale: 7, width: 1024, height: 1024 },
+    refs: {
+      projectId: demoProject.id,
+      chapterId: panel.chapter_id,
+      pageId: panel.page_id,
+      panelId: panel.id,
+    },
+  };
+  const generationJob = {
+    id: nextId('preview-job'),
+    project_id: demoProject.id,
+    job_type: 'comic',
+    status: 'complete',
+    agent: 'comfyuiAdapter',
+    provider: 'comfyui',
+    model: payload.workflow,
+    input: payload,
+    output: { outputUrl, simulated: true, panelId: panel.id },
+    created_at: now(),
+    started_at: now(),
+    completed_at: now(),
+  };
+  const asset = {
+    id: nextId('preview-asset'),
+    project_id: demoProject.id,
+    name: `ComfyUI test image for panel ${panel.panel_number}`,
+    type: 'panel',
+    subtype: 'comfyui_plan',
+    description: `Simulated ComfyUI planning output for saved panel ${panel.panel_number}.`,
+    file_url: outputUrl,
+    thumbnail: outputUrl,
+    metadata: {
+      adapter: 'comfyuiAdapter',
+      stage: 'comfyui_planning',
+      simulated: true,
+      prompt: payload.prompt,
+      comfyuiPayload: payload,
+      generationJobId: generationJob.id,
+      panelId: panel.id,
+      chapterId: panel.chapter_id,
+      pageId: panel.page_id,
+    },
+    tags: ['comfyui', 'phase-2', 'simulated', 'panel-plan'],
+    source: 'ai_generated',
+    linked_id: panel.id,
+    version_number: 1,
+    created_at: now(),
+    updated_at: now(),
+  };
+
+  demoStore.generationJobs.push(generationJob);
+  demoStore.assets.push(asset);
+  updateById(demoStore.panels, panel.id, {
+    image_asset_id: asset.id,
+    assets: [...new Set([...(panel.assets || []), asset.id])],
+    status: 'generated',
+    metadata: {
+      ...(panel.metadata || {}),
+      comfyuiPlanning: {
+        adapter: 'comfyuiAdapter',
+        stage: 'comfyui_planning',
+        jobId: generationJob.id,
+        assetId: asset.id,
+        outputUrl,
+        simulated: true,
+      },
+    },
+  });
+  const workflowStage = upsertWorkflowStage('comfyui_planning', {
+    chapter_id: panel.chapter_id,
+    status: 'complete',
+    input_refs: [{ type: 'comic_panel', id: panel.id }],
+    output_refs: [
+      { type: 'generation_job', id: generationJob.id },
+      { type: 'asset', id: asset.id },
+    ],
+    metadata: {
+      adapter: 'comfyuiAdapter',
+      workflow: payload.workflow,
+      simulated: true,
+      outputUrl,
+      prompt: payload.prompt,
+    },
+  });
+
+  return { panel: demoStore.panels.find(item => item.id === panel.id), asset, generationJob, workflowStage, payload };
+}
+
 export function demoModeApi(req, res, next) {
   if (process.env.DATABASE_URL) return next();
   if (!req.path.startsWith('/api')) return next();
@@ -249,6 +351,10 @@ export function demoModeApi(req, res, next) {
       const panel = updateById(demoStore.panels, id, req.body || {});
       return panel ? json(res, { panel }) : json(res, { error: 'Comic panel not found.' }, 404);
     }
+    if (req.method === 'GET' && id) {
+      const panel = demoStore.panels.find(item => item.id === id);
+      return panel ? json(res, { panel }) : json(res, { error: 'Comic panel not found.' }, 404);
+    }
     return json(res, { panels: listByProject(demoStore.panels, req) });
   }
   if (path.includes('/production/workflow/stages')) {
@@ -257,10 +363,16 @@ export function demoModeApi(req, res, next) {
     return json(res, { workflowStages: listByProject(demoStore.workflowStages, req) });
   }
 
+  if (path.includes('/adapters/comfyui/plan') && req.method === 'POST') {
+    const result = planPreviewComfyUiPanel(req);
+    if (!result) return json(res, { error: 'Comic panel not found.' }, 404);
+    return json(res, { message: 'ComfyUI planning adapter completed in simulated mode.', ...result }, 201);
+  }
+
   if (path.includes('/characters')) return json(res, { characters: [] });
   if (path.includes('/worlds')) return json(res, path.includes('/locations') ? { locations: [] } : { worlds: [] });
   if (path.includes('/assets/stats')) return json(res, { stats: { total: 0, by_type: [] } });
-  if (path.includes('/assets')) return json(res, { assets: [] });
+  if (path.includes('/assets')) return json(res, { assets: listByProject(demoStore.assets, req) });
   if (path.includes('/stories/scripts')) return json(res, { scripts: [] });
   if (path.includes('/scenes')) return json(res, { scenes: [] });
   if (path.includes('/episodes')) return json(res, { episodes: [] });

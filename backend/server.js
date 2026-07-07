@@ -27,6 +27,7 @@ import knowledgeGraphRouter from './routes/knowledgeGraph.js';
 import generationJobsRouter from './routes/generationJobs.js';
 import scenesRouter      from './routes/scenes.js';
 import productionRouter  from './routes/production.js';
+import adaptersRouter    from './routes/adapters.js';
 import systemRouter      from './routes/system.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
@@ -128,6 +129,7 @@ app.get('/api', (_req, res) => {
       'GET  /api/projects/:projectId/production/motion/sequences',
       'GET  /api/projects/:projectId/production/voices',
       'GET  /api/projects/:projectId/production/animation/assets',
+      'POST /api/projects/:projectId/adapters/comfyui/plan',
     ],
   });
 });
@@ -157,6 +159,7 @@ app.use('/api/projects/:projectId/stories',                 storiesRouter);
 app.use('/api/projects/:projectId/graph',                   knowledgeGraphRouter);
 app.use('/api/projects/:projectId/jobs',                    generationJobsRouter);
 app.use('/api/projects/:projectId/production',              productionRouter);
+app.use('/api/projects/:projectId/adapters',                adaptersRouter);
 app.use('/api/projects/:projectId',                         scenesRouter);  // /scenes and /episodes
 
 // ── Unknown /api/* → JSON 404 (must precede SPA catch-all) ──
