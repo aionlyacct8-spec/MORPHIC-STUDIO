@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { migrate } from './migrate.js';
+import { getPgPoolConfig } from './pgOptions.js';
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ function requireDatabaseUrl() {
 async function initializeDatabase() {
   requireDatabaseUrl();
 
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const client = new Client(getPgPoolConfig());
 
   try {
     await client.connect();
@@ -33,7 +34,7 @@ async function initializeDatabase() {
     await client.end();
 
     // Bring the database up to the full application schema, not just the base schema.
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool(getPgPoolConfig());
     try {
       await migrate({ pool });
     } finally {

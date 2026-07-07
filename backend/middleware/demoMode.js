@@ -31,6 +31,16 @@ const demoBrain = {
   memory_context: 'Preview mode is running without PostgreSQL. Connect DATABASE_URL and run npm run setup for persistent saved projects.',
 };
 
+const demoStore = {
+  chapters: [],
+  pages: [],
+  panels: [],
+  workflowStages: [],
+};
+
+function now() { return new Date().toISOString(); }
+function nextId(prefix) { return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`; }
+
 function json(res, payload, status = 200) {
   res.status(status).json({ ...payload, previewMode: true });
 }
@@ -58,41 +68,58 @@ function buildPreviewPlan(body = {}) {
     characters: [],
   }));
 
+  const chapterId = `preview-chapter-${chapterNumber}`;
   const pages = [];
   const panels = scenes.map((scene, index) => {
     const pageNumber = Math.floor(index / panelsPerPage) + 1;
     if (!pages.find(page => page.page_number === pageNumber)) {
       pages.push({
-        id: `preview-page-${pageNumber}`,
-        chapter_id: 'preview-chapter-1',
+        id: `preview-page-${chapterNumber}-${pageNumber}`,
+        project_id: demoProject.id,
+        chapter_id: chapterId,
         page_number: pageNumber,
         layout: 'adaptive-grid',
+        title: `Page ${pageNumber}`,
+        summary: '',
+        status: 'draft',
+        metadata: {},
         panel_count: 0,
+        created_at: now(),
+        updated_at: now(),
       });
     }
     const page = pages.find(item => item.page_number === pageNumber);
     page.panel_count += 1;
     return {
-      id: `preview-panel-${index + 1}`,
+      id: `preview-panel-${chapterNumber}-${index + 1}`,
+      project_id: demoProject.id,
+      chapter_id: chapterId,
       page_id: page.id,
       scene_id: scene.id,
       panel_number: index + 1,
       description: scene.summary,
-      dialogue: '',
+      dialogue: [],
       shot_type: index % 2 === 0 ? 'establishing' : 'medium',
       camera_angle: 'story-driven',
       effects: [],
-      continuity_notes: ['Preview-only plan; save to PostgreSQL for persistence.'],
+      continuity_notes: 'Preview-only plan; connect PostgreSQL for durable persistence.',
+      status: 'draft',
+      metadata: {},
+      created_at: now(),
+      updated_at: now(),
     };
   });
 
   return {
     scriptId: 'preview-script-1',
     chapter: {
-      id: 'preview-chapter-1',
+      id: chapterId,
       title,
       chapter_number: chapterNumber,
       project_id: demoProject.id,
+      status: 'planned',
+      created_at: now(),
+      updated_at: now(),
     },
     scenes,
     pages,
@@ -110,6 +137,56 @@ export function previewModeNotice(req, res, next) {
   next();
 }
 
+
+function savePreviewPlan(plan) {
+  demoStore.chapters = [plan.chapter, ...demoStore.chapters.filter(chapter => chapter.id !== plan.chapter.id)];
+  demoStore.pages = [
+    ...demoStore.pages.filter(page => page.chapter_id !== plan.chapter.id),
+    ...plan.pages,
+  ];
+  demoStore.panels = [
+    ...demoStore.panels.filter(panel => panel.chapter_id !== plan.chapter.id),
+    ...plan.panels,
+  ];
+}
+
+function listByProject(items, req) {
+  const filtered = items.filter(item => item.project_id === demoProject.id)
+    .filter(item => !req.query.chapterId && !req.query.chapter_id ? true : item.chapter_id === (req.query.chapterId || req.query.chapter_id))
+    .filter(item => !req.query.pageId && !req.query.page_id ? true : item.page_id === (req.query.pageId || req.query.page_id))
+    .filter(item => !req.query.status ? true : item.status === req.query.status);
+  return filtered;
+}
+
+function updateById(items, id, body) {
+  const index = items.findIndex(item => item.id === id);
+  if (index === -1) return null;
+  items[index] = { ...items[index], ...body, updated_at: now() };
+  return items[index];
+}
+
+function upsertWorkflowStage(stageKey, body = {}) {
+  const chapterId = body.chapter_id ?? null;
+  const existingIndex = demoStore.workflowStages.findIndex(stage => stage.stage_key === stageKey && (stage.chapter_id ?? null) === chapterId);
+  const payload = {
+    id: existingIndex >= 0 ? demoStore.workflowStages[existingIndex].id : nextId('preview-stage'),
+    project_id: demoProject.id,
+    chapter_id: chapterId,
+    stage_key: stageKey,
+    status: body.status || 'in_progress',
+    input_refs: body.input_refs || [],
+    output_refs: body.output_refs || [],
+    metadata: body.metadata || {},
+    started_at: existingIndex >= 0 ? demoStore.workflowStages[existingIndex].started_at : now(),
+    completed_at: ['complete', 'completed', 'approved'].includes(body.status) ? now() : null,
+    created_at: existingIndex >= 0 ? demoStore.workflowStages[existingIndex].created_at : now(),
+    updated_at: now(),
+  };
+  if (existingIndex >= 0) demoStore.workflowStages[existingIndex] = payload;
+  else demoStore.workflowStages.push(payload);
+  return payload;
+}
+
 export function demoModeApi(req, res, next) {
   if (process.env.DATABASE_URL) return next();
   if (!req.path.startsWith('/api')) return next();
@@ -124,7 +201,11 @@ export function demoModeApi(req, res, next) {
 
   if (path === '/api/projects/demo-project') return json(res, { project: demoProject, brain: demoBrain });
   if (path === '/api/projects/demo-project/brain') return json(res, { brain: demoBrain });
-  if (path.includes('/production/intake/plan') && req.method === 'POST') return json(res, buildPreviewPlan(req.body), 201);
+  if (path.includes('/production/intake/plan') && req.method === 'POST') {
+    const plan = buildPreviewPlan(req.body);
+    savePreviewPlan(plan);
+    return json(res, plan, 201);
+  }
   if (path.includes('/production/intake/enhance') && req.method === 'POST') {
     return json(res, {
       script_analysis: { themes: ['continuity', 'asset reuse'], conflicts: [], tone: 'prototype preview', summary: 'AI enhancement needs an AI key and database for persistent updates.' },
@@ -134,6 +215,46 @@ export function demoModeApi(req, res, next) {
       locations: [],
       errors: ['Preview mode does not persist AI enhancement.'],
     });
+  }
+
+
+  if (path.includes('/production/chapters')) return json(res, { chapters: listByProject(demoStore.chapters, req) });
+  if (path.includes('/production/comic/pages')) {
+    const id = path.match(/\/production\/comic\/pages\/([^/]+)$/)?.[1];
+    if (req.method === 'PATCH' && id) {
+      const page = updateById(demoStore.pages, id, req.body || {});
+      return page ? json(res, { page }) : json(res, { error: 'Comic page not found.' }, 404);
+    }
+    return json(res, { pages: listByProject(demoStore.pages, req) });
+  }
+  if (path.includes('/production/comic/panels')) {
+    const id = path.match(/\/production\/comic\/panels\/([^/]+)$/)?.[1];
+    if (req.method === 'POST') {
+      const panel = {
+        id: nextId('preview-panel'),
+        project_id: demoProject.id,
+        dialogue: [],
+        effects: [],
+        characters: [],
+        assets: [],
+        metadata: {},
+        created_at: now(),
+        updated_at: now(),
+        ...(req.body || {}),
+      };
+      demoStore.panels.push(panel);
+      return json(res, { panel }, 201);
+    }
+    if (req.method === 'PATCH' && id) {
+      const panel = updateById(demoStore.panels, id, req.body || {});
+      return panel ? json(res, { panel }) : json(res, { error: 'Comic panel not found.' }, 404);
+    }
+    return json(res, { panels: listByProject(demoStore.panels, req) });
+  }
+  if (path.includes('/production/workflow/stages')) {
+    const stageKey = path.match(/\/production\/workflow\/stages\/([^/]+)$/)?.[1];
+    if (req.method === 'PATCH' && stageKey) return json(res, { workflowStage: upsertWorkflowStage(stageKey, req.body || {}) });
+    return json(res, { workflowStages: listByProject(demoStore.workflowStages, req) });
   }
 
   if (path.includes('/characters')) return json(res, { characters: [] });
@@ -148,9 +269,6 @@ export function demoModeApi(req, res, next) {
   if (path.includes('/graph')) return json(res, { nodes: [], edges: [] });
   if (path.includes('/jobs/dispatch') && req.method === 'POST') return json(res, { job: { id: 'preview-job', status: 'queued', preview: true } }, 202);
   if (path.includes('/jobs')) return json(res, { jobs: [] });
-  if (path.includes('/production/chapters')) return json(res, { chapters: [] });
-  if (path.includes('/production/comic/pages')) return json(res, { pages: [] });
-  if (path.includes('/production/comic/panels')) return json(res, { panels: [] });
   if (path.includes('/production/motion/sequences')) return json(res, { sequences: [] });
   if (path.includes('/production/voices')) return json(res, { voices: [] });
   if (path.includes('/production/animation/assets')) return json(res, { animationAssets: [] });
