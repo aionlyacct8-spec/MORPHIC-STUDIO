@@ -11,7 +11,9 @@
     "migrate": "node database/migrate.js",
     "check": "node --check backend/server.js && node --check database/setup.js && node --check database/migrate.js && find backend -name \"*.js\" -print0 | xargs -0 -n1 node --check",
     "preview": "node scripts/preview.js",
-    "verify:storyboard": "node scripts/verify-storyboard-flow.js"
+    "verify:storyboard": "node scripts/verify-storyboard-flow.js",
+    "verify:comfyui-plan": "node scripts/verify-comfyui-plan.js",
+    "verify:comfyui-runtime": "node scripts/verify-comfyui-runtime.js"
   },
   "dependencies": {
     "@google/genai": "latest",
