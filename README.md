@@ -76,6 +76,7 @@ The included `Procfile` also declares the production web process as `web: npm st
 | `npm run setup` | Apply base schema and run migrations. It does not seed demo projects by default. |
 | `npm run migrate` | Run pending SQL migrations only. |
 | `npm run check` | Syntax-check backend and database JavaScript files. |
+| `npm run verify:phase2` | Requires `DATABASE_URL`; applies the base schema/migrations, starts an in-process API server, and exercises Phase 2A-2F persistence endpoints against PostgreSQL. |
 
 ## Environment Variables
 

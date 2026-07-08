@@ -13,7 +13,8 @@
     "preview": "node scripts/preview.js",
     "verify:storyboard": "node scripts/verify-storyboard-flow.js",
     "verify:comfyui-plan": "node scripts/verify-comfyui-plan.js",
-    "verify:comfyui-runtime": "node scripts/verify-comfyui-runtime.js"
+    "verify:comfyui-runtime": "node scripts/verify-comfyui-runtime.js",
+    "verify:phase2": "node scripts/verify-phase2-foundations.js"
   },
   "dependencies": {
     "@google/genai": "latest",

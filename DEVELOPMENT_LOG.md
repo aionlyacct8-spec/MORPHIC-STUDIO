@@ -2,6 +2,74 @@
 
 This log records completed work so future human and AI contributors can understand project history. Add a new entry after each major coding or architecture session.
 
+## 2026-07-08 — npm 403 root-cause investigation
+
+**Summary**
+
+- Investigated npm install failures without removing dependencies or bypassing verification.
+- Found no repository `.npmrc`, auth-token, or package-specific dependency cause; npm's configured registry is `https://registry.npmjs.org/`.
+- Found the committed lockfile used environment-specific `package-firewall.replit.local` resolved tarball URLs; normalized those URLs back to `https://registry.npmjs.org/` while preserving package integrity metadata.
+- Confirmed this container still cannot install packages because its required proxy returns `403 Forbidden` for both the package-firewall mirror and `registry.npmjs.org`, and direct non-proxy registry access cannot resolve DNS.
+
+**Files modified**
+
+- `package-lock.json`
+- `docs/CURRENT_SPRINT.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The previous verification attempt was blocked by npm package installation failures. The repository lockfile should not require an environment-specific package mirror, and the remaining blocker needed to be documented as environmental proxy/network policy.
+
+**Related architecture documents**
+
+- `docs/CURRENT_SPRINT.md`
+- `SESSION_HANDOFF.md`
+
+**Breaking changes**
+
+None. Dependency versions and integrity hashes are unchanged; only lockfile resolved tarball hosts were normalized.
+
+**Recommended follow-up work**
+
+Rerun `npm ci`, `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`, and `npm run verify:phase2` in a normal development environment with package registry access.
+
+## 2026-07-08 — Supabase verification preparation and env loading fix
+
+**Summary**
+
+- Created a local ignored `.env` with the provided development Supabase `DATABASE_URL`; credentials were not committed.
+- Confirmed `.gitignore` excludes `.env` and `.env.*` while allowing `.env.example`.
+- Updated storyboard and Phase 2 verification scripts to load `.env` before checking `DATABASE_URL`, so the requested local development workflow uses environment files correctly.
+- Attempted `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`; the run failed before database access because local dependencies are incomplete and npm package refreshes are blocked by package-repository `403 Forbidden` responses.
+
+**Files modified**
+
+- `scripts/verify-storyboard-flow.js`
+- `scripts/verify-phase2-foundations.js`
+- `docs/CURRENT_SPRINT.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The verification workflow must safely read the development database URL from local environment files without hardcoding secrets and must stop at verification-only fixes until the database/API checks can run.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None. Verification scripts now honor local `.env` files before evaluating `DATABASE_URL`.
+
+**Recommended follow-up work**
+
+Restore npm dependencies in an environment with package-registry access, rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`, and run `npm run verify:phase2` only if storyboard verification passes.
+
 ## 2026-07-08 — Architecture alignment and AI handoff system
 
 **Summary**
@@ -81,6 +149,47 @@ None. Documentation-only workflow standardization.
 **Recommended follow-up work**
 
 Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes.
+
+## 2026-07-08 — Phase 2 validation harness and persistence-default fix
+
+**Summary**
+
+- Added `npm run verify:phase2`, a focused PostgreSQL/API verifier for Migrations 005 and 006 plus Phase 2A-2F persistence endpoints.
+- Exported the Express app behind a test-safe listen guard so verification can exercise real routes in-process without starting the normal long-running server.
+- Fixed Phase 2 foundation inserts to omit unspecified optional columns so database defaults persist instead of explicit `NULL` values.
+
+**Files modified**
+
+- `backend/repositories/phase2Repository.js`
+- `backend/server.js`
+- `scripts/verify-phase2-foundations.js`
+- `package.json`
+- `README.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The highest-priority task was validation, not feature expansion. The repository needed a repeatable database/API verifier for Phase 2A-2F and a persistence correction discovered during review of optional/defaulted foundation columns.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None. Existing server startup remains unchanged unless `MORPHIC_SKIP_LISTEN=1` is set by verification tooling.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only the migration/API persistence failures it reports.
 
 ## 2026-07-08 — Conflict 2 core dependency guardrail
 

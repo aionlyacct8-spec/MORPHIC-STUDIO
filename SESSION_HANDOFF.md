@@ -5,28 +5,28 @@
 
 ## What was completed
 
-- Continued Phase 2 beyond Shared Asset System foundations with additive Phase 2B-2F records and APIs.
+- Added a focused Phase 2A-2F database/API validation harness for shared assets, Migration 005/006 schema, character records, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
 - Added `database/migrations/006_phase2_remaining_foundations.sql` for character asset links, rigs, expressions, poses, clothing sets, scene asset placements, storyboard asset references, comic speech bubbles, animation timelines, and animation keyframes.
-- Added `backend/repositories/phase2Repository.js`, `backend/services/phase2FoundationService.js`, and `backend/controllers/phase2FoundationController.js` for project-scoped Phase 2 foundation records.
+- Corrected Phase 2 foundation inserts so omitted optional fields preserve database defaults instead of persisting explicit `NULL` values.
 - Added production routes for Phase 2B Character Library, Phase 2C Scene Builder, Phase 2D Storyboard Workspace references, Phase 2E Comic Pipeline speech bubbles, and Phase 2F Animation Pipeline timelines/keyframes.
 - Updated API discovery, demo-mode responses, README API documentation, current sprint/roadmap/handoff docs, and the development log.
 
 ## In progress
 
 - Phase 2 implementation foundations now exist through 2F at the database/API boundary.
-- Database-backed verification is still pending because this environment does not have a configured reachable `DATABASE_URL`.
+- Local `.env` is configured for the development Supabase database and is ignored by git; verification is currently blocked by this container's npm/proxy restrictions, not by missing database configuration.
 
 ## Remaining
 
-- Run Migrations 005 and 006 against a real development database.
-- Add database-backed verification coverage for shared assets, character rigs/poses/expressions/clothing, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
+- Restore npm dependencies in a normal development environment with package-registry access.
+- Rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`; if it passes, run `npm run verify:phase2`.
 - Build frontend/editor surfaces that use these records without duplicating shared assets.
 - Integrate durable object storage policy with uploaded/imported/authored/AI-assisted/rendered/exported files.
 - Decide whether `generation_jobs` should be aliased, migrated, or retained as a legacy internal name before adding new automation workers.
 
 ## Current blockers
 
-- Real database migration/API verification requires a reachable PostgreSQL/Supabase `DATABASE_URL`.
+- Real database migration/API verification requires installed npm dependencies; this container's proxy returns `403 Forbidden` for npm package fetches. The committed lockfile no longer points at the environment-specific `package-firewall.replit.local` mirror, but this container still cannot reach `registry.npmjs.org` through its proxy.
 - Real ComfyUI verification requires an external running ComfyUI host and API-format workflow JSON.
 - Object storage behavior needs final policy before implementation.
 - Production job taxonomy is unresolved because current code still uses `generation_jobs` for compatibility.
@@ -37,6 +37,8 @@
 - `backend/controllers/phase2FoundationController.js`
 - `backend/repositories/phase2Repository.js`
 - `backend/services/phase2FoundationService.js`
+- `scripts/verify-storyboard-flow.js`
+- `scripts/verify-phase2-foundations.js`
 - `backend/routes/production.js`
 - `backend/server.js`
 - `backend/middleware/demoMode.js`
@@ -58,8 +60,8 @@
 
 ## Problems encountered
 
-- No database-backed migration run was possible in this environment because no `DATABASE_URL` is configured.
+- `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard` failed before reaching the database because Node could not resolve the missing `dotenv` package from the incomplete `node_modules`. Investigation found no project `.npmrc` or auth-token cause; npm is configured for `registry.npmjs.org`, but lockfile tarballs previously pointed at `package-firewall.replit.local` and the container proxy returns `403 Forbidden` for both the mirror and npmjs registry access.
 
 ## Recommended next task
 
-Run Migrations 005 and 006 against a real development database, then add database-backed verification coverage for shared assets and the Phase 2B-2F foundation endpoints.
+Restore npm dependencies in a normal development environment with package-registry access, rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`, then run `npm run verify:phase2` only after storyboard verification passes.

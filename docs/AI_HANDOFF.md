@@ -51,7 +51,7 @@ Current runtime shape:
 
 ## Current priorities
 
-1. Phase 2 foundations: validate Migrations 005 and 006 plus repository/service/API layers against a real database.
+1. Phase 2 foundations: run `npm run verify:phase2` against a reachable development PostgreSQL database and address any schema/API persistence failures.
 2. Asset Library reuse controls and stronger character matching.
 3. Object storage implementation for durable shared assets.
 4. Production job taxonomy decision before new automation workers.
@@ -77,7 +77,7 @@ Current runtime shape:
 
 ## Next recommended task
 
-Continue Phase 2 by running Migrations 005 and 006 against a real development database, then add database-backed verification for shared assets and the Phase 2B-2F foundation endpoints.
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only the migration/API persistence failures it reports.
 
 ## Commands commonly used
 
@@ -86,6 +86,7 @@ npm run check
 git diff --check
 npm run verify:storyboard-flow
 npm run verify:comfyui-plan
+npm run verify:phase2
 # Requires external ComfyUI runtime:
 npm run verify:comfyui-runtime
 ```

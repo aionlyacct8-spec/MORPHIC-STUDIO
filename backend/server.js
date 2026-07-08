@@ -190,10 +190,14 @@ app.get('*', (_req, res) => {
 app.use(errorHandler);
 
 // ── Start ─────────────────────────────────────────────────
-app.listen(serverConfig.port, serverConfig.host, () => {
-  logger.info(`🎬 Morphic Studio live at http://${serverConfig.host}:${serverConfig.port}`);
-  logger.info(`   AI provider : ${process.env.AI_PROVIDER || 'openai'}`);
-  logger.info(`   Database    : ${process.env.DATABASE_URL ? 'connected' : 'NOT SET — run: node database/setup.js after adding DATABASE_URL'}`);
-  logger.info(`   Rate limiting: active`);
-  logger.info(`   Orchestrator: active`);
-});
+if (process.env.MORPHIC_SKIP_LISTEN !== '1') {
+  app.listen(serverConfig.port, serverConfig.host, () => {
+    logger.info(`🎬 Morphic Studio live at http://${serverConfig.host}:${serverConfig.port}`);
+    logger.info(`   AI provider : ${process.env.AI_PROVIDER || 'openai'}`);
+    logger.info(`   Database    : ${process.env.DATABASE_URL ? 'connected' : 'NOT SET — run: node database/setup.js after adding DATABASE_URL'}`);
+    logger.info(`   Rate limiting: active`);
+    logger.info(`   Orchestrator: active`);
+  });
+}
+
+export default app;

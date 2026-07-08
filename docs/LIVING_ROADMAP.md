@@ -32,7 +32,7 @@ Active outcomes:
 ## Active tasks
 
 - Follow `docs/AI_SESSION_PROTOCOL.md` / root `AGENTS.md` at the start and end of every AI coding session.
-- Continue Phase 2 implementation validation: Migrations 005 and 006 now start shared assets plus Phase 2B-2F foundation records; next verify them against a real database and expand UI/use-case coverage.
+- Phase 2 implementation validation now has a focused `npm run verify:phase2` harness for Migrations 005/006, shared asset persistence, and Phase 2B-2F API endpoints; run it wherever a reachable PostgreSQL `DATABASE_URL` is available.
 - Use `docs/CORE_DATA_MODEL.md` to keep Phase 2A implementation additive and compatible with existing APIs.
 - Decide whether `generation_jobs` should be renamed, aliased, or superseded by `production_jobs` / `automation_jobs` before adding new automation workers.
 - Decide package-manager lockfile policy.
@@ -49,7 +49,7 @@ Active outcomes:
 
 ## Upcoming tasks
 
-1. Next implementation slice: run Migrations 005 and 006 against a real development database, then add verification coverage for shared assets, character rigs/poses/expressions/clothing, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
+1. Next implementation slice: run `npm run verify:phase2` against a reachable development PostgreSQL database, then use any failures to make focused persistence/API corrections.
 2. Implement Shared Asset System reuse controls and stronger character matching during script intake.
 3. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.
 4. Frontend terminology cleanup for any remaining demo/default workflows when related screens are touched.
@@ -59,6 +59,7 @@ Active outcomes:
 
 ## Blocked tasks
 
+- This container cannot install PostgreSQL or refresh npm dependencies because outbound package repositories return `403 Forbidden`; real Phase 2 verification must run in an environment with existing dependencies and a reachable `DATABASE_URL`.
 - Real ComfyUI runtime verification requires a reachable ComfyUI host and API-format workflow JSON.
 - Object storage completion requires final local/S3/MinIO policy and storage object behavior; output-producing integration plans are now blocked unless they declare Asset Library, version, storage, job, and workflow-stage records.
 - Heavy frontend editor integration is blocked until save/load data contracts are stable.
