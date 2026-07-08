@@ -113,6 +113,7 @@ See [Deployment Guide](./DEPLOYMENT.md) for platform-neutral runtime, environmen
 - [Production Automation Architecture](./docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md) defines the current product direction: AI-assisted animation and comic production automation, not AI video generation.
 - [Comic Production Automation Architecture](./docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md) defines the comic-specific production system: story intelligence, panel planning, camera/composition assistance, dialogue placement, reading flow, comic timeline, export, and reuse-first asset retrieval.
 - [Architecture Compatibility Report](./docs/ARCHITECTURE_COMPATIBILITY_REPORT.md) reviews existing systems against the updated architecture and identifies compatible, partial, conflicting, deferred, and technical-debt areas.
+- [Core Data Model](./docs/CORE_DATA_MODEL.md) is the canonical implementation reference for entities, relationships, output-record contracts, and additive data-model work.
 - [AI Session Protocol](./docs/AI_SESSION_PROTOCOL.md) and root [AGENTS.md](./AGENTS.md) define the required workflow for every future AI coding session.
 - [Root Roadmap](./ROADMAP.md) and [Living Roadmap](./docs/LIVING_ROADMAP.md) are the current state trackers for milestones, active work, blockers, deferred items, decisions, integrations, and known issues.
 - [AI Handoff Guide](./docs/AI_HANDOFF.md) and [Session Handoff](./SESSION_HANDOFF.md) help future AI coding agents resume work quickly.

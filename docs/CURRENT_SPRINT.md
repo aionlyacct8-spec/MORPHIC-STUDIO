@@ -11,6 +11,7 @@ The current sprint is not a feature sprint. It is an architecture refactoring an
 - Use [Production Automation Architecture](./PRODUCTION_AUTOMATION_ARCHITECTURE.md), [Comic Production Automation Architecture](./COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md), and [Open Source Integration Plan](../OPEN_SOURCE_INTEGRATION_PLAN.md) as the current architectural source of truth.
 - Keep the Phase 1/Phase 2 bridge centered on saved Morphic records before wiring heavy engines to UI buttons.
 - Maintain the [Architecture Compatibility Report](./ARCHITECTURE_COMPATIBILITY_REPORT.md) as the cleanup guide for compatible, partially compatible, conflicting, deferred, and technical-debt areas.
+- Use [Core Data Model](./CORE_DATA_MODEL.md) as the canonical implementation reference before migrations, APIs, adapters, or save/load contracts are changed.
 - Follow [AI Session Protocol](./AI_SESSION_PROTOCOL.md) and root `AGENTS.md` before making changes and before ending a major session.
 - Maintain the [Living Roadmap](./LIVING_ROADMAP.md), root `ROADMAP.md`, [AI Handoff Guide](./AI_HANDOFF.md), root `SESSION_HANDOFF.md`, and root `DEVELOPMENT_LOG.md` whenever meaningful changes are made.
 - Continue to preserve working backend/API systems unless they conflict with reusable production assets, modular workflows, non-destructive editing, or creator control.
@@ -87,7 +88,7 @@ jobs:
 
 ## Next implementation steps
 
-1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes.
+1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes.
 2. Update frontend terminology and demo/default content in `frontend/storyboard.html`, `frontend/open-source-roadmap.html`, and `frontend/preview.html`.
 3. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal implementation name.
 4. Decide package-manager lockfile policy.

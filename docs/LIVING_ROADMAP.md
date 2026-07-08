@@ -24,6 +24,7 @@ Goal: align the existing prototype with the production-automation architecture b
 Active outcomes:
 
 - Architecture Compatibility Report is available.
+- Core Data Model is available as the canonical implementation reference for entities, relationships, output-record contracts, and additive migrations.
 - Living roadmap is available.
 - AI handoff documentation is available.
 - Development log is available.
@@ -33,7 +34,7 @@ Active outcomes:
 ## Active tasks
 
 - Follow `docs/AI_SESSION_PROTOCOL.md` / root `AGENTS.md` at the start and end of every AI coding session.
-- Review frontend copy and controls for remaining one-click generation language.
+- Conflict 1 frontend copy cleanup is complete for current static controls; continue backend/internal generation terminology cleanup only through compatibility-preserving aliases.
 - Decide whether `generation_jobs` should be renamed, aliased, or superseded by `production_jobs` / `automation_jobs`.
 - Review the database refactoring plan for reusable production entities and prepare additive migration work.
 - Decide package-manager lockfile policy.
@@ -41,7 +42,7 @@ Active outcomes:
 
 ## Upcoming tasks
 
-1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft additive Migration 005 readiness changes.
+1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft additive Migration 005 readiness changes.
 2. Frontend terminology cleanup for storyboard, open-source roadmap, preview, and any demo/default workflows.
 3. Asset Library reuse controls and stronger character matching during script intake.
 4. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.
@@ -52,13 +53,13 @@ Active outcomes:
 ## Blocked tasks
 
 - Real ComfyUI runtime verification requires a reachable ComfyUI host and API-format workflow JSON.
-- Object storage completion requires final local/S3/MinIO policy and storage object behavior.
+- Object storage completion requires final local/S3/MinIO policy and storage object behavior; output-producing integration plans are now blocked unless they declare Asset Library, version, storage, job, and workflow-stage records.
 - Heavy frontend editor integration is blocked until save/load data contracts are stable.
 - Cognitive AI layer is blocked until production records and Asset Library reuse are stable.
 
 ## Deferred tasks
 
-- Text-to-video and image-to-video integrations are excluded from core architecture.
+- Text-to-video and image-to-video integrations are excluded from core architecture; the open-source evaluation service now returns an explicit excluded-core-dependency decision for those candidates.
 - React/Next.js migration is deferred until backend contracts stabilize.
 - Full animation rig editor is deferred until character rig, pose, expression, timeline, and asset schemas are refined.
 - Voice/music workflows are deferred until dialogue, voice profile, audio asset, and timeline contracts stabilize.
@@ -93,8 +94,9 @@ Active outcomes:
 
 ## Known issues
 
-- Some UI copy still uses Generate/Regenerate language.
+- Current static frontend controls have been reframed away from Generate/Regenerate language for Conflict 1; remaining generation terminology is primarily backend/internal compatibility naming.
+- Conflict 4 output-record guardrail is active in open-source evaluation; new output-producing adapters must declare `assets`, `asset_versions`, `storage_objects`, `generation_jobs`, and `workflow_stages`.
 - Some backend and database names still use generation terminology for compatibility.
-- Some static frontend pages include demo fallback cards or preview-only language.
+- Preview launcher demo/default wording has been cleaned up for Conflict 3; continue auditing static frontend cards and example/template content when related screens are touched.
 - Large attached assets and patch files may be historical references rather than active project files.
 - No authenticated multi-user ownership model is implemented yet.

@@ -70,7 +70,7 @@ tailwind.config = {
       <input class="bg-transparent border-none text-on-surface focus:ring-0 text-sm w-40 font-label-sm placeholder:text-on-surface-variant/50 outline-none" placeholder="Search assets..." type="text"/>
     </div>
     <button onclick="markStoryboardReviewed()" class="px-4 py-2 bg-surface-container-high border border-white/20 text-on-surface rounded font-label-md text-label-md hover:bg-surface-variant transition-colors">Mark Reviewed</button>
-    <button onclick="generateShot(event)" id="generate-btn" class="px-6 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]">Generate</button>
+    <button onclick="planShot(event)" id="generate-btn" class="px-6 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(192,193,255,0.3)]">Plan Assist</button>
     <div class="flex items-center gap-1 border-l border-white/10 pl-4">
       <a href="dashboard.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">edit_note</span></a>
       <a href="story-hub.html" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-[18px]">hub</span></a>
@@ -180,7 +180,7 @@ tailwind.config = {
               <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">face</span>
             </div>
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-20">
-              <button onclick="regenerateShot(this)" class="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shadow-lg"><span class="material-symbols-outlined text-[18px]">refresh</span></button>
+              <button onclick="reviseShot(this)" aria-label="Revise shot plan" class="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shadow-lg"><span class="material-symbols-outlined text-[18px]">refresh</span></button>
               <button class="p-2 bg-surface-container text-on-surface rounded-full hover:scale-110 transition-transform shadow-lg border border-white/10"><span class="material-symbols-outlined text-[18px]">edit</span></button>
             </div>
           </div>
@@ -345,12 +345,12 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Generate panel -->
+      <!-- Production-assist panel -->
       <div class="pt-4 border-t border-white/5">
-        <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px] mb-3">Generate New Shot</h4>
-        <textarea id="shot-prompt" class="w-full bg-surface-container border border-white/5 rounded-lg px-3 py-2.5 text-on-surface text-xs font-body-md focus:border-primary focus:outline-none transition-colors resize-none" placeholder="Describe the shot you want to generate..." rows="3"></textarea>
+        <h4 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-[10px] mb-3">Plan New Shot</h4>
+        <textarea id="shot-prompt" class="w-full bg-surface-container border border-white/5 rounded-lg px-3 py-2.5 text-on-surface text-xs font-body-md focus:border-primary focus:outline-none transition-colors resize-none" placeholder="Describe the shot you want production assistance planning..." rows="3"></textarea>
         <button onclick="generateFromPrompt(event)" class="mt-2 w-full py-2.5 bg-primary text-on-primary rounded font-label-sm text-label-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5">
-          <span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot
+          <span class="material-symbols-outlined text-[15px]">auto_awesome</span> Plan Shot
         </button>
       </div>
     </div>
@@ -683,30 +683,30 @@ async function generateFromPrompt(event) {
   try {
     await _dispatchPanels(promptText);
     promptEl.value = '';
-    setStatus('Generation job queued for saved panel prompt', 'success');
+    setStatus('Production-assist job queued for saved panel prompt', 'success');
   } catch (e) {
-    console.warn('Panel generation error:', e);
-    setStatus(e.message || 'Generation dispatch failed', 'error');
+    console.warn('Panel planning assist error:', e);
+    setStatus(e.message || 'Production-assist dispatch failed', 'error');
   } finally {
-    btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">auto_awesome</span> Generate Shot';
+    btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">auto_awesome</span> Plan Shot';
     btn.disabled = false;
   }
 }
 
-async function generateShot(event) {
+async function planShot(event) {
   const activePanel = storyboardState.panels.find(panel => panel.id === storyboardState.activePanelId);
   if (!activePanel) return addNewShot();
   const btn = event?.currentTarget || document.getElementById('generate-btn');
   btn.textContent = 'Queuing...';
   btn.disabled = true;
   try {
-    await _dispatchPanels(activePanel.description || 'Generate next storyboard panel');
-    setStatus('Generation job queued from active saved panel', 'success');
+    await _dispatchPanels(activePanel.description || 'Plan next storyboard panel');
+    setStatus('Production-assist job queued from active saved panel', 'success');
   } catch (e) {
-    console.warn('Shot generation error:', e);
-    setStatus(e.message || 'Generation dispatch failed', 'error');
+    console.warn('Shot planning assist error:', e);
+    setStatus(e.message || 'Production-assist dispatch failed', 'error');
   } finally {
-    btn.textContent = 'Generate';
+    btn.textContent = 'Plan Assist';
     btn.disabled = false;
   }
 }
@@ -723,7 +723,7 @@ function acceptAISuggestion(btn) { btn.closest('.glass-card')?.remove(); }
 function insertOTS() { addNewShot(); }
 function activateShot(_row, _id) {}
 function addNewShotWithDescription(_description) { addNewShot(); }
-function regenerateShot(_btn) { generateShot(); }
+function reviseShot(_btn) { planShot(); }
 
 document.addEventListener('DOMContentLoaded', () => {
   const statusWrap = document.querySelector('.flex.items-center.gap-2.text-primary');
