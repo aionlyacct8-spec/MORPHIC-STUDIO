@@ -118,7 +118,7 @@ export async function listPhase2Records(configKey, projectId, filters = {}) {
 
 export async function createPhase2Record(configKey, projectId, payload = {}) {
   const config = PHASE2_TABLES[configKey];
-  const columns = config.insert;
+  const columns = config.insert.filter(field => field === 'project_id' || payload[field] !== undefined);
   const placeholders = columns.map((_, index) => `$${index + 1}`).join(', ');
   const values = columns.map(field => field === 'project_id' ? projectId : stringifyValue(config, field, payload[field]));
 

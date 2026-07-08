@@ -23,8 +23,8 @@ Implement the production-automation architecture in the safest dependency order:
 
 ## Active tasks
 
-1. Continue Phase 2 implementation by validating Migrations 005 and 006 plus the new repository/service/API layers against a real database.
-2. Add verification coverage for reusable asset metadata, relationships, character reusable production records, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
+1. Run `npm run verify:phase2` in an environment with a reachable development PostgreSQL `DATABASE_URL` to validate Migrations 005/006 and every Phase 2A-2F persistence endpoint.
+2. Use the verifier output to make focused corrections only; preserve backward compatibility and avoid feature expansion.
 3. Keep frontend/backend terminology cleanup compatibility-preserving as related implementation files are touched.
 4. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal name before new automation workers are added.
 5. Decide package manager and lockfile policy.
@@ -47,4 +47,4 @@ Implement the production-automation architecture in the safest dependency order:
 
 ## Next recommended task
 
-Continue Phase 2 by running Migrations 005 and 006 against a real development database, then add database-backed verification for shared assets and the Phase 2B-2F foundation endpoints.
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix any remaining schema/API persistence failures it reports.

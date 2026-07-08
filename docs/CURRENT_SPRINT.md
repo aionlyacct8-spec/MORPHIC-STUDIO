@@ -86,6 +86,17 @@ jobs:
           VERIFY_STORYBOARD_WRITE: 1
 ```
 
+## Phase 2 database/API verification
+
+`npm run verify:phase2` is the focused Phase 2A-2F validation harness. It requires `DATABASE_URL`, applies the base schema plus migrations, starts the Express app in-process without binding the normal long-running server, creates temporary production records through the public API, verifies persistence in the new tables, and deletes the temporary project.
+
+Current verification status: local `.env` was configured with the development Supabase URL and `.gitignore` already excludes `.env`/`.env.*`. The verification scripts load `.env` before checking `DATABASE_URL`. Package-install root-cause investigation found two issues: the committed lockfile used an environment-specific `package-firewall.replit.local` mirror for resolved tarballs, and this container forces npm/curl through an Envoy proxy that returns `403 Forbidden` for both the mirror and `registry.npmjs.org`. The lockfile mirror URLs have been normalized back to `registry.npmjs.org`; verification still must be rerun in a normal development environment with package registry access because this container cannot fetch npm packages through its proxy.
+
+```bash
+export DATABASE_URL='postgresql://postgres.<project-ref>:<url-encoded-password>@<host>:5432/postgres'
+npm run verify:phase2
+```
+
 ## Phase 2 implementation sequence
 
 1. **Phase 2A — Shared Asset System:** reusable asset infrastructure, versioning, metadata, provenance, storage links, relationships, usage tracking, and reuse-first retrieval.
@@ -97,8 +108,8 @@ jobs:
 
 ## Next implementation steps
 
-1. Run Migrations 005 and 006 against a real development database and verify the new asset plus Phase 2B-2F repository/service/API layers.
-2. Add database-backed verification for asset creation, version creation, storage-object linking, asset relationships, character rigs/poses/expressions/clothing, scene placements, storyboard references, speech bubbles, timelines, and keyframes.
+1. Restore npm dependencies in a normal development environment with package-registry access, then rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`.
+2. If storyboard verification passes, run `npm run verify:phase2` against the configured development database to validate Migrations 005 and 006 plus shared asset and Phase 2B-2F API persistence.
 3. Implement reuse controls and stronger character matching during script intake after asset schema gaps are closed.
 4. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal implementation name before adding new automation workers.
 5. Decide package-manager lockfile policy.

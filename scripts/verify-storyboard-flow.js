@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 5099);
