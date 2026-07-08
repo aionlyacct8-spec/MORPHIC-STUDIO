@@ -41,7 +41,7 @@ These systems are useful but need modification before further feature work.
 | Agent task names | Internal task names such as `generate_panels`, `generate_outline`, and `generate_character_dna` reflect older generation wording. | Preserve exports for compatibility; add production-assist aliases and update UI copy before changing route contracts. |
 | Comic panel status values | Status values include `generated`, which conflicts with editable production automation language. | Add/transition to statuses such as `planned`, `assisted`, `revised`, `reviewed`, and `approved` in a future DB migration. |
 | Asset `source` values | `ai_generated` is still part of the base asset source taxonomy. | Extend source taxonomy with `ai_assisted`, `authored`, `imported`, `rendered`, and `exported`; keep old value as legacy-compatible. |
-| Storyboard frontend | The storyboard UI still has prominent Generate/Regenerate controls and prompt wording. | Reframe as “Plan,” “Assist,” “Revise,” or “Create production draft”; keep disabled/guarded until backed by saved records. |
+| Storyboard frontend | Older controls used prominent Generate/Regenerate labels and prompt wording. | **Conflict 1 UI cleanup applied 2026-07-08:** frontend controls now use Plan/Assist/Revise language while legacy task names remain internal for compatibility. |
 | Open Source Roadmap frontend | Copy still overemphasizes visual generation and omits the refined Tier 1 stack. | Update copy to production automation stack before presenting it as current architecture. |
 | Motion comic language | Motion comic rendering is useful but can imply video-output-first thinking. | Keep as timeline/export pipeline, not a core AI video generation workflow. |
 | Current docs with older terms | Some older docs still mention generation as shorthand. | Continue replacing terms when files are touched; do not churn working code solely for naming. |
@@ -52,10 +52,10 @@ These items conflict with the updated direction unless redesigned.
 
 | System or pattern | Conflict | Recommendation |
 |---|---|---|
-| One-click “Generate” UX as primary workflow | Suggests finished output ownership by AI rather than editable production assistance. | Redesign UI flow around saved plans, asset reuse, user review, and non-destructive revisions. |
-| Any future text-to-video/image-to-video integration as core dependency | Optimizes for finished media generation instead of reusable assets, rigging, timeline editing, and creator control. | Keep out of core architecture; allow only later research/export experiments if they preserve production records. |
-| Static mock/demo cards presented as product data | Confuses real projects with examples and increases cleanup debt. | Remove from default user paths or clearly mark as optional examples/templates. |
-| Opaque output files without asset/version metadata | Breaks reuse, provenance, and non-destructive editing. | Block new integrations until they write Asset Library, storage, version, job, and workflow-stage records. |
+| One-click “Generate” UX as primary workflow | Suggests finished output ownership by AI rather than editable production assistance. | **Conflict 1 addressed 2026-07-08:** primary frontend labels now use Plan/Assist/Revise language and describe editable drafts for creator review; continue replacing legacy backend task names only through compatibility aliases. |
+| Any future text-to-video/image-to-video integration as core dependency | Optimizes for finished media generation instead of reusable assets, rigging, timeline editing, and creator control. | **Conflict 2 addressed 2026-07-08:** Open-source evaluation now classifies text-to-video/image-to-video candidates as excluded core dependencies; allow only later research/export experiments if they preserve production records. |
+| Static mock/demo cards presented as product data | Confuses real projects with examples and increases cleanup debt. | **Conflict 3 addressed 2026-07-08:** Preview launcher copy now avoids presenting demo responses or demo universes as product data; continue removing or labeling examples when touched. |
+| Opaque output files without asset/version metadata | Breaks reuse, provenance, and non-destructive editing. | **Conflict 4 addressed 2026-07-08:** open-source evaluation now blocks output-producing integration plans unless they declare writes to `assets`, `asset_versions`, `storage_objects`, `generation_jobs`, and `workflow_stages`. |
 
 ## Deferred systems
 
@@ -80,9 +80,11 @@ These systems should wait until architecture contracts stabilize.
 
 ### Placeholder, fake, or demo content
 
-- Some frontend pages still use static cards or demo fallbacks when APIs return nothing.
-- Preview copy still mentions demo responses and demo universe language.
-- Storyboard controls still dispatch generic panel-generation tasks.
+- Conflict 2 mitigation is implemented in the open-source evaluation service: text-to-video/image-to-video candidates are blocked from core-dependency planning and documented as research/export-only possibilities.
+- Conflict 3 mitigation is implemented for the preview launcher: default copy now refers to non-persistent API responses and production workspaces instead of demo responses or demo universes.
+- Some frontend pages may still include static cards or example/template content; continue removing from default workflows or clearly labeling them when those paths are touched.
+- Conflict 1 UI mitigation is implemented across current static frontend controls: visible Generate/Regenerate language was replaced with Plan/Assist/Revise wording while legacy task dispatch remains internal for backward compatibility.
+- Conflict 4 mitigation is implemented in open-source evaluation: output-producing adapters must satisfy the durable output-record contract before they can proceed.
 
 Recommendation: remove from default workflows or label as templates/examples; keep fixtures only for testing.
 

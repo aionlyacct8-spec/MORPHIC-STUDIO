@@ -18,13 +18,13 @@ Align the existing prototype with the production-automation architecture:
 - Morphic Studio is an AI-assisted production-automation platform for comics and animation.
 - It is not an AI video generator, AI comic generator, or one-click content generator.
 - Comic and animation workflows must reuse the same Character Library, Environment Library, Asset Library, Scene Builder, Project Brain, and Production Database.
-- Open-source integrations should be added one at a time after their Morphic data contracts exist.
+- Open-source integrations should be added one at a time after their Morphic data contracts exist; text-to-video/image-to-video candidates must remain excluded from the core dependency path, and output-producing adapters must declare Asset Library, version, storage, job, and workflow-stage records before implementation.
 
 ## Active tasks
 
 1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`.
 2. Draft additive Migration 005 readiness changes for production-oriented taxonomy/status/source values.
-3. Update frontend terminology and demo/default content in `frontend/storyboard.html`, `frontend/open-source-roadmap.html`, and `frontend/preview.html`.
+3. Frontend one-click generation language has been reframed to Plan/Assist/Revise wording for current static controls; continue backend/internal terminology cleanup only through compatibility-preserving aliases.
 4. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal name.
 5. Decide package manager and lockfile policy.
 

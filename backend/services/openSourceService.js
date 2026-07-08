@@ -1,3 +1,5 @@
+const REQUIRED_OUTPUT_RECORDS = ['assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'];
+
 const TOOL_PLANS = [
   {
     key: 'comfyui',
@@ -7,7 +9,8 @@ const TOOL_PLANS = [
     workflow: 'Primary visual generation engine for character generation, backgrounds, style workflows, custom pipelines, comics, and animation assets.',
     adapter: 'comfyuiAdapter',
     phase: 'phase_2_primary_visual_engine',
-    writesTo: ['assets', 'storage_objects', 'comic_panels.metadata', 'style_presets'],
+    writesTo: ['assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages', 'comic_panels.metadata', 'style_presets'],
+    outputRecordsRequired: true,
     firstMilestone: 'Generate one test image from a saved panel prompt and store it as an Asset Library record.',
     requiredChecks: ['License compatibility', 'Model license and provenance', 'GPU/runtime strategy', 'Workflow JSON import/export', 'Output file storage path'],
   },
@@ -43,7 +46,8 @@ const TOOL_PLANS = [
     workflow: 'High-performance rendering, GPU/WebGL acceleration, and animation previews.',
     adapter: 'pixiPreviewAdapter',
     phase: 'phase_2_preview_candidate',
-    writesTo: ['motion_sequences.metadata', 'animation_assets', 'assets'],
+    writesTo: ['motion_sequences.metadata', 'animation_assets', 'assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Preview a short motion-comic sequence from saved panels and motion cues.',
     requiredChecks: ['Renderer lifecycle', 'Asset preloading', 'Timeline cue mapping', 'Fallback behavior', 'Browser compatibility'],
   },
@@ -127,7 +131,8 @@ const TOOL_PLANS = [
     workflow: 'Render motion comics and slideshow exports from saved panels, voice assets, captions, and timing metadata.',
     adapter: 'remotionRenderAdapter',
     phase: 'phase_3_motion_export_candidate',
-    writesTo: ['motion_sequences.metadata', 'assets', 'storage_objects', 'workflow_stages'],
+    writesTo: ['motion_sequences.metadata', 'assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Render one short motion-comic clip from saved panels and timing data.',
     requiredChecks: ['Render runtime', 'Audio sync', 'Storage output path', 'Export format', 'Queue integration'],
   },
@@ -163,7 +168,8 @@ const TOOL_PLANS = [
     workflow: 'Durable object storage for generated images, audio, video, thumbnails, model outputs, and export files.',
     adapter: 'objectStorageAdapter',
     phase: 'phase_2_storage_runtime_candidate',
-    writesTo: ['storage_objects', 'assets', 'asset_versions', 'project_settings'],
+    writesTo: ['storage_objects', 'assets', 'asset_versions', 'generation_jobs', 'workflow_stages', 'project_settings'],
+    outputRecordsRequired: true,
     firstMilestone: 'Save one generated panel image to object storage and link it to an Asset Library record.',
     requiredChecks: ['S3 API compatibility', 'Bucket policy', 'Signed URL strategy', 'Local/dev fallback', 'Backup policy'],
   },
@@ -235,7 +241,8 @@ const TOOL_PLANS = [
     workflow: 'Candidate for character voice generation and reusable voice assets.',
     adapter: 'voiceGenerationAdapter',
     phase: 'phase_3_voice_candidate',
-    writesTo: ['voice_profiles', 'assets', 'storage_objects', 'workflow_stages'],
+    writesTo: ['voice_profiles', 'assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Generate one reusable voice line asset from a saved character voice profile.',
     requiredChecks: ['License/model status', 'Voice consent', 'Runtime strategy', 'Audio storage path', 'Timing metadata'],
   },
@@ -247,7 +254,8 @@ const TOOL_PLANS = [
     workflow: 'Background removal for isolating characters, props, and reusable asset cutouts.',
     adapter: 'assetCleanupAdapter',
     phase: 'phase_3_media_utility_candidate',
-    writesTo: ['assets', 'asset_versions', 'storage_objects'],
+    writesTo: ['assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Create one transparent-background asset version from a generated panel crop.',
     requiredChecks: ['Input/output formats', 'Alpha handling', 'Batch runtime', 'Quality threshold', 'Versioning policy'],
   },
@@ -259,7 +267,8 @@ const TOOL_PLANS = [
     workflow: 'Masking and region selection for targeted panel edits and asset extraction.',
     adapter: 'maskingAdapter',
     phase: 'phase_3_media_utility_candidate',
-    writesTo: ['assets.metadata', 'asset_versions', 'storage_objects'],
+    writesTo: ['assets.metadata', 'assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Save one reusable mask metadata object linked to an asset version.',
     requiredChecks: ['Model runtime', 'Mask schema', 'Editor integration', 'Storage format', 'Performance'],
   },
@@ -271,7 +280,8 @@ const TOOL_PLANS = [
     workflow: 'Final assembly, transcoding, compression, and export utility for motion comics and animation outputs.',
     adapter: 'mediaExportAdapter',
     phase: 'phase_3_export_candidate',
-    writesTo: ['exports', 'assets', 'storage_objects', 'workflow_stages'],
+    writesTo: ['exports', 'assets', 'asset_versions', 'storage_objects', 'generation_jobs', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Transcode one generated motion sequence into a downloadable MP4 asset.',
     requiredChecks: ['Binary availability', 'Sandbox/runtime limits', 'Codec policy', 'Queue integration', 'Output storage'],
   },
@@ -314,6 +324,11 @@ const TOOL_PLANS = [
 ];
 
 const EXCLUDED_TOOLS = [
+  {
+    name: 'Text-to-video / image-to-video core integrations',
+    reason: 'Excluded from core architecture because finished-media generators do not preserve reusable assets, editable rigs, timeline tracks, provenance, and creator review by default.',
+    match: ['text-to-video', 'text to video', 'image-to-video', 'image to video', 'video-generation', 'video generation', 'txt2video', 'img2video', 'sora', 'runway', 'pika', 'luma', 'wan'],
+  },
   { name: 'Replit', reason: 'Removed from the Morphic website stack.' },
   { name: 'Odyssey', reason: 'Research only; not selected for implementation.' },
   { name: 'Additional image-generation engines', reason: 'ComfyUI is sufficient for now.' },
@@ -347,8 +362,31 @@ function repoNameFromInput(input) {
   }
 }
 
+function findExcludedTool(repoName) {
+  const lower = repoName.toLowerCase();
+  return EXCLUDED_TOOLS.find(tool => (tool.match || []).some(token => lower.includes(token)));
+}
+
 function findPlan(repoName) {
   const lower = repoName.toLowerCase();
+  const excludedTool = findExcludedTool(repoName);
+
+  if (excludedTool) {
+    return {
+      key: 'excluded_core_dependency',
+      category: 'Excluded Core Dependency',
+      name: excludedTool.name,
+      workflow: 'Not approved for the core Morphic Studio architecture. Consider only a future research/export experiment if it writes durable Morphic records and keeps creator approval, asset reuse, provenance, and non-destructive timeline edits intact.',
+      adapter: 'notApplicable',
+      phase: 'excluded_from_core_architecture',
+      writesTo: [],
+      outputRecordsRequired: false,
+      firstMilestone: 'No implementation milestone is approved for core architecture.',
+      requiredChecks: ['Production-record preservation', 'Asset/version metadata', 'Editable timeline or rig output', 'Creator review workflow', 'Non-core research approval'],
+      exclusionReason: excludedTool.reason,
+    };
+  }
+
   return TOOL_PLANS.find(plan => plan.match.some(token => lower.includes(token))) || {
     key: 'unknown',
     category: 'Unclassified',
@@ -357,8 +395,25 @@ function findPlan(repoName) {
     adapter: 'customAdapter',
     phase: 'phase_1_evaluation_required',
     writesTo: ['project_settings', 'workflow_stages'],
+    outputRecordsRequired: true,
     firstMilestone: 'Create an adapter brief and prove one safe output can be saved back to a Morphic record.',
     requiredChecks: ['License compatibility', 'Maintenance activity', 'Security posture', 'Runtime requirements', 'Data record ownership'],
+  };
+}
+
+function assessOutputRecordContract(plan) {
+  const required = plan.outputRecordsRequired ? REQUIRED_OUTPUT_RECORDS : [];
+  const writesTo = plan.writesTo || [];
+  const missing = required.filter(record => !writesTo.includes(record));
+
+  return {
+    required,
+    writesTo,
+    missing,
+    compliant: missing.length === 0,
+    decision: missing.length
+      ? 'Blocked until the adapter plan writes durable Asset Library, storage, version, job, and workflow-stage records.'
+      : 'Output record contract satisfied or not required for this non-output integration.',
   };
 }
 
@@ -375,15 +430,31 @@ export function evaluateOpenSourceTool(input) {
   const plan = findPlan(repo);
   const isDevelopmentOnly = plan.phase === 'development_workflow_only';
   const isResearch = plan.phase === 'research_candidate';
+  const isExcluded = plan.phase === 'excluded_from_core_architecture';
+  const outputRecordPolicy = assessOutputRecordContract(plan);
+  const isBlockedOutput = !isExcluded && !outputRecordPolicy.compliant;
   return {
     repo,
     ...plan,
-    decision: isDevelopmentOnly
-      ? 'Keep this in the development workflow; do not embed it in the creator-facing website.'
-      : isResearch
-        ? 'Keep this on the research list until the related timeline/color workflow becomes necessary.'
-        : 'Proceed only through the adapter layer after Phase 1 save/load contracts are stable.',
-    phaseOrder: [
+    outputRecordPolicy,
+    decision: isExcluded
+      ? 'Do not add this as a core dependency. It may be reconsidered only as a separately approved research/export experiment that preserves Morphic production records.'
+      : isBlockedOutput
+        ? outputRecordPolicy.decision
+        : isDevelopmentOnly
+          ? 'Keep this in the development workflow; do not embed it in the creator-facing website.'
+          : isResearch
+            ? 'Keep this on the research list until the related timeline/color workflow becomes necessary.'
+            : 'Proceed only through the adapter layer after Phase 1 save/load contracts are stable.',
+    phaseOrder: isExcluded ? [
+      'No core implementation phase is approved.',
+      'If future research is approved, first prove editable production-record preservation outside the core dependency graph.',
+      'Do not expose creator-facing finished-video generation as a primary workflow.',
+    ] : isBlockedOutput ? [
+      'Phase 1: update the adapter brief so writesTo includes assets, asset_versions, storage_objects, generation_jobs, and workflow_stages.',
+      'Phase 2: prove one safe output is saved as a reusable Asset Library record with version, storage, job, and workflow-stage metadata.',
+      'Phase 3: expose the integration only after the durable production-record contract is verified.',
+    ] : [
       'Phase 1: confirm license, security, runtime, storage, and exact Morphic records touched.',
       'Phase 2: build a thin adapter that writes one test output back to Asset Library or the relevant production table.',
       'Phase 3: expose the adapter behind a reviewed UI action, queue job, and workflow stage status.',

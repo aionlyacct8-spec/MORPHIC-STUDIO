@@ -5,12 +5,11 @@
 
 ## What was completed
 
-- Added root `AGENTS.md` so future AI coding agents automatically receive the Morphic Studio AI Session Protocol.
-- Added `docs/AI_SESSION_PROTOCOL.md` as the canonical step-by-step workflow for every AI coding session.
-- Added root `ROADMAP.md` as a quick-entry roadmap that points to the canonical living roadmap and current milestone.
-- Updated README planning links so the AI Session Protocol, root AGENTS instructions, root roadmap, and living roadmap are discoverable.
-- Updated `docs/AI_HANDOFF.md`, `docs/LIVING_ROADMAP.md`, and `docs/CURRENT_SPRINT.md` to require the protocol as part of the standard workflow.
-- Updated `DEVELOPMENT_LOG.md` with this protocol-standardization session.
+- Implemented Architecture Compatibility Report Conflict 4.
+- Added an output-record policy to the open-source evaluation service.
+- Output-producing integration plans now must declare writes to `assets`, `asset_versions`, `storage_objects`, `generation_jobs`, and `workflow_stages`.
+- Unknown/custom integration proposals are blocked until their adapter brief proves the durable Morphic output-record contract.
+- Updated `docs/ARCHITECTURE_COMPATIBILITY_REPORT.md`, `docs/LIVING_ROADMAP.md`, `ROADMAP.md`, and `DEVELOPMENT_LOG.md` for the Conflict 4 status.
 
 ## In progress
 
@@ -19,39 +18,36 @@
 
 ## Remaining
 
-- Draft Migration 005 for additive taxonomy/readiness changes after reviewing the database plan.
-- Update frontend copy in `frontend/storyboard.html`, `frontend/open-source-roadmap.html`, and `frontend/preview.html` to reduce one-click generation language.
+- Review and refine `docs/DATABASE_REFACTORING_PLAN.md`.
+- Draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
 - Decide whether `generation_jobs` should be aliased, migrated, or retained as a legacy internal name.
 - Decide package manager and lockfile policy.
 - Identify archive strategy for historical patch files and attached planning assets.
 
 ## Current blockers
 
-- Real ComfyUI verification requires an external running ComfyUI host and API-format workflow JSON.
+- Real ComfyUI verification requires an external running ComfyUI host and API-format workflow JSON. Treat Playwright/Puppeteer warnings as environment limitations, not project failures.
 - Object storage behavior needs final policy before implementation.
 - Production job taxonomy is unresolved because current code still uses `generation_jobs` for compatibility.
 
 ## Files modified in this session
 
-- `AGENTS.md`
-- `docs/AI_SESSION_PROTOCOL.md`
-- `ROADMAP.md`
-- `README.md`
-- `docs/AI_HANDOFF.md`
+- `backend/services/openSourceService.js`
+- `docs/ARCHITECTURE_COMPATIBILITY_REPORT.md`
 - `docs/LIVING_ROADMAP.md`
-- `docs/CURRENT_SPRINT.md`
+- `ROADMAP.md`
 - `DEVELOPMENT_LOG.md`
 - `SESSION_HANDOFF.md`
 
 ## Architectural decisions
 
-- The AI Session Protocol is now a repository-level workflow requirement, not a conversation-only instruction.
-- Root `AGENTS.md` is the enforcement/discovery point for future AI agents.
-- Root `ROADMAP.md` is a quick-entry roadmap and must stay synchronized with `docs/LIVING_ROADMAP.md`.
+- Output-producing adapters cannot proceed from evaluation unless they declare durable Morphic records for assets, versions, storage objects, jobs, and workflow stages.
+- Unknown/custom integrations are treated as blocked until their output contract is explicit.
+- The guardrail is additive and does not destructively rename or remove existing legacy job/task contracts.
 
 ## Problems encountered
 
-- No runtime blockers; this was a documentation/workflow change.
+- No project failure encountered. Playwright/Puppeteer warnings remain understood as environment limitations if they appear during validation.
 
 ## Recommended next task
 
