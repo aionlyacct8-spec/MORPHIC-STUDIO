@@ -2,14 +2,14 @@
 
 ## Focus
 
-Architecture alignment before feature expansion.
+Phase 2 implementation foundations through 2F.
 
-The current sprint is not a feature sprint. It is an architecture refactoring and cleanup-planning sprint so future work follows the production-automation direction instead of one-click generation workflows.
+The current sprint has expanded the implementation foundation from Phase 2A shared assets into additive Phase 2B-2F records for reusable characters, scene composition, storyboard references, comic lettering/layout, and animation timelines.
 
 ## Active work
 
 - Use [Production Automation Architecture](./PRODUCTION_AUTOMATION_ARCHITECTURE.md), [Comic Production Automation Architecture](./COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md), and [Open Source Integration Plan](../OPEN_SOURCE_INTEGRATION_PLAN.md) as the current architectural source of truth.
-- Keep the Phase 1/Phase 2 bridge centered on saved Morphic records before wiring heavy engines to UI buttons.
+- Begin Phase 2A with saved Morphic asset records, asset versions, provenance, metadata, storage links, usage relationships, and reuse-first retrieval before wiring heavy engines to UI buttons.
 - Maintain the [Architecture Compatibility Report](./ARCHITECTURE_COMPATIBILITY_REPORT.md) as the cleanup guide for compatible, partially compatible, conflicting, deferred, and technical-debt areas.
 - Use [Core Data Model](./CORE_DATA_MODEL.md) as the canonical implementation reference before migrations, APIs, adapters, or save/load contracts are changed.
 - Follow [AI Session Protocol](./AI_SESSION_PROTOCOL.md) and root `AGENTS.md` before making changes and before ending a major session.
@@ -86,13 +86,23 @@ jobs:
           VERIFY_STORYBOARD_WRITE: 1
 ```
 
+## Phase 2 implementation sequence
+
+1. **Phase 2A — Shared Asset System:** reusable asset infrastructure, versioning, metadata, provenance, storage links, relationships, usage tracking, and reuse-first retrieval.
+2. **Phase 2B — Character System:** reusable characters with rigs, expressions, clothing, metadata, continuity rules, and versioning.
+3. **Phase 2C — Scene Builder:** editable scene containers assembled from shared characters, environments, props, lighting, cameras, timeline cues, and continuity rules.
+4. **Phase 2D — Storyboard Workspace:** storyboards directly connected to shared characters, environments, props, scenes, shot plans, and continuity notes.
+5. **Phase 2E — Comic Production:** comic pages, panels, lettering, reading flow, and export built on shared assets and scenes.
+6. **Phase 2F — Animation Production:** timelines, rigs, motion clips, camera/audio/dialogue tracks, and export built on shared assets and scenes.
+
 ## Next implementation steps
 
-1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes.
-2. Update frontend terminology and demo/default content in `frontend/storyboard.html`, `frontend/open-source-roadmap.html`, and `frontend/preview.html`.
-3. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal implementation name.
-4. Decide package-manager lockfile policy.
-5. Identify archive strategy for historical patch files and attached planning assets.
-6. Run `npm run verify:comfyui-runtime` only when a reachable `Comfy-Org/ComfyUI` host and known-good API-format workflow JSON are available.
-7. Add MinIO/S3-compatible object storage after the storage policy and production job taxonomy are stable.
-8. Add Redis/BullMQ runtime configuration after durable job semantics are decided.
+1. Run Migrations 005 and 006 against a real development database and verify the new asset plus Phase 2B-2F repository/service/API layers.
+2. Add database-backed verification for asset creation, version creation, storage-object linking, asset relationships, character rigs/poses/expressions/clothing, scene placements, storyboard references, speech bubbles, timelines, and keyframes.
+3. Implement reuse controls and stronger character matching during script intake after asset schema gaps are closed.
+4. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal implementation name before adding new automation workers.
+5. Decide package-manager lockfile policy.
+6. Identify archive strategy for historical patch files and attached planning assets.
+7. Run `npm run verify:comfyui-runtime` only when a reachable `Comfy-Org/ComfyUI` host and known-good API-format workflow JSON are available.
+8. Add MinIO/S3-compatible object storage after the storage policy and production job taxonomy are stable.
+9. Add Redis/BullMQ runtime configuration after durable job semantics are decided.

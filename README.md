@@ -114,6 +114,7 @@ See [Deployment Guide](./DEPLOYMENT.md) for platform-neutral runtime, environmen
 - [Comic Production Automation Architecture](./docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md) defines the comic-specific production system: story intelligence, panel planning, camera/composition assistance, dialogue placement, reading flow, comic timeline, export, and reuse-first asset retrieval.
 - [Architecture Compatibility Report](./docs/ARCHITECTURE_COMPATIBILITY_REPORT.md) reviews existing systems against the updated architecture and identifies compatible, partial, conflicting, deferred, and technical-debt areas.
 - [Core Data Model](./docs/CORE_DATA_MODEL.md) is the canonical implementation reference for entities, relationships, output-record contracts, and additive data-model work.
+- [Open Source Integration Plan](./OPEN_SOURCE_INTEGRATION_PLAN.md) defines evaluation rules for external components, and [Open Source Registry](./docs/OPEN_SOURCE_REGISTRY.md) records adopted/planned components, licenses, integration status, adapter status, ownership, and notes.
 - [AI Session Protocol](./docs/AI_SESSION_PROTOCOL.md) and root [AGENTS.md](./AGENTS.md) define the required workflow for every future AI coding session.
 - [Root Roadmap](./ROADMAP.md) and [Living Roadmap](./docs/LIVING_ROADMAP.md) are the current state trackers for milestones, active work, blockers, deferred items, decisions, integrations, and known issues.
 - [AI Handoff Guide](./docs/AI_HANDOFF.md) and [Session Handoff](./SESSION_HANDOFF.md) help future AI coding agents resume work quickly.
@@ -156,6 +157,9 @@ All active product APIs are project-scoped unless noted.
 | `POST` | `/api/projects/:projectId/characters` | Create a character. |
 | `GET/POST` | `/api/projects/:projectId/worlds` | List or create worlds. |
 | `GET/POST` | `/api/projects/:projectId/assets` | List or create assets. |
+| `GET/POST` | `/api/projects/:projectId/assets/:assetId/versions` | List or create non-destructive asset versions. |
+| `GET` | `/api/projects/:projectId/assets/:assetId/storage` | List storage objects linked to an asset. |
+| `GET/POST` | `/api/projects/:projectId/assets/:assetId/relationships` | List or create reusable asset relationships. |
 | `GET/POST` | `/api/projects/:projectId/stories/scripts` | List or create scripts. |
 | `GET/POST` | `/api/projects/:projectId/graph/nodes` | Read or upsert knowledge graph nodes. |
 | `POST` | `/api/projects/:projectId/jobs/dispatch` | Dispatch an AI orchestration job. |
@@ -164,7 +168,16 @@ All active product APIs are project-scoped unless noted.
 | `POST` | `/api/projects/:projectId/production/intake/plan` | Phase 1 script intake: save script, chapter, scenes, pages, panels, and continuity rules. |
 | `GET/POST` | `/api/projects/:projectId/production/chapters` | List or create story/comic chapters. |
 | `GET/POST` | `/api/projects/:projectId/production/comic/pages` | List or create comic pages. |
+| `GET/POST` | `/api/projects/:projectId/production/characters/:characterId/rigs` | List or create reusable character rigs linked to shared assets. |
+| `GET/POST` | `/api/projects/:projectId/production/characters/:characterId/expressions` | List or create reusable character expressions. |
+| `GET/POST` | `/api/projects/:projectId/production/characters/:characterId/poses` | List or create reusable character poses. |
+| `GET/POST` | `/api/projects/:projectId/production/characters/:characterId/clothing-sets` | List or create reusable character clothing sets. |
+| `GET/POST` | `/api/projects/:projectId/production/scenes/:sceneId/placements` | List or create scene placements referencing shared assets. |
+| `GET/POST` | `/api/projects/:projectId/production/storyboards/asset-references` | List or create storyboard references to shared assets. |
 | `GET/POST` | `/api/projects/:projectId/production/comic/panels` | List or create reusable comic panels linked to scenes/assets. |
+| `GET/POST` | `/api/projects/:projectId/production/comic/speech-bubbles` | List or create comic speech bubbles and lettering records. |
+| `GET/POST` | `/api/projects/:projectId/production/animation/timelines` | List or create animation timelines. |
+| `GET/POST` | `/api/projects/:projectId/production/animation/timelines/:timelineId/keyframes` | List or create animation keyframes. |
 | `GET/POST` | `/api/projects/:projectId/production/voices` | List or create reusable character voice profiles. |
 | `GET/POST` | `/api/projects/:projectId/production/motion/sequences` | List or create slideshow/motion-comic sequences. |
 | `GET/POST` | `/api/projects/:projectId/production/animation/assets` | List or create reusable animation rigs, body parts, poses, and presets. |

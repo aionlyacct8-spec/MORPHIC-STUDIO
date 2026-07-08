@@ -35,11 +35,11 @@ Current runtime shape:
 
 ## Current objectives
 
-1. Finish architecture refactoring and cleanup before feature expansion.
+1. Begin Phase 2A Shared Asset System implementation.
 2. Keep all future work aligned with reusable production assets and non-destructive editing.
 3. Strengthen database and API contracts for shared comic/animation production pipelines.
-4. Update frontend copy and controls away from one-click generation language.
-5. Add open-source integrations one at a time only after contracts stabilize.
+4. Build Phase 2 in order: Shared Asset System, Character System, Scene Builder, Storyboard Workspace, Comic Production, Animation Production.
+5. Defer advanced AI orchestration and automation layers until those foundations are solid.
 
 ## Current blockers
 
@@ -51,13 +51,12 @@ Current runtime shape:
 
 ## Current priorities
 
-1. Review and refine the database refactoring plan, then draft additive Migration 005 readiness changes.
-2. Frontend terminology and demo-content cleanup.
-3. Production job taxonomy decision.
-4. Asset Library reuse controls and stronger character matching.
-5. Object storage implementation.
-6. Queue/worker implementation.
-7. Editor/integration evaluations.
+1. Phase 2 foundations: validate Migrations 005 and 006 plus repository/service/API layers against a real database.
+2. Asset Library reuse controls and stronger character matching.
+3. Object storage implementation for durable shared assets.
+4. Production job taxonomy decision before new automation workers.
+5. Queue/worker implementation.
+6. Editor/integration evaluations only after page/panel/vector/timeline contracts are stable.
 
 ## Recent decisions
 
@@ -78,7 +77,7 @@ Current runtime shape:
 
 ## Next recommended task
 
-Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
+Continue Phase 2 by running Migrations 005 and 006 against a real development database, then add database-backed verification for shared assets and the Phase 2B-2F foundation endpoints.
 
 ## Commands commonly used
 

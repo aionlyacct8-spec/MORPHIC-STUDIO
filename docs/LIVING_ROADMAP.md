@@ -1,7 +1,7 @@
 # Morphic Studio Living Roadmap
 
 **Last updated:** 2026-07-08  
-**Current priority:** Architecture alignment before feature expansion.
+**Current priority:** Phase 2 implementation, beginning with Shared Asset System foundations.
 
 This roadmap must stay current. Update it whenever architecture, implementation status, blockers, integrations, or priorities change.
 
@@ -17,35 +17,42 @@ This roadmap must stay current. Update it whenever architecture, implementation 
 
 ## Current milestone
 
-### Architecture Refactoring and Cleanup
+### Phase 2 Implementation — Shared Production Foundation
 
-Goal: align the existing prototype with the production-automation architecture before adding major features.
+Goal: shift from architecture cleanup into implementation of the shared production foundation, starting with reusable asset infrastructure and then building character, scene, storyboard, comic, and animation systems on top of the same records.
 
 Active outcomes:
 
-- Architecture Compatibility Report is available.
+- Architecture Compatibility Report conflicts are addressed enough to begin implementation.
 - Core Data Model is available as the canonical implementation reference for entities, relationships, output-record contracts, and additive migrations.
-- Living roadmap is available.
-- AI handoff documentation is available.
-- Development log is available.
-- Session handoff file is available.
-- AI Session Protocol and root AGENTS instructions are available.
+- Phase 2 milestone order is established as 2A Shared Asset System, 2B Character System, 2C Scene Builder, 2D Storyboard Workspace, 2E Comic Production, and 2F Animation Production.
+- Advanced AI orchestration and automation layers remain deferred until the shared asset, character, scene, storyboard, comic, and animation foundations are solid.
+- Living roadmap, AI handoff documentation, development log, session handoff file, AI Session Protocol, and root AGENTS instructions are available.
 
 ## Active tasks
 
 - Follow `docs/AI_SESSION_PROTOCOL.md` / root `AGENTS.md` at the start and end of every AI coding session.
-- Conflict 1 frontend copy cleanup is complete for current static controls; continue backend/internal generation terminology cleanup only through compatibility-preserving aliases.
-- Decide whether `generation_jobs` should be renamed, aliased, or superseded by `production_jobs` / `automation_jobs`.
-- Review the database refactoring plan for reusable production entities and prepare additive migration work.
+- Continue Phase 2 implementation validation: Migrations 005 and 006 now start shared assets plus Phase 2B-2F foundation records; next verify them against a real database and expand UI/use-case coverage.
+- Use `docs/CORE_DATA_MODEL.md` to keep Phase 2A implementation additive and compatible with existing APIs.
+- Decide whether `generation_jobs` should be renamed, aliased, or superseded by `production_jobs` / `automation_jobs` before adding new automation workers.
 - Decide package-manager lockfile policy.
 - Identify which attached assets/patch files are historical references and can be archived.
 
+## Phase 2 implementation milestones
+
+1. **Phase 2A — Shared Asset System:** build reusable asset infrastructure that every downstream workspace relies on, including versions, metadata, provenance, storage links, usage tracking, relationships, and reuse-first retrieval controls.
+2. **Phase 2B — Character System:** create reusable characters with rigs, expressions, clothing, metadata, continuity rules, and versioning, all backed by shared assets rather than duplicate character outputs.
+3. **Phase 2C — Scene Builder:** allow users to assemble reusable characters, environments, props, lighting, camera positions, timeline cues, and continuity rules into editable scene containers.
+4. **Phase 2D — Storyboard Workspace:** tie storyboard beats, frames, panels, shot plans, and continuity notes directly to shared characters, environments, props, and scenes.
+5. **Phase 2E — Comic Production:** build comic page, panel, lettering, reading-flow, and export workflows on top of the same shared assets and scene records.
+6. **Phase 2F — Animation Production:** build animation timelines, rigs, motion clips, camera tracks, audio/dialogue tracks, and export workflows on top of the same assets and scene/timeline records.
+
 ## Upcoming tasks
 
-1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft additive Migration 005 readiness changes.
-2. Frontend terminology cleanup for storyboard, open-source roadmap, preview, and any demo/default workflows.
-3. Asset Library reuse controls and stronger character matching during script intake.
-4. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.
+1. Next implementation slice: run Migrations 005 and 006 against a real development database, then add verification coverage for shared assets, character rigs/poses/expressions/clothing, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
+2. Implement Shared Asset System reuse controls and stronger character matching during script intake.
+3. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.
+4. Frontend terminology cleanup for any remaining demo/default workflows when related screens are touched.
 5. Redis/BullMQ production automation queue after job taxonomy is stable.
 6. OpenCV/Paper.js evaluation after asset masks/vector contracts exist.
 7. Fabric.js/Konva/PixiJS editor work after comic page/panel/vector contracts are stable.
