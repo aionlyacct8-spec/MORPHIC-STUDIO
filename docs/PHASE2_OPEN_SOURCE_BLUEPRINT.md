@@ -8,7 +8,7 @@ Use a combined blueprint:
 - Keep the build-order discipline from the second proposal because Morphic should not jump into canvas, voice, or animation before the memory and asset contracts are stable.
 - Keep the cloud-decoupling rule from the first proposal because the website must stay responsive while heavy AI work runs on separate GPU/storage/queue infrastructure.
 
-Morphic Studio's advantage is not any single model or canvas package. The advantage is the Memory Layer: projects, canon, characters, worlds, panels, assets, voices, styles, and workflow stages stored as durable Morphic records before any engine generates output.
+Morphic Studio's advantage is not any single model, canvas package, or finished-media generator. The advantage is the production memory layer: projects, canon, characters, worlds, panels, assets, voices, styles, rigs, timelines, and workflow stages stored as durable Morphic records before any engine creates, edits, or exports output.
 
 ## Phase status
 
@@ -26,8 +26,10 @@ Not started yet:
 
 - A confirmed real ComfyUI runtime verification run in this environment.
 - Redis/BullMQ workers for long-running jobs.
-- MinIO/S3 object persistence for generated binaries.
-- React/Next.js editor UI actions that trigger generation.
+- MinIO/S3 object persistence for imported, authored, AI-assisted, rendered, and exported binaries.
+- React/Next.js editor UI actions that trigger production automation.
+- OpenCV/Paper.js evaluation for image intelligence and vector editing.
+- Krita/OpenToonz/Glaxnimate/Synfig/SkelForm evaluation for comic, animation, and rigging concepts.
 - Voice, motion comic rendering, full animation, and canon validation UI.
 
 ## Selected stack by layer
@@ -40,8 +42,11 @@ Not started yet:
 | shadcn/ui | Use for a fast, themeable component system once React migration begins. | Later Phase 2. |
 | Zustand | Use for editor-local state such as selected panel, drag state, and layout state. | Later Phase 2. |
 | tldraw | Use for storyboard / infinite planning canvas exploration. | Later Phase 2. |
-| React Grid Layout or Fabric.js | Use for comic page layout editing; decide after the panel layout JSON contract exists. | Later Phase 2. |
-| Remotion | Use for motion-comic/slideshow export from saved panels, voices, and timing data. | Phase 3+. |
+| Fabric.js | Required canvas editor for comic pages, assets, text, panels, and production elements. | Later Phase 2 after save/load contracts. |
+| Konva | Required high-performance layer, selection, transform, and editor-interaction layer. | Later Phase 2 after save/load contracts. |
+| PixiJS | Required GPU rendering layer for complex scenes, previews, comic motion, and animation workspaces. | Phase 3+. |
+| Paper.js | Required vector editing reference/runtime candidate for paths, masks, guides, speech shapes, and reusable vector elements. | Later Phase 2. |
+| Remotion / FFmpeg | Export/render candidates from saved panels, voices, timeline tracks, camera cues, and timing data. | Phase 3+. |
 
 ### Layer 2 — Morphic Memory Layer
 
@@ -76,7 +81,7 @@ Rule: LLMs and image engines can read from memory, but they do not own memory. P
 
 | Tool | Decision | Timing |
 |---|---|---|
-| MinIO / S3-compatible storage | Add before real generated image/audio/video files are treated as production assets. | Next backend infrastructure step. |
+| MinIO / S3-compatible storage | Add before imported, authored, AI-assisted, rendered, or exported files are treated as production assets. | Next backend infrastructure step. |
 
 The adapter should save binaries to object storage, then save Morphic metadata in `assets`, `asset_versions`, `storage_objects`, panel metadata, and workflow stages.
 
@@ -88,35 +93,42 @@ The adapter should save binaries to object storage, then save Morphic metadata i
 
 Direct API calls are acceptable for a backend-only smoke test. User-facing generation must go through jobs.
 
-### Layer 6 — Visual generation and character consistency
+### Layer 6 — Core production automation stack
 
 | Tool | Decision | Timing |
 |---|---|---|
-| ComfyUI | Primary visual generation runtime. | Now / next. |
-| IP-Adapter / InstantID / ControlNet OpenPose | Research and test inside ComfyUI workflows after one real panel image is generated. | After first real ComfyUI smoke. |
-| StoryDiffusion / CharaConsist / PhotoMaker | Research candidates for multi-panel character consistency. | After baseline ComfyUI bridge works. |
-| Rembg / SAM 2 | Useful for asset cleanup and targeted edits. | Later Phase 2. |
+| ComfyUI | Required AI workflow engine for controlled pipelines, targeted edits, and missing-piece asset creation. | Now / next. |
+| OpenCV | Required image intelligence layer for analysis, segmentation, masking, tracking, cleanup, and quality checks. | Phase 2 after asset metadata contracts. |
+| Paper.js | Required vector graphics layer for comic/vector production records. | Later Phase 2. |
+| IP-Adapter / InstantID / ControlNet OpenPose | Research inside ComfyUI workflows for reference-guided assets and pose/control inputs. | After first real ComfyUI smoke. |
+| Rembg / SAM 2 | Candidate helpers for asset cleanup and targeted edits if OpenCV and ComfyUI workflows need additional segmentation. | Later Phase 2. |
 
-Do not make StoryDiffusion, CharaConsist, or a custom node pack mandatory until the core ComfyUI API bridge can run one controlled workflow and return one saved asset.
+Do not add text-to-video or image-to-video systems as core dependencies. They optimize for finished media generation, while Morphic needs reusable assets, rigging, timeline editing, production automation, and creator control.
 
-### Layer 7 — Voice, motion comic, and animation
+### Layer 7 — Comic, rigging, animation, and export references
 
 | Tool | Decision | Timing |
 |---|---|---|
+| Krita | Highest-priority comic production reference for drawing, panels, text/balloon workflows, and PSD-oriented art workflows. | Evaluate before custom comic drawing tools. |
+| OpenToonz | Production workflow, scene management, onion-skinning, and animation pipeline reference. | Phase 3+. |
+| SkelForm | High-priority skeletal rigging reference for IK, mesh deformation, PSD import, and reusable 2D character animation concepts. | Phase 3 rigging research. |
+| Synfig Studio | High-priority reference for bones, tweening, cut-out animation, and vector/bitmap deformation. | Phase 3 rigging research. |
+| Glaxnimate | SVG/vector animation and reusable graphics reference. | Phase 3+. |
+| Blender | Future-capability reference for rigging, Grease Pencil, camera/lighting/rendering, not an immediate dependency. | Later. |
 | Coqui TTS / RVC / whisper.cpp | Voice generation, voice conversion, and timing/transcription candidates. | Phase 3. |
-| Remotion | Programmatic motion comic rendering from saved panels and timing. | Phase 3. |
-| SadTalker / Blender / OpenToonz / FFmpeg | Animation and export tools. | Last; do not start before visual generation and asset memory are reliable. |
+| Remotion / FFmpeg | Rendering/export candidates from saved production records. | Phase 3. |
 
 ## Build order
 
 1. Keep the current Express + PostgreSQL backend and finish the saved-record contracts.
 2. Run the real ComfyUI API smoke test using `Comfy-Org/ComfyUI`, `COMFYUI_MODE=real`, `COMFYUI_BASE_URL`, and `COMFYUI_WORKFLOW_PATH`.
-3. Add object storage so generated files become durable Asset Library files instead of mock URLs.
-4. Add Redis/BullMQ so long-running AI work is queued and restart-safe.
+3. Add object storage so imported, authored, AI-assisted, rendered, and exported files become durable Asset Library records instead of mock URLs.
+4. Add Redis/BullMQ so long-running production automation work is queued and restart-safe.
 5. Add character consistency workflow inputs: master reference asset, pose/control inputs, prompt seed, model/workflow metadata, and repeatable output tracking.
-6. Add canon validation as a backend service that checks scripts against saved character/world/timeline facts before generation.
+6. Add canon validation as a backend service that checks scripts against saved character/world/timeline facts before production automation runs.
 7. Start the React/Next.js editor migration only after the API contracts are stable.
-8. Add canvas/page editing, motion comics, voice, and animation in later phases.
+8. Evaluate OpenCV and Paper.js before custom image-intelligence/vector systems.
+9. Add canvas/page editing, comic intelligence, motion comics, voice, rigging, and animation in later phases.
 
 ## Immediate next implementation target
 
@@ -148,6 +160,7 @@ If that passes, the next code task is object storage: save the generated image b
 
 - Do not migrate Express to NestJS yet.
 - Do not migrate SQL migrations to Prisma yet.
-- Do not wire generation to a frontend button yet.
+- Do not wire production automation to a frontend button yet.
 - Do not add every character-consistency model at once.
-- Do not build voice, Remotion, or animation before the visual asset contract is reliable.
+- Do not add text-to-video or image-to-video projects as core architecture dependencies.
+- Do not build voice, Remotion, rigging, or animation before the visual asset contract is reliable.

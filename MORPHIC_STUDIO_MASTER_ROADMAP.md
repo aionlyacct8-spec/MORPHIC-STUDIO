@@ -1,6 +1,17 @@
 # Morphic Studio — Master Roadmap
 
-A unified execution plan combining foundational infrastructure, cleanup work, missing systems review, and the phased build-out for Morphic Studio's AI comic/animation production pipeline.
+A unified execution plan combining foundational infrastructure, cleanup work, missing systems review, and the phased build-out for Morphic Studio's AI-assisted comic and animation production-automation pipeline. This roadmap follows `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md` and `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`: Morphic Studio is not an AI video generator or AI comic generator; it is an editable, reusable production environment where creators direct and AI automates repetitive work.
+
+---
+
+## Architecture North Star: Production Automation
+
+- [ ] Reinterpret older “video generation,” “comic generation,” “page generation,” or “one-click animation” tasks as editable production automation tasks.
+- [ ] Prioritize reusable characters, environments, props, rigs, poses, expressions, animation clips, camera presets, lighting presets, timelines, and exports.
+- [ ] Keep creators in control with accept, modify, reject, regenerate, undo, compare, branch, and restore workflows for major AI-assisted actions.
+- [ ] Make the Animation Automation Engine the core animation layer for posing, lip sync, in-betweening, timing suggestions, smoothing, secondary motion, cleanup, and quality checks.
+- [ ] Ensure comic, storyboard, and animation workflows share the same Character Library, Scene Builder, Asset Library, Project Brain, and continuity records.
+- [ ] Use specialized agents for story, script, storyboard, comic story intelligence, panel planning, reading flow, character, rigging, animation, scene, camera, timeline, asset management, rendering, documentation, production management, and quality assurance.
 
 ---
 
@@ -29,9 +40,9 @@ A unified execution plan combining foundational infrastructure, cleanup work, mi
 - [ ] Strengthen character matching during story/script intake so existing saved characters are reused instead of duplicated.
 - [ ] When a script introduces a genuinely new character, create and save that character as a reusable record.
 - [ ] Link scenes, comic panels, voice profiles, and later animation assets back to saved character records.
-- [ ] Build or wire a real Asset Library UI for characters, locations, props, voices, panels, and animation assets.
+- [ ] Build or wire a real Asset Library UI for characters, locations, props, voices, panels, expressions, poses, camera presets, lighting setups, and animation assets.
 - [ ] Add manual reuse controls so creators can choose saved assets instead of regenerating them.
-- [ ] Make the Asset Library the visible center of the “generate once, save permanently, reuse forever” workflow.
+- [ ] Make the Asset Library the visible center of the “create once, save permanently, reuse everywhere” workflow.
 
 ---
 
@@ -95,16 +106,16 @@ New or audited tables required:
 - [ ] Add Sharp for image optimization and thumbnails
 - [ ] Wire asset URLs into the existing assets DB table
 
-### 1.4 Extend AI Gateway for image generation
-- [ ] Add image generation provider support to `gateway.js`
+### 1.4 Extend AI Gateway for production-assist visual workflows
+- [ ] Add visual workflow provider support to `gateway.js` for references, assets, cleanup, and production-assist tasks
 - [ ] Support Replicate API (Stable Diffusion / Flux)
 - [ ] Support FAL.ai as fallback
 - [ ] Create `imageAgent.js` for prompt engineering
-- [ ] Wire image results into asset storage
+- [ ] Wire visual workflow results into versioned asset storage with editable metadata
 
 ---
 
-## Phase 2: AI Generation Systems
+## Phase 2: AI-Assisted Production Systems
 
 ### 2.1 Prompt Builder
 Composable prompt construction instead of single free-text prompts:
@@ -116,11 +127,11 @@ Character + Location + Camera + Lighting + Mood + Art Style + Negative Prompt = 
 - [ ] Build reusable prompt assembly module
 - [ ] Expose as shared service across image/animation pipelines
 
-### 2.2 Comic panel image generation
+### 2.2 Comic panel production assistance
 - [ ] Take AI script analysis output (`visual_description` per panel)
-- [ ] Feed through imageAgent → image generation API
-- [ ] Store generated images as assets with panel linkage
-- [ ] Display generated panel images in comic-studio
+- [ ] Feed through production-assist agents and approved visual workflow adapters
+- [ ] Store produced or assisted images as reusable assets with panel linkage, provenance, and versions
+- [ ] Display panel artwork, dialogue placement, reading-flow notes, and editable production metadata in comic-studio
 
 ### 2.3 Character consistency system
 - [ ] Generate character reference sheet from Character DNA
@@ -129,7 +140,7 @@ Character + Location + Camera + Lighting + Mood + Art Style + Negative Prompt = 
 - [ ] Reuse existing saved character records during script intake before generating new character assets
 - [ ] Link every character image, pose, expression, voice, and animation asset to the canonical character record
 
-### 2.4 Background generation
+### 2.4 Environment/background asset assistance
 - [ ] Generate location backgrounds from Location DNA
 - [ ] Store as reusable background assets
 - [ ] Link backgrounds to location records
@@ -141,11 +152,11 @@ Pre-export upscaling:
 - [ ] Flux Upscaler integration
 
 ### 2.6 Inpainting
-Targeted regeneration instead of full-image redo:
-- [ ] Regenerate face only
-- [ ] Regenerate hand only
-- [ ] Regenerate background only
-- [ ] Regenerate speech bubble area only
+Targeted non-destructive revisions instead of full-image redo:
+- [ ] Revise face only
+- [ ] Revise hand only
+- [ ] Revise background only
+- [ ] Revise speech bubble area only
 
 ### 2.7 Image Editing Pipeline
 - [ ] Remove background
@@ -174,23 +185,31 @@ Targeted regeneration instead of full-image redo:
 - [ ] Entire chapter overview
 - [ ] Drag pages to reorder
 
-### 3.4 Automatic Page Layout AI
-Instead of manual panel placement, AI generates:
+### 3.4 Comic Production Automation
+Instead of forcing manual panel placement or one-click comic generation, AI proposes editable production plans for page layout, panels, dialogue, and reading flow:
+- [ ] Story analysis and scene breakdown
+- [ ] Character, environment, and prop assignment
+- [ ] Emotion and acting analysis
+- [ ] Camera planning and composition suggestions
 - [ ] Manga layout
 - [ ] Western layout
 - [ ] Webtoon layout
 
-### 3.5 Speech Bubble Auto Placement
-- [ ] AI places bubbles without covering faces
+### 3.5 Dialogue, Caption, and SFX Placement
+- [ ] Suggest speech bubble sizing, placement, and order without covering important artwork
+- [ ] Support captions, thought bubbles, whisper effects, shouting effects, radio communication, narration boxes, and SFX
+- [ ] Keep all text and bubble placement editable, lockable, and reversible
 
-### 3.6 Reading Order Detection
+### 3.6 Reading Flow Assistant
 - [ ] Detect and encode reading order for exports
+- [ ] Analyze eye movement, panel transitions, dialogue flow, visual balance, empty space, and clutter
+- [ ] Suggest readability improvements without changing the story
 
 ---
 
 ## Phase 4: Audio & Motion Pipeline
 
-### 4.1 TTS voice generation
+### 4.1 Reusable voice profiles and TTS assistance
 - [ ] Set up Piper TTS as FastAPI microservice
 - [ ] Create voice assignment UI (map character → voice model)
 - [ ] Generate dialogue audio per panel/scene
@@ -286,7 +305,7 @@ Idea → Outline → Script → Storyboard → Panels → Images → Dialogue �
 Per-panel controls:
 - [ ] Approve
 - [ ] Reject
-- [ ] Regenerate
+- [ ] Regenerate or revise
 - [ ] Lock
 - [ ] Unlock
 
@@ -299,8 +318,8 @@ Per-panel controls:
 - [ ] Print-ready settings (300 DPI, CMYK, bleeds)
 - [ ] Digital-optimized export (RGB, compressed)
 
-### 7.2 Motion comic video export
-- [ ] FFmpeg video rendering pipeline
+### 7.2 Timeline-based animation and motion-comic export
+- [ ] FFmpeg rendering/export pipeline for timeline-based outputs
 - [ ] MP4 and WebM output
 - [ ] Resolution options (720p, 1080p, 4K)
 - [ ] Progress tracking via BullMQ
@@ -345,7 +364,7 @@ Specialized agents beyond the current `imageAgent`, each focused on a single tas
 - [ ] Color grading pipeline (OpenCV)
 
 ### 9.2 Animatic generator
-- [ ] Auto-generate timed slideshow from storyboard + voice
+- [ ] Propose editable timed slideshow or animatic tracks from storyboard + voice
 - [ ] Preview before committing to full motion comic
 
 ### 9.3 Collaboration features

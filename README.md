@@ -2,14 +2,14 @@
 
 **Create Once. Evolve Forever.**
 
-Morphic Studio is an AI-assisted story, comic, and animation workspace. This repository currently contains a Node/Express API, PostgreSQL schema/migrations, and a static HTML frontend served by the API process.
+Morphic Studio is an AI-assisted animation and comic production platform. It is not a one-click AI video generator; it is a production-automation workspace where creators direct the work, reusable assets carry continuity forward, and AI assists with repetitive production tasks. This repository currently contains a Node/Express API, PostgreSQL schema/migrations, and a static HTML frontend served by the API process.
 
 ## Current Stack
 
 - **Backend:** Node.js 20, Express 4, ESM modules
 - **Database:** PostgreSQL via `pg`
 - **Frontend:** Static HTML pages with Tailwind CSS CDN and inline browser JavaScript
-- **AI:** Provider gateway for OpenAI, OpenRouter, and Gemini-compatible chat generation
+- **AI:** Provider gateway for OpenAI, OpenRouter, and Gemini-compatible assistants that support production planning, asset organization, and workflow automation
 - **Deployment:** Platform-neutral Node web process via `npm start` / `Procfile`; configurable with `HOST` and `PORT`
 
 ## Getting Started
@@ -110,7 +110,14 @@ See [Deployment Guide](./DEPLOYMENT.md) for platform-neutral runtime, environmen
 
 ## Planning Documents
 
-- [Morphic Studio Master Roadmap](./MORPHIC_STUDIO_MASTER_ROADMAP.md) tracks the cleanup tasks, character consistency/asset-library next step, and phased build plan for the AI comic and animation production pipeline.
+- [Production Automation Architecture](./docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md) defines the current product direction: AI-assisted animation and comic production automation, not AI video generation.
+- [Comic Production Automation Architecture](./docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md) defines the comic-specific production system: story intelligence, panel planning, camera/composition assistance, dialogue placement, reading flow, comic timeline, export, and reuse-first asset retrieval.
+- [Architecture Compatibility Report](./docs/ARCHITECTURE_COMPATIBILITY_REPORT.md) reviews existing systems against the updated architecture and identifies compatible, partial, conflicting, deferred, and technical-debt areas.
+- [AI Session Protocol](./docs/AI_SESSION_PROTOCOL.md) and root [AGENTS.md](./AGENTS.md) define the required workflow for every future AI coding session.
+- [Root Roadmap](./ROADMAP.md) and [Living Roadmap](./docs/LIVING_ROADMAP.md) are the current state trackers for milestones, active work, blockers, deferred items, decisions, integrations, and known issues.
+- [AI Handoff Guide](./docs/AI_HANDOFF.md) and [Session Handoff](./SESSION_HANDOFF.md) help future AI coding agents resume work quickly.
+- [Development Log](./DEVELOPMENT_LOG.md) records completed architecture and implementation sessions.
+- [Morphic Studio Master Roadmap](./MORPHIC_STUDIO_MASTER_ROADMAP.md) tracks the cleanup tasks, character consistency/asset-library next step, and phased build plan for the comic and animation production pipeline.
 
 ## Phase 1 Workflow
 
@@ -119,7 +126,7 @@ The first production workflow is **Story Intake → Saved Production Plan**:
 1. Paste a script into the dashboard Phase 1 Story Intake panel.
 2. The backend creates or updates a script record.
 3. The planner breaks the text into scenes, a chapter, comic pages, reusable comic panels, and continuity rules.
-4. The plan is stored in PostgreSQL so later comic, motion-comic, voice, and animation tools reuse the same records instead of regenerating from scratch.
+4. The plan is stored in PostgreSQL so later comic, storyboard, voice, rigging, timeline, and animation tools reuse the same records instead of recreating assets from scratch.
 5. This deterministic planner works without an AI key; OpenRouter can be added next to improve analysis quality.
 
 ## Story Production Foundation
@@ -127,9 +134,9 @@ The first production workflow is **Story Intake → Saved Production Plan**:
 The core product direction is now represented in the backend data model:
 
 1. **Shared Asset Library** stores reusable characters, outfits, backgrounds, voices, props, panels, poses, and animation-related files.
-2. **Project Brain** stores story/world/continuity memory so generations can stay consistent.
+2. **Project Brain** stores story/world/continuity memory so AI-assisted production work stays consistent.
 3. **Production Workflow APIs** organize reusable assets into chapters, comic pages, comic panels, motion-comic slideshow sequences, voice profiles, and animation rig/preset assets.
-4. **Comic and animation paths share the same project assets** so characters, locations, props, voices, and rules are not regenerated from scratch every chapter.
+4. **Comic and animation paths share the same project assets** so characters, locations, props, voices, rigs, timelines, and rules are not recreated from scratch every chapter.
 
 ## API Overview
 
