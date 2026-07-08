@@ -372,6 +372,9 @@ export function demoModeApi(req, res, next) {
   if (path.includes('/characters')) return json(res, { characters: [] });
   if (path.includes('/worlds')) return json(res, path.includes('/locations') ? { locations: [] } : { worlds: [] });
   if (path.includes('/assets/stats')) return json(res, { stats: { total: 0, by_type: [] } });
+  if (path.includes('/assets/') && path.includes('/versions')) return json(res, { versions: [] });
+  if (path.includes('/assets/') && path.includes('/storage')) return json(res, { storageObjects: [] });
+  if (path.includes('/assets/') && path.includes('/relationships')) return json(res, { relationships: [] });
   if (path.includes('/assets')) return json(res, { assets: listByProject(demoStore.assets, req) });
   if (path.includes('/stories/scripts')) return json(res, { scripts: [] });
   if (path.includes('/scenes')) return json(res, { scenes: [] });
@@ -383,6 +386,16 @@ export function demoModeApi(req, res, next) {
   if (path.includes('/jobs')) return json(res, { jobs: [] });
   if (path.includes('/production/motion/sequences')) return json(res, { sequences: [] });
   if (path.includes('/production/voices')) return json(res, { voices: [] });
+  if (path.includes('/production/characters/') && path.includes('/asset-links')) return json(res, { assetLinks: [] });
+  if (path.includes('/production/characters/') && path.includes('/rigs')) return json(res, { rigs: [] });
+  if (path.includes('/production/characters/') && path.includes('/expressions')) return json(res, { expressions: [] });
+  if (path.includes('/production/characters/') && path.includes('/poses')) return json(res, { poses: [] });
+  if (path.includes('/production/characters/') && path.includes('/clothing-sets')) return json(res, { clothingSets: [] });
+  if (path.includes('/production/scenes/') && path.includes('/placements')) return json(res, { placements: [] });
+  if (path.includes('/production/storyboards/asset-references')) return json(res, { assetReferences: [] });
+  if (path.includes('/production/comic/speech-bubbles')) return json(res, { speechBubbles: [] });
+  if (path.includes('/production/animation/timelines') && path.includes('/keyframes')) return json(res, { keyframes: [] });
+  if (path.includes('/production/animation/timelines')) return json(res, { timelines: [] });
   if (path.includes('/production/animation/assets')) return json(res, { animationAssets: [] });
 
   return next();
