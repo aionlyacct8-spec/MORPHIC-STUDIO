@@ -269,3 +269,131 @@ None. Documentation-only reference addition.
 **Recommended follow-up work**
 
 Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
+
+## 2026-07-08 — Phase 2 implementation kickoff
+
+**Summary**
+
+- Shifted current project focus from architecture cleanup to Phase 2 implementation.
+- Established the Phase 2 milestone order: 2A Shared Asset System, 2B Character System, 2C Scene Builder, 2D Storyboard Workspace, 2E Comic Production, and 2F Animation Production.
+- Updated roadmap, current sprint, AI handoff, and session handoff documentation to make Phase 2A Shared Asset System the active implementation foundation.
+
+**Files modified**
+
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+- `SESSION_HANDOFF.md`
+
+**Reason for change**
+
+Phase 2 should now begin and shift almost entirely to implementation, starting with reusable asset infrastructure before character, scene, storyboard, comic, animation, and advanced AI orchestration layers.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `OPEN_SOURCE_INTEGRATION_PLAN.md`
+- `docs/ARCHITECTURE_COMPATIBILITY_REPORT.md`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+
+**Breaking changes**
+
+None. Documentation-only planning update.
+
+**Recommended follow-up work**
+
+Begin Phase 2A by reviewing existing asset APIs/schema against `docs/CORE_DATA_MODEL.md`, then draft Migration 005 for additive Shared Asset System readiness changes without breaking existing APIs.
+
+## 2026-07-08 — Phase 2A Shared Asset System implementation slice
+
+**Summary**
+
+- Added additive Migration 005 for Shared Asset System readiness fields, asset version storage links, storage object lifecycle/provider metadata, and asset relationships.
+- Introduced Asset Library repository and service layers, then refactored the asset controller to use them while preserving existing routes.
+- Added project-scoped API support for asset storage-object listing and asset relationship listing/creation.
+- Added `docs/OPEN_SOURCE_REGISTRY.md` to track adopted/planned open-source components, licenses, statuses, adapters, owner subsystems, and next Phase 2 stages.
+
+**Files modified**
+
+- `backend/controllers/assetsController.js`
+- `backend/repositories/assetsRepository.js`
+- `backend/routes/assets.js`
+- `backend/services/assetService.js`
+- `database/migrations/005_shared_asset_system.sql`
+- `docs/OPEN_SOURCE_REGISTRY.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `README.md`
+- `DEVELOPMENT_LOG.md`
+- `SESSION_HANDOFF.md`
+
+**Reason for change**
+
+Phase 2A needs real Shared Asset System implementation before Character Library, Scene Builder, Storyboard Workspace, Comic Pipeline, Animation Pipeline, or advanced AI orchestration work can build on reusable production assets.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/OPEN_SOURCE_REGISTRY.md`
+
+**Breaking changes**
+
+None intended. The migration is additive, existing asset endpoints remain in place, and legacy source/job naming is preserved for compatibility.
+
+**Recommended follow-up work**
+
+Run Migration 005 against a real development database, then add database-backed verification coverage for asset creation, version creation, storage-object linking, and asset relationships.
+
+## 2026-07-08 — Phase 2B-2F foundation records and APIs
+
+**Summary**
+
+- Added additive Migration 006 for the remaining Phase 2 foundations: character asset links, rigs, expressions, poses, clothing sets, scene asset placements, storyboard asset references, comic speech bubbles, animation timelines, and animation keyframes.
+- Added a Phase 2 foundation repository, service, and controller for project-scoped creation/listing of those records.
+- Added production API routes for Phase 2B Character Library foundations, Phase 2C Scene Builder placements, Phase 2D storyboard asset references, Phase 2E comic speech bubbles, and Phase 2F animation timelines/keyframes.
+- Updated API discovery, preview-mode responses, README API documentation, and current handoff/roadmap documents.
+
+**Files modified**
+
+- `backend/controllers/phase2FoundationController.js`
+- `backend/repositories/phase2Repository.js`
+- `backend/services/phase2FoundationService.js`
+- `backend/routes/production.js`
+- `backend/server.js`
+- `backend/middleware/demoMode.js`
+- `database/migrations/006_phase2_remaining_foundations.sql`
+- `README.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+- `SESSION_HANDOFF.md`
+
+**Reason for change**
+
+The remaining Phase 2 foundations need additive production records and API boundaries so Character Library, Scene Builder, Storyboard Workspace, Comic Pipeline, and Animation Pipeline can reference shared assets instead of duplicating production data.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+
+**Breaking changes**
+
+None intended. Existing production and asset endpoints remain in place; new tables and routes are additive.
+
+**Recommended follow-up work**
+
+Run Migrations 005 and 006 against a real development database, then add database-backed verification coverage for shared assets and the Phase 2B-2F foundation endpoints.
