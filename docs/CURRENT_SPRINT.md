@@ -2,18 +2,26 @@
 
 ## Focus
 
-Real Storyboard + Asset Contract.
+Architecture alignment before feature expansion.
+
+The current sprint is not a feature sprint. It is an architecture refactoring and cleanup-planning sprint so future work follows the production-automation direction instead of one-click generation workflows.
 
 ## Active work
 
+- Use [Production Automation Architecture](./PRODUCTION_AUTOMATION_ARCHITECTURE.md), [Comic Production Automation Architecture](./COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md), and [Open Source Integration Plan](../OPEN_SOURCE_INTEGRATION_PLAN.md) as the current architectural source of truth.
 - Keep the Phase 1/Phase 2 bridge centered on saved Morphic records before wiring heavy engines to UI buttons.
-- Verify Story Intake saves scripts, chapters, scenes, comic pages, and comic panels.
-- Verify Storyboard Review reloads saved pages/panels from the backend, edits panel metadata, and writes a `storyboard_review` workflow stage.
-- Use `npm run verify:storyboard` as the regression check for the story-intake-to-storyboard save/load path.
-- Keep ComfyUI planning adapter work behind saved panels, saved assets, and workflow stages.
-- Use `npm run verify:comfyui-plan` as the Phase 2 regression check for one saved panel prompt producing one simulated ComfyUI job, one Asset Library record, and one `comfyui_planning` workflow stage.
-- Follow the selected [Phase 2 Open-Source Blueprint](./PHASE2_OPEN_SOURCE_BLUEPRINT.md): real ComfyUI next, then durable storage and queues before UI-triggered generation.
-- Checkpoint for the next AI agent: the adapter now has a real-runtime bridge guarded by `COMFYUI_MODE=real`, `COMFYUI_BASE_URL`, and `COMFYUI_WORKFLOW_PATH`; start by running `npm run verify:comfyui-runtime` against a reachable ComfyUI host with an API-format workflow JSON.
+- Maintain the [Architecture Compatibility Report](./ARCHITECTURE_COMPATIBILITY_REPORT.md) as the cleanup guide for compatible, partially compatible, conflicting, deferred, and technical-debt areas.
+- Follow [AI Session Protocol](./AI_SESSION_PROTOCOL.md) and root `AGENTS.md` before making changes and before ending a major session.
+- Maintain the [Living Roadmap](./LIVING_ROADMAP.md), root `ROADMAP.md`, [AI Handoff Guide](./AI_HANDOFF.md), root `SESSION_HANDOFF.md`, and root `DEVELOPMENT_LOG.md` whenever meaningful changes are made.
+- Continue to preserve working backend/API systems unless they conflict with reusable production assets, modular workflows, non-destructive editing, or creator control.
+
+## Current architecture checkpoint
+
+- Morphic Studio is an AI-assisted production-automation platform for comics and animation.
+- It is not an AI video generator, AI comic generator, or one-click content generator.
+- Comic and animation workflows must reuse the same Character Library, Environment Library, Asset Library, Scene Builder, Project Brain, and Production Database.
+- Text-to-video and image-to-video systems are not core dependencies.
+- Open-source integrations should be added one at a time after the relevant Morphic data contracts exist.
 
 ## Supabase verification runbook
 
@@ -79,9 +87,11 @@ jobs:
 
 ## Next implementation steps
 
-1. Run `npm run setup` or `npm run migrate` against the real Supabase database from a native host or CI runner that can resolve the Supabase pooler.
-2. Run `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard` with `DATABASE_URL` set in that same runtime environment to validate the real database path.
-3. Run `npm run verify:comfyui-runtime` against a reachable `Comfy-Org/ComfyUI` host and a known-good API-format workflow JSON.
-4. Add MinIO/S3-compatible object storage so generated files become durable Asset Library objects instead of ComfyUI `/view` URLs or mock URLs.
-5. Add Redis/BullMQ runtime configuration and a durable job status model before enabling heavy image generation from the UI.
-6. Add Socket.IO only after durable jobs exist, starting with job progress/status events rather than multi-user collaboration.
+1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes.
+2. Update frontend terminology and demo/default content in `frontend/storyboard.html`, `frontend/open-source-roadmap.html`, and `frontend/preview.html`.
+3. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal implementation name.
+4. Decide package-manager lockfile policy.
+5. Identify archive strategy for historical patch files and attached planning assets.
+6. Run `npm run verify:comfyui-runtime` only when a reachable `Comfy-Org/ComfyUI` host and known-good API-format workflow JSON are available.
+7. Add MinIO/S3-compatible object storage after the storage policy and production job taxonomy are stable.
+8. Add Redis/BullMQ runtime configuration after durable job semantics are decided.

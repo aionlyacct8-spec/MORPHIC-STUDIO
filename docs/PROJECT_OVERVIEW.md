@@ -10,8 +10,8 @@ Creators should be able to start with a story idea or script, preserve their uni
 
 - Character Consistency Engine
 - Style Consistency Engine
-- Comic Generation Pipeline
-- Animation Pipeline
+- Comic Production Automation Pipeline
+- Animation Production Automation Pipeline
 - Visual Identity Engine
 - Story Pipeline
 - Local Organizer
