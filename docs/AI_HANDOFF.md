@@ -6,7 +6,7 @@ Use this file to onboard future AI coding agents quickly. Follow `docs/AI_SESSIO
 
 ## Current project status
 
-Morphic Studio is a prototype Node/Express + PostgreSQL application with a static HTML frontend. It has project, story, character, world, asset, scene, Project Brain, knowledge graph, production workflow, storage, queue health, system config, and ComfyUI adapter scaffolding.
+Morphic Studio is a prototype Node/Express + PostgreSQL application with a static HTML frontend. `docs/CORE_DATA_MODEL.md` is now the canonical reference for data-model implementation decisions. It has project, story, character, world, asset, scene, Project Brain, knowledge graph, production workflow, storage, queue health, system config, and ComfyUI adapter scaffolding.
 
 The product direction is now production automation for comics and animation. Do not treat the app as an AI video generator, AI comic generator, or one-click content generator.
 
@@ -19,6 +19,7 @@ Canonical architecture documents:
 - `OPEN_SOURCE_INTEGRATION_PLAN.md`
 - `docs/PHASE2_OPEN_SOURCE_BLUEPRINT.md`
 - `docs/ARCHITECTURE_COMPATIBILITY_REPORT.md`
+- `docs/CORE_DATA_MODEL.md`
 - `docs/LIVING_ROADMAP.md`
 - `docs/DATABASE_REFACTORING_PLAN.md`
 - `docs/AI_SESSION_PROTOCOL.md`
@@ -77,7 +78,7 @@ Current runtime shape:
 
 ## Next recommended task
 
-Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
+Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
 
 ## Commands commonly used
 

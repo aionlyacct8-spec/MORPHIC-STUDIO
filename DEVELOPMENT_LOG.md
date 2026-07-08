@@ -231,3 +231,41 @@ None. Existing runtime adapters remain compatible; the evaluation service now bl
 **Recommended follow-up work**
 
 Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
+
+## 2026-07-08 — Core Data Model reference
+
+**Summary**
+
+- Added `docs/CORE_DATA_MODEL.md` as the canonical implementation reference for Morphic Studio entities, relationships, output-record contracts, source-of-truth guidance, and additive migration priorities.
+- Linked the Core Data Model from README, AI Handoff, Current Sprint, Living Roadmap, and root Roadmap so future feature work starts from one data-model reference.
+- Preserved the current compatibility-first migration direction; no schema changes were applied.
+
+**Files modified**
+
+- `docs/CORE_DATA_MODEL.md`
+- `README.md`
+- `docs/AI_HANDOFF.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `DEVELOPMENT_LOG.md`
+- `SESSION_HANDOFF.md`
+
+**Reason for change**
+
+After completing the architecture conflicts, the implementation phase needs one authoritative data-model reference before Shared Asset Library, Character Library, Scene Builder, storyboard, comic, animation, timeline, and agent systems expand.
+
+**Related architecture documents**
+
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/ARCHITECTURE_COMPATIBILITY_REPORT.md`
+- `docs/DATABASE_REFACTORING_PLAN.md`
+
+**Breaking changes**
+
+None. Documentation-only reference addition.
+
+**Recommended follow-up work**
+
+Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.

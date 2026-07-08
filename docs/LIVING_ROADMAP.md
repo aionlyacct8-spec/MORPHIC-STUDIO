@@ -24,6 +24,7 @@ Goal: align the existing prototype with the production-automation architecture b
 Active outcomes:
 
 - Architecture Compatibility Report is available.
+- Core Data Model is available as the canonical implementation reference for entities, relationships, output-record contracts, and additive migrations.
 - Living roadmap is available.
 - AI handoff documentation is available.
 - Development log is available.
@@ -41,7 +42,7 @@ Active outcomes:
 
 ## Upcoming tasks
 
-1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft additive Migration 005 readiness changes.
+1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft additive Migration 005 readiness changes.
 2. Frontend terminology cleanup for storyboard, open-source roadmap, preview, and any demo/default workflows.
 3. Asset Library reuse controls and stronger character matching during script intake.
 4. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.

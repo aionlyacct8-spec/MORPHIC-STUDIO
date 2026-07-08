@@ -22,7 +22,7 @@ Align the existing prototype with the production-automation architecture:
 
 ## Active tasks
 
-1. Review and refine `docs/DATABASE_REFACTORING_PLAN.md`.
+1. Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`.
 2. Draft additive Migration 005 readiness changes for production-oriented taxonomy/status/source values.
 3. Frontend one-click generation language has been reframed to Plan/Assist/Revise wording for current static controls; continue backend/internal terminology cleanup only through compatibility-preserving aliases.
 4. Decide whether `generation_jobs` should be aliased, migrated, or left as a legacy internal name.
@@ -37,4 +37,4 @@ Align the existing prototype with the production-automation architecture:
 
 ## Next recommended task
 
-Review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
+Use `docs/CORE_DATA_MODEL.md` to review and refine `docs/DATABASE_REFACTORING_PLAN.md`, then draft Migration 005 for additive taxonomy/readiness changes without breaking existing APIs.
