@@ -18,18 +18,32 @@ router.delete('/chapters/:id', asyncWrap(ctrl.deleteChapter));
 
 
 // Phase 2B-D reusable production foundations
+router.get('/characters/:characterId/library', asyncWrap(phase2.getCharacterLibraryProfile));
 router.get('/characters/:characterId/asset-links', asyncWrap(phase2.listCharacterAssetLinks));
 router.post('/characters/:characterId/asset-links', asyncWrap(phase2.createCharacterAssetLink));
+router.patch('/characters/:characterId/asset-links/:id', asyncWrap(phase2.updateCharacterAssetLink));
+router.delete('/characters/:characterId/asset-links/:id', asyncWrap(phase2.deleteCharacterAssetLink));
 router.get('/characters/:characterId/rigs', asyncWrap(phase2.listCharacterRigs));
 router.post('/characters/:characterId/rigs', asyncWrap(phase2.createCharacterRig));
+router.patch('/characters/:characterId/rigs/:id', asyncWrap(phase2.updateCharacterRig));
+router.delete('/characters/:characterId/rigs/:id', asyncWrap(phase2.deleteCharacterRig));
 router.get('/characters/:characterId/expressions', asyncWrap(phase2.listCharacterExpressions));
 router.post('/characters/:characterId/expressions', asyncWrap(phase2.createCharacterExpression));
+router.patch('/characters/:characterId/expressions/:id', asyncWrap(phase2.updateCharacterExpression));
+router.delete('/characters/:characterId/expressions/:id', asyncWrap(phase2.deleteCharacterExpression));
 router.get('/characters/:characterId/poses', asyncWrap(phase2.listCharacterPoses));
 router.post('/characters/:characterId/poses', asyncWrap(phase2.createCharacterPose));
+router.patch('/characters/:characterId/poses/:id', asyncWrap(phase2.updateCharacterPose));
+router.delete('/characters/:characterId/poses/:id', asyncWrap(phase2.deleteCharacterPose));
 router.get('/characters/:characterId/clothing-sets', asyncWrap(phase2.listCharacterClothingSets));
 router.post('/characters/:characterId/clothing-sets', asyncWrap(phase2.createCharacterClothingSet));
+router.patch('/characters/:characterId/clothing-sets/:id', asyncWrap(phase2.updateCharacterClothingSet));
+router.delete('/characters/:characterId/clothing-sets/:id', asyncWrap(phase2.deleteCharacterClothingSet));
+router.get('/scenes/:sceneId/builder', asyncWrap(phase2.getSceneBuilderProfile));
 router.get('/scenes/:sceneId/placements', asyncWrap(phase2.listScenePlacements));
 router.post('/scenes/:sceneId/placements', asyncWrap(phase2.createScenePlacement));
+router.patch('/scenes/:sceneId/placements/:id', asyncWrap(phase2.updateScenePlacement));
+router.delete('/scenes/:sceneId/placements/:id', asyncWrap(phase2.deleteScenePlacement));
 router.get('/storyboards/asset-references', asyncWrap(phase2.listStoryboardAssetReferences));
 router.post('/storyboards/asset-references', asyncWrap(phase2.createStoryboardAssetReference));
 

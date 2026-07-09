@@ -1,49 +1,53 @@
 # Session Handoff
 
-**Last updated:** 2026-07-08  
+**Last updated:** 2026-07-09
 **Current branch:** `work`
 
 ## What was completed
 
-- Added a focused Phase 2A-2F database/API validation harness for shared assets, Migration 005/006 schema, character records, scene placements, storyboard references, comic speech bubbles, animation timelines, and keyframes.
-- Added `database/migrations/006_phase2_remaining_foundations.sql` for character asset links, rigs, expressions, poses, clothing sets, scene asset placements, storyboard asset references, comic speech bubbles, animation timelines, and animation keyframes.
-- Corrected Phase 2 foundation inserts so omitted optional fields preserve database defaults instead of persisting explicit `NULL` values.
-- Added production routes for Phase 2B Character Library, Phase 2C Scene Builder, Phase 2D Storyboard Workspace references, Phase 2E Comic Pipeline speech bubbles, and Phase 2F Animation Pipeline timelines/keyframes.
-- Updated API discovery, demo-mode responses, README API documentation, current sprint/roadmap/handoff docs, and the development log.
+- Completed the requested cross-agent synchronization/validation pass by reading the repository protocol, handoff, roadmap, sprint, core data model, architecture, compatibility, registry, and AI handoff documents before code changes.
+- Confirmed the latest committed work is Phase 2A-2F database/API foundation work plus a normalized npm lockfile registry cleanup.
+- Attempted real Supabase PostgreSQL Phase 2 verification with the provided local-development `DATABASE_URL`; this container cannot resolve the Supabase pooler host and reports `getaddrinfo EAI_AGAIN aws-0-eu-west-1.pooler.supabase.com`.
+- Added the first Scene Builder Workspace UI that consumes existing project, scene, asset, character, Scene Builder profile, and placement APIs rather than adding backend-only contracts.
+- The workspace lets users select/create scenes and add reusable asset placements for characters, props, environments, lighting, camera, weather, and effects.
+- Added the Scene Builder entry point to the landing page so the production workspace is reachable from the app.
+- Kept backend foundations frozen except for the already-built verification path; no new schema or architectural layer was added.
+- Updated roadmap, sprint, core data model, AI handoff, development log, and this session handoff to reflect the compatibility alias and current verification status.
 
 ## In progress
 
-- Phase 2 implementation foundations now exist through 2F at the database/API boundary.
-- Local `.env` is configured for the development Supabase database and is ignored by git; verification is currently blocked by this container's npm/proxy restrictions, not by missing database configuration.
+- Phase 2 implementation foundations exist through 2F at the database/API boundary.
+- Phase 2C now has an initial user-facing Scene Builder Workspace over existing scenes, shared assets, characters, placements, camera, lighting, weather, effects, metadata, and production notes.
+- This container can run syntax checks and demo-mode storyboard verification, and the provided `DATABASE_URL` reaches the verifier, but DNS resolution for the Supabase pooler fails in this environment.
 
 ## Remaining
 
-- Restore npm dependencies in a normal development environment with package-registry access.
-- Rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`; if it passes, run `npm run verify:phase2`.
-- Build frontend/editor surfaces that use these records without duplicating shared assets.
+- Run `npm run verify:phase2` from a network environment that can resolve the Supabase pooler host to validate Migrations 005, 006, and 007 plus Phase 2A-2F API persistence and the Scene Builder profile/edit contract.
+- Continue hardening the Scene Builder Workspace UI with edit/delete placement controls, richer scene metadata editing, and asset thumbnails without duplicating scenes, characters, or shared assets.
 - Integrate durable object storage policy with uploaded/imported/authored/AI-assisted/rendered/exported files.
-- Decide whether `generation_jobs` should be aliased, migrated, or retained as a legacy internal name before adding new automation workers.
+- Plan the full service/client migration from legacy `generation_jobs` writes to production automation terminology after the alias is verified.
 
 ## Current blockers
 
-- Real database migration/API verification requires installed npm dependencies; this container's proxy returns `403 Forbidden` for npm package fetches. The committed lockfile no longer points at the environment-specific `package-firewall.replit.local` mirror, but this container still cannot reach `registry.npmjs.org` through its proxy.
+- Real Phase 2 database/API verification has credentials available for local development, but this container cannot resolve `aws-0-eu-west-1.pooler.supabase.com` and reports `getaddrinfo EAI_AGAIN`.
 - Real ComfyUI verification requires an external running ComfyUI host and API-format workflow JSON.
 - Object storage behavior needs final policy before implementation.
-- Production job taxonomy is unresolved because current code still uses `generation_jobs` for compatibility.
 - Advanced AI orchestration and automation layers are intentionally deferred until shared asset, character, scene, storyboard, comic, and animation foundations are verified.
 
 ## Files modified in this session
 
-- `backend/controllers/phase2FoundationController.js`
-- `backend/repositories/phase2Repository.js`
-- `backend/services/phase2FoundationService.js`
-- `scripts/verify-storyboard-flow.js`
-- `scripts/verify-phase2-foundations.js`
-- `backend/routes/production.js`
 - `backend/server.js`
+- `backend/services/generationJobService.js`
+- `database/migrations/007_production_job_alias.sql`
+- `scripts/verify-phase2-foundations.js`
+- `backend/controllers/phase2FoundationController.js`
+- `backend/services/phase2FoundationService.js`
+- `backend/routes/production.js`
 - `backend/middleware/demoMode.js`
-- `database/migrations/006_phase2_remaining_foundations.sql`
-- `README.md`
+- `backend/repositories/phase2Repository.js`
+- `frontend/scene-builder.html`
+- `frontend/index.html`
+- `docs/CORE_DATA_MODEL.md`
 - `docs/LIVING_ROADMAP.md`
 - `ROADMAP.md`
 - `docs/CURRENT_SPRINT.md`
@@ -54,14 +58,16 @@
 ## Architectural decisions
 
 - Remaining Phase 2 systems should start as additive, project-scoped records that reference `assets`, `asset_versions`, `characters`, `scenes`, `comic_pages`, and `comic_panels` rather than copying production data.
-- Character rigs, expressions, poses, and clothing sets are now structured records tied back to canonical characters and shared assets.
+- `production_jobs` is a read-only compatibility alias over `generation_jobs`; keep orchestrator writes on the legacy table until service/client migration is explicitly approved.
+- Scene Builder groups character, prop, environment, lighting, camera, weather, and effect placements around canonical `scenes` while all files remain in the Shared Asset System and characters remain in the Character Library.
 - Scene Builder composition begins with `scene_asset_placements` so environments, props, and characters remain shared asset references.
 - Storyboard, comic, and animation foundations use references/timelines/keyframes that can later be edited by frontend workspaces and adapters.
 
 ## Problems encountered
 
-- `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard` failed before reaching the database because Node could not resolve the missing `dotenv` package from the incomplete `node_modules`. Investigation found no project `.npmrc` or auth-token cause; npm is configured for `registry.npmjs.org`, but lockfile tarballs previously pointed at `package-firewall.replit.local` and the container proxy returns `403 Forbidden` for both the mirror and npmjs registry access.
+- `npm run verify:phase2` cannot complete in this container because DNS resolution for the Supabase pooler host fails with `getaddrinfo EAI_AGAIN`.
+- `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard` passed in demo/no-database mode, so it did not validate real database writes in this container.
 
 ## Recommended next task
 
-Restore npm dependencies in a normal development environment with package-registry access, rerun `VERIFY_STORYBOARD_WRITE=1 npm run verify:storyboard`, then run `npm run verify:phase2` only after storyboard verification passes.
+Run `npm run verify:phase2` from a network environment that can resolve the Supabase pooler host and fix only verified Scene Builder workspace/profile or Migration 005/006/007 persistence failures.

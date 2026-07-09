@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Morphic Studio — Scene Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#c0c1ff',surface:'#051424','surface-container':'#122131','surface-bright':'#2c3a4c','on-surface':'#d4e4fa','on-surface-variant':'#c7c4d7'},fontFamily:{body:['Inter','system-ui','sans-serif']}}}}
+</script>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen">
+<header class="border-b border-white/10 bg-surface-container/80 backdrop-blur px-6 py-4 flex items-center justify-between">
+  <div>
+    <p class="text-xs uppercase tracking-[0.3em] text-primary">Phase 2C</p>
+    <h1 class="text-2xl font-semibold">Scene Builder Workspace</h1>
+    <p class="text-sm text-on-surface-variant">Assemble reusable characters, props, environments, lighting, camera, weather, and effects from shared assets.</p>
+  </div>
+  <a href="/dashboard.html" class="text-sm text-primary hover:underline">Back to dashboard</a>
+</header>
+<main class="grid grid-cols-12 gap-4 p-6">
+  <aside class="col-span-3 bg-surface-container/70 border border-white/10 rounded-xl p-4 space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold">Scenes</h2>
+      <button id="refresh-btn" class="text-xs px-3 py-1 rounded bg-primary/20 text-primary">Refresh</button>
+    </div>
+    <div id="scene-list" class="space-y-2 text-sm"></div>
+    <div class="border-t border-white/10 pt-4 space-y-2">
+      <input id="new-scene-title" class="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm" placeholder="New scene title"/>
+      <button id="create-scene-btn" class="w-full rounded bg-primary/20 text-primary py-2 text-sm">Create Scene</button>
+    </div>
+  </aside>
+  <section class="col-span-6 bg-surface-container/50 border border-white/10 rounded-xl p-4 space-y-4">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-on-surface-variant">Canonical Scene</p>
+        <h2 id="scene-title" class="text-xl font-semibold">Select a scene</h2>
+        <p id="scene-meta" class="text-sm text-on-surface-variant"></p>
+      </div>
+      <div id="scene-counts" class="grid grid-cols-4 gap-2 text-center text-xs"></div>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-lg border border-white/10 bg-black/10 p-3"><h3 class="text-sm font-semibold mb-2">Characters</h3><div id="group-characters" class="space-y-1 text-sm text-on-surface-variant"></div></div>
+      <div class="rounded-lg border border-white/10 bg-black/10 p-3"><h3 class="text-sm font-semibold mb-2">Props</h3><div id="group-props" class="space-y-1 text-sm text-on-surface-variant"></div></div>
+      <div class="rounded-lg border border-white/10 bg-black/10 p-3"><h3 class="text-sm font-semibold mb-2">Camera</h3><div id="group-cameras" class="space-y-1 text-sm text-on-surface-variant"></div></div>
+      <div class="rounded-lg border border-white/10 bg-black/10 p-3"><h3 class="text-sm font-semibold mb-2">Effects / Atmosphere</h3><div id="group-effects" class="space-y-1 text-sm text-on-surface-variant"></div></div>
+    </div>
+    <div class="rounded-lg border border-white/10 bg-black/10 p-3">
+      <h3 class="text-sm font-semibold mb-2">All placements</h3>
+      <div id="placement-list" class="space-y-2"></div>
+    </div>
+  </section>
+  <aside class="col-span-3 bg-surface-container/70 border border-white/10 rounded-xl p-4 space-y-4">
+    <h2 class="font-semibold">Add reusable placement</h2>
+    <label class="block text-xs text-on-surface-variant">Shared asset</label>
+    <select id="asset-select" class="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm"></select>
+    <label class="block text-xs text-on-surface-variant">Character (optional)</label>
+    <select id="character-select" class="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm"></select>
+    <label class="block text-xs text-on-surface-variant">Placement type</label>
+    <select id="placement-type" class="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm">
+      <option value="character">Character</option><option value="prop">Prop</option><option value="environment">Environment</option><option value="lighting">Lighting</option><option value="camera">Camera</option><option value="weather">Weather</option><option value="effect">Effect</option>
+    </select>
+    <textarea id="placement-notes" class="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm" rows="3" placeholder="Placement notes / camera / lighting / effect metadata"></textarea>
+    <button id="add-placement-btn" class="w-full rounded bg-primary/20 text-primary py-2 text-sm">Add placement</button>
+    <p id="status" class="text-xs text-on-surface-variant"></p>
+  </aside>
+</main>
+<script>
+let projectId=null, selectedSceneId=null, assets=[], characters=[];
+const $=id=>document.getElementById(id);
+function setStatus(msg){$('status').textContent=msg||'';}
+async function api(path, opts={}){const res=await fetch(path,{headers:{'content-type':'application/json'},...opts});const json=await res.json().catch(()=>({}));if(!res.ok)throw new Error(json.error||json.message||res.statusText);return json;}
+async function getProjectId(){const stored=localStorage.getItem('morphic_project_id');if(stored)return stored;const data=await api('/api/projects');projectId=data.projects?.[0]?.id; if(projectId)localStorage.setItem('morphic_project_id',projectId); return projectId;}
+function item(label, sub=''){return `<div class="rounded border border-white/10 bg-white/5 px-2 py-1"><span>${label}</span>${sub?`<span class="block text-xs opacity-70">${sub}</span>`:''}</div>`}
+function renderGroup(id, rows){$(id).innerHTML=rows?.length?rows.map(p=>item(p.label||p.placement_type,p.metadata?.notes||p.asset_id)).join(''):'<p class="text-xs opacity-60">No records yet.</p>';}
+async function loadLookups(){const [a,c]=await Promise.all([api(`/api/projects/${projectId}/assets`),api(`/api/projects/${projectId}/characters`)]);assets=a.assets||[];characters=c.characters||[];$('asset-select').innerHTML=assets.map(a=>`<option value="${a.id}">${a.name} · ${a.type}</option>`).join('');$('character-select').innerHTML='<option value="">None</option>'+characters.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');}
+async function loadScenes(){const data=await api(`/api/projects/${projectId}/scenes`);$('scene-list').innerHTML=(data.scenes||[]).map(s=>`<button class="block w-full text-left rounded border border-white/10 bg-white/5 px-3 py-2 hover:border-primary/40" onclick="selectScene('${s.id}')"><span class="font-medium">${s.title||'Untitled scene'}</span><span class="block text-xs text-on-surface-variant">${s.status||'draft'} · ${s.mood||'no mood'}</span></button>`).join('')||'<p class="text-xs text-on-surface-variant">No scenes yet.</p>'; if(!selectedSceneId&&data.scenes?.[0])selectScene(data.scenes[0].id);}
+async function selectScene(id){selectedSceneId=id;const data=await api(`/api/projects/${projectId}/production/scenes/${id}/builder`);const b=data.sceneBuilder;$('scene-title').textContent=b.scene?.title||'Untitled scene';$('scene-meta').textContent=[b.scene?.mood,b.scene?.time_of_day,b.weather].filter(Boolean).join(' · ');$('scene-counts').innerHTML=['characters','props','cameras','effects'].map(k=>`<div class="rounded bg-black/20 p-2"><b class="block text-primary">${b.summary?.[k]||0}</b>${k}</div>`).join('');renderGroup('group-characters',b.groupedPlacements?.characters);renderGroup('group-props',b.groupedPlacements?.props);renderGroup('group-cameras',b.groupedPlacements?.cameras);renderGroup('group-effects',b.groupedPlacements?.effects);$('placement-list').innerHTML=(b.placements||[]).map(p=>item(`${p.placement_type} · layer ${p.layer_order}`,p.asset_id)).join('')||'<p class="text-xs text-on-surface-variant">No placements yet.</p>';}
+async function addPlacement(){if(!selectedSceneId)return setStatus('Select a scene first.');const assetId=$('asset-select').value;if(!assetId)return setStatus('Create or select a shared asset first.');const body={asset_id:assetId,character_id:$('character-select').value||undefined,placement_type:$('placement-type').value,metadata:{notes:$('placement-notes').value.trim()}};await api(`/api/projects/${projectId}/production/scenes/${selectedSceneId}/placements`,{method:'POST',body:JSON.stringify(body)});$('placement-notes').value='';setStatus('Placement saved to Scene Builder.');await selectScene(selectedSceneId);}
+async function createScene(){const title=$('new-scene-title').value.trim();if(!title)return;const data=await api(`/api/projects/${projectId}/scenes`,{method:'POST',body:JSON.stringify({title,status:'draft',metadata:{source:'scene-builder-workspace'}})});$('new-scene-title').value='';await loadScenes();await selectScene(data.scene.id);}
+document.addEventListener('DOMContentLoaded',async()=>{try{projectId=await getProjectId(); if(!projectId){setStatus('Create a project first.');return;} await loadLookups(); await loadScenes(); $('refresh-btn').onclick=loadScenes; $('add-placement-btn').onclick=addPlacement; $('create-scene-btn').onclick=createScene;}catch(e){setStatus(e.message);}});
+</script>
+<script src="/morphic-ui.js"></script>
+</body>
+</html>

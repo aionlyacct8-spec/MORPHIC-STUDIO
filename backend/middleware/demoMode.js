@@ -386,11 +386,13 @@ export function demoModeApi(req, res, next) {
   if (path.includes('/jobs')) return json(res, { jobs: [] });
   if (path.includes('/production/motion/sequences')) return json(res, { sequences: [] });
   if (path.includes('/production/voices')) return json(res, { voices: [] });
+  if (path.includes('/production/characters/') && path.includes('/library')) return json(res, { characterLibrary: { character: null, assetLinks: [], linkedAssets: [], rigs: [], expressions: [], poses: [], clothingSets: [], summary: { assetLinks: 0, linkedAssets: 0, rigs: 0, expressions: 0, poses: 0, clothingSets: 0 } } });
   if (path.includes('/production/characters/') && path.includes('/asset-links')) return json(res, { assetLinks: [] });
   if (path.includes('/production/characters/') && path.includes('/rigs')) return json(res, { rigs: [] });
   if (path.includes('/production/characters/') && path.includes('/expressions')) return json(res, { expressions: [] });
   if (path.includes('/production/characters/') && path.includes('/poses')) return json(res, { poses: [] });
   if (path.includes('/production/characters/') && path.includes('/clothing-sets')) return json(res, { clothingSets: [] });
+  if (path.includes('/production/scenes/') && path.includes('/builder')) return json(res, { sceneBuilder: { scene: null, placements: [], groupedPlacements: { characters: [], props: [], environments: [], lighting: [], cameras: [], weather: [], effects: [] }, characters: [], props: [], environments: [], lighting: [], camera: [], weather: null, effects: [], linkedAssets: [], assetVersions: [], metadata: {}, productionNotes: '', summary: { placements: 0, linkedAssets: 0, assetVersions: 0, characters: 0, props: 0, environments: 0, lighting: 0, cameras: 0, weather: 0, effects: 0 } } });
   if (path.includes('/production/scenes/') && path.includes('/placements')) return json(res, { placements: [] });
   if (path.includes('/production/storyboards/asset-references')) return json(res, { assetReferences: [] });
   if (path.includes('/production/comic/speech-bubbles')) return json(res, { speechBubbles: [] });

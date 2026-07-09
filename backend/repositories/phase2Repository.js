@@ -129,6 +129,25 @@ export async function createPhase2Record(configKey, projectId, payload = {}) {
   return { [config.collection.slice(0, -1) || 'record']: result.rows[0], record: result.rows[0] };
 }
 
+export async function updatePhase2Record(configKey, projectId, id, payload = {}) {
+  const config = PHASE2_TABLES[configKey];
+  const editable = config.insert.filter(field => field !== 'project_id' && payload[field] !== undefined);
+  if (!editable.length) return null;
+
+  const assignments = editable.map((field, index) => `${field} = $${index + 1}`);
+  const values = editable.map(field => stringifyValue(config, field, payload[field]));
+  values.push(id, projectId);
+
+  const result = await query(
+    `UPDATE ${config.table}
+     SET ${assignments.join(', ')}, updated_at = NOW()
+     WHERE id = $${values.length - 1} AND project_id = $${values.length} AND deleted_at IS NULL
+     RETURNING *`,
+    values
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function getPhase2Record(configKey, projectId, id) {
   const config = PHASE2_TABLES[configKey];
   const result = await query(
