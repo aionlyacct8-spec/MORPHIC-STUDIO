@@ -2,6 +2,224 @@
 
 This log records completed work so future human and AI contributors can understand project history. Add a new entry after each major coding or architecture session.
 
+## 2026-07-09 — Scene Builder Workspace UI and Supabase verification attempt
+
+**Summary**
+
+- Attempted real Phase 2 verification with the provided local-development Supabase PostgreSQL connection string; this container failed DNS resolution for the Supabase pooler host with `getaddrinfo EAI_AGAIN aws-0-eu-west-1.pooler.supabase.com`.
+- Added `frontend/scene-builder.html`, the first user-facing Scene Builder Workspace that consumes existing project, scene, asset, character, Scene Builder profile, and placement APIs.
+- Added a Scene Builder card to the landing page so the workspace is reachable from the app.
+- Kept backend foundations frozen except for verification attempts; no new schema or architectural layer was added.
+
+**Files modified**
+
+- `frontend/scene-builder.html`
+- `frontend/index.html`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The backend contracts for Phase 2A-2C are mature enough to begin visible production workspaces. Scene Builder is the next user-facing milestone because storyboard, comic, and animation work should reference canonical scenes instead of creating new scene copies.
+
+**Related architecture documents**
+
+- `docs/CORE_DATA_MODEL.md`
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` from a network environment that can resolve the Supabase pooler host and fix only verified Scene Builder workspace/profile or Migration 005/006/007 persistence failures.
+
+## 2026-07-09 — Scene Builder canonical assembly profile
+
+**Summary**
+
+- Began Phase 2C by adding a canonical Scene Builder profile that composes existing scenes, scene asset placements, linked shared assets, character placements, props, environments, lighting, camera, weather, effects, metadata, and production notes.
+- Added editable PATCH/DELETE routes for scene placements without adding new schema or duplicate scene systems.
+- Extended the Phase 2 verifier to validate Scene Builder grouping for character, prop, camera, and effect placements when `DATABASE_URL` is available.
+- Updated operational documentation to mark Scene Builder as the next production foundation after Character Library.
+
+**Files modified**
+
+- `backend/controllers/phase2FoundationController.js`
+- `backend/services/phase2FoundationService.js`
+- `backend/routes/production.js`
+- `backend/server.js`
+- `backend/middleware/demoMode.js`
+- `scripts/verify-phase2-foundations.js`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+Everything downstream depends on scenes. Scene Builder must assemble reusable characters, props, environments, lighting, camera, weather, and effects from existing shared assets so Storyboard Workspace, Comic Pipeline, and Animation Workspace can reference scenes instead of duplicating them.
+
+**Related architecture documents**
+
+- `docs/CORE_DATA_MODEL.md`
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None. Existing scene and scene-placement create/list endpoints remain available, and deletes use existing soft-delete behavior.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only verified Scene Builder profile/edit or Migration 005/006/007 persistence failures.
+
+## 2026-07-09 — Character Library canonical asset relationships
+
+**Summary**
+
+- Expanded the Character Library profile from a simple aggregate endpoint into the canonical project-scoped character production asset read/edit model.
+- The profile now exposes shared assets, asset versions, rigs, expressions, pose library, clothing sets, accessories, color palette data, turnaround sheets, facial expression assets, animation presets, voice profile/assets, metadata, and production notes using existing tables.
+- Added editable PATCH/DELETE routes for character asset links, rigs, expressions, poses, and clothing sets without adding new schema or duplicate character systems.
+- Extended the Phase 2 verifier to validate Character Library grouping for accessories, animation presets, asset versions, and editable records when `DATABASE_URL` is available.
+
+**Files modified**
+
+- `backend/controllers/phase2FoundationController.js`
+- `backend/repositories/phase2Repository.js`
+- `backend/services/phase2FoundationService.js`
+- `backend/routes/production.js`
+- `backend/server.js`
+- `scripts/verify-phase2-foundations.js`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The Character Library must become the single reusable source of truth for characters across future scene, storyboard, comic, animation, memory, assistant, and feedback systems. This change uses existing Shared Asset System records and Phase 2B tables rather than creating duplicate character or asset systems.
+
+**Related architecture documents**
+
+- `docs/CORE_DATA_MODEL.md`
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None. Existing create/list endpoints remain available, and deletes use existing soft-delete behavior.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only verified Character Library profile/edit or Migration 005/006/007 persistence failures.
+
+## 2026-07-09 — Character Library aggregate profile API
+
+**Summary**
+
+- Added a Phase 2B Character Library profile endpoint that aggregates a canonical character with existing asset links, linked shared assets, rigs, expressions, poses, clothing sets, and summary counts.
+- Reused the existing Phase 2 foundation tables and Shared Asset System; no new schema, aliases, or architectural layer was added.
+- Extended demo-mode and Phase 2 verification coverage for the aggregate Character Library profile.
+- Updated operational documentation to shift the implementation focus from additional planning/schema work toward using the Phase 2 foundations.
+
+**Files modified**
+
+- `backend/controllers/phase2FoundationController.js`
+- `backend/services/phase2FoundationService.js`
+- `backend/routes/production.js`
+- `backend/server.js`
+- `backend/middleware/demoMode.js`
+- `scripts/verify-phase2-foundations.js`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+Phase 2 database foundations are sufficiently established for the next step to be implementation that uses those records. The Character Library needs a single read model for UI/editor surfaces without duplicating character, asset, rig, pose, expression, or clothing data.
+
+**Related architecture documents**
+
+- `docs/CORE_DATA_MODEL.md`
+- `docs/PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/COMIC_PRODUCTION_AUTOMATION_ARCHITECTURE.md`
+- `docs/LIVING_ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+
+**Breaking changes**
+
+None. Existing Phase 2 character sub-resource endpoints remain available.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only verified Migration 005/006/007 or Character Library profile persistence issues.
+
+## 2026-07-09 — Production job compatibility alias and validation sync
+
+**Summary**
+
+- Completed a cross-agent repository synchronization pass against the current protocol, roadmap, sprint, architecture, core data model, registry, and handoff documents.
+- Added Migration 007 with a read-only `production_jobs` compatibility alias over legacy `generation_jobs`.
+- Added a compatibility API route at `/api/projects/:projectId/production-jobs` while preserving the existing `/api/projects/:projectId/jobs` route.
+- Extended the Phase 2 verifier to check the `production_jobs` alias when `DATABASE_URL` is available.
+- Updated operational documentation to record the current milestone, blocker, alias decision, and next task.
+
+**Files modified**
+
+- `backend/server.js`
+- `backend/services/generationJobService.js`
+- `database/migrations/007_production_job_alias.sql`
+- `scripts/verify-phase2-foundations.js`
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+- `SESSION_HANDOFF.md`
+- `DEVELOPMENT_LOG.md`
+
+**Reason for change**
+
+The highest-priority implementation work is still Phase 2 validation, but real database verification is blocked in this container by missing `DATABASE_URL`. The unresolved production job taxonomy was a documented blocker for future automation workers, so this session added a non-destructive alias that improves architecture terminology without breaking existing orchestrator writes or API clients.
+
+**Related architecture documents**
+
+- `docs/CORE_DATA_MODEL.md`
+- `docs/LIVING_ROADMAP.md`
+- `ROADMAP.md`
+- `docs/CURRENT_SPRINT.md`
+- `docs/AI_HANDOFF.md`
+
+**Breaking changes**
+
+None. Existing `generation_jobs` table usage and `/api/projects/:projectId/jobs` routes remain intact.
+
+**Recommended follow-up work**
+
+Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only the Migration 005/006/007 or API persistence failures it reports.
+
 ## 2026-07-08 — npm 403 root-cause investigation
 
 **Summary**

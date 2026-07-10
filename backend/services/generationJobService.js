@@ -1,6 +1,11 @@
 /**
  * Generation Job Service
  * CRUD operations for the generation_jobs table.
+ *
+ * generation_jobs remains the legacy physical table for compatibility.
+ * production_jobs is a read compatibility view introduced for production
+ * automation terminology while orchestrator writes continue to target the
+ * legacy table until a full migration is approved.
  * The Orchestrator creates/updates jobs; this service exposes them via API.
  */
 

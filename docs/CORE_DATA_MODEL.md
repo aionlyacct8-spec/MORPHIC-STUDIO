@@ -24,7 +24,7 @@ Morphic Studio is an AI-assisted production-automation platform for comics and a
 | Project Memory | Canon, continuity, world facts, style rules, story context, and agent memory. | `project_brain`, `ai_memory`, `knowledge_graph_nodes`, `knowledge_graph_edges` | Define source-of-truth boundaries before semantic search or cognitive agents expand. |
 | Story | Series/story grouping, premise, arcs, chapters, and continuity context. | Split across `scripts`, `chapters`, Project Brain, and metadata | Add explicit story/series records only when publishing structure requires them. |
 | Script | Written source material for story, storyboard, comic, and animation planning. | `scripts`, `chapters` | Link scripts to analysis, scene breakdowns, storyboard/page plans, and workflow stages. |
-| Character | Canonical reusable character identity, personality, voice, appearance, and role. | `characters`, Project Brain character bible, character assets | Keep `characters` canonical; link to rigs, expressions, poses, clothing, voice profiles, and assets. |
+| Character | Canonical reusable character identity, personality, voice, appearance, role, production notes, and reusable production relationships. | `characters`, Project Brain character bible, `character_asset_links`, character rigs/expressions/poses/clothing sets, shared assets | Keep `characters` canonical; link to shared assets, asset versions, rigs, expressions, pose library, clothing sets, accessories, color palettes, turnaround sheets, facial expression libraries, animation presets, voice profiles, metadata, and production notes without duplicating assets. |
 | Character Rig | Editable rig structure, parts, joints, compatibility data, and control metadata. | `animation_assets.asset_kind = 'rig'`, `rig_data` | Add `character_rigs` and `character_rig_parts` when rig editing begins. |
 | Pose | Reusable body/hand/face pose preset tied to rig compatibility and assets. | `animation_assets.asset_kind = 'pose'`, asset metadata | Add `character_poses` when pose editing/reuse needs structured records. |
 | Expression | Reusable facial expression or emotion preset tied to character continuity. | `animation_assets.asset_kind = 'expression'`, asset metadata | Add `character_expressions` when expression editing/reuse needs structured records. |
@@ -33,30 +33,49 @@ Morphic Studio is an AI-assisted production-automation platform for comics and a
 | Storage Object | Durable binary/object storage metadata, bucket/key/path/url, checksum, and object metadata. | `storage_objects` | Required for output-producing integrations once object-storage policy is finalized. |
 | Environment | Reusable place or background with location rules, atmosphere, and scene suitability. | `locations`, `assets.type = 'background'/'location'`, Project Brain world data | Strengthen `locations` or add `environments` only when metadata exceeds current tables. |
 | Prop | Reusable object that can appear in scenes, comics, animation, and continuity checks. | `assets.type = 'prop'`, knowledge graph nodes | Keep props asset-first unless structured behavior requires a dedicated table. |
-| Scene | Reusable production container for characters, props, locations, camera, lighting, continuity, and timeline cues. | `scenes`, `comic_panels.scene_id`, motion cues | Expand scene composition metadata before heavy editor integrations. |
+| Scene | Reusable production container for characters, props, environments, lighting, camera, weather, effects, continuity, and timeline cues. | `scenes`, `scene_asset_placements`, shared assets, `comic_panels.scene_id`, motion cues | Scene Builder composes existing characters/assets through placements; downstream storyboard, comic, and animation records should reference scenes rather than duplicate them. |
 | Storyboard | Editable visual plan made from pages/panels/shots, scenes, and workflow stages. | `comic_pages`, `comic_panels`, `workflow_stages`, storyboard frontend metadata | Keep storyboard plans saved as Morphic records; add storyboard-specific tables only if panels/pages cannot represent boards cleanly. |
 | Comic | Comic publishing structure, page layout, panel plans, dialogue placement, reading flow, and export metadata. | `chapters`, `comic_pages`, `comic_panels` | Add `comics`/`comic_issues` only when multi-series publishing requires them. |
 | Animation | Animation workspace records, clips, cues, motion assets, renders, and export metadata. | `motion_comic_sequences`, `motion_comic_cues`, `animation_assets` | Add `animations` and `animation_timelines` when the animation workspace begins. |
 | Timeline | Ordered editable tracks for body, face, camera, lighting, dialogue, audio, effects, and export timing. | Project Brain timeline JSON, `timeline_events`, `motion_comic_cues` | Define one canonical timeline model before major editor integrations. |
-| Agent Task | AI/automation task history, status, input, output, errors, and provenance. | `generation_jobs`, orchestrator task records, `workflow_stages` | Add compatibility naming such as `production_jobs`/`agent_tasks` after API review. |
+| Agent Task | AI/automation task history, status, input, output, errors, and provenance. | `generation_jobs`, read alias `production_jobs`, orchestrator task records, `workflow_stages` | Keep writes on legacy `generation_jobs` for compatibility; use `production_jobs` as a read-only bridge until service/client migration is approved. |
 | Workflow Stage | Production-state checkpoint for story intake, storyboard review, adapter runs, export, QA, and user approval. | `workflow_stages` | Use for production state; jobs track execution while workflow stages track production progress. |
 | Revision | Non-destructive branchable edit, target, author, status, and compare/restore metadata. | Not yet centralized | Add `production_revisions` and `production_revision_targets` when revision workflows begin. |
 
 ## Relationship rules
 
 - A `project` may own many scripts, characters, assets, scenes, pages, panels, workflow stages, jobs, memory records, and storage objects.
-- A `character` may reference many assets, rigs, poses, expressions, clothing sets, voice profiles, and scene appearances.
+- A `character` may reference many shared assets, asset versions, rigs, poses, expressions, clothing sets, accessories, color palettes, turnaround sheets, facial expression libraries, animation presets, voice profiles, production notes, and scene appearances through project-scoped reusable records.
 - An `asset` may have many `asset_versions` and many `storage_objects` over time.
 - A `scene` should reference canonical characters, environments, props, assets, workflow stages, and timeline cues rather than duplicating facts.
 - A `comic_panel` or storyboard shot should reference scenes, assets, page layout metadata, dialogue, camera notes, and workflow-stage context.
 - An `animation` or motion sequence should reference scenes, assets, rigs, timeline tracks, audio, effects, and export assets.
 - An AI/automation job should record input/output/provenance and should be linked to workflow stages and any assets or versions it creates.
 
+## Scene Builder implementation contract
+
+The Scene Builder is the canonical reusable source of truth for assembled production scenes. It should be consumed by Storyboard Workspace, Comic Pipeline, Animation Pipeline, Project Memory, AI Production Assistants, and future feedback/learning systems. Implement it by composing existing project-scoped records:
+
+- Keep scene identity, description, action, mood, time of day, weather, duration estimate, status, camera/lighting/effects metadata, and production notes on `scenes.metadata` and existing scene fields.
+- Keep reusable characters, props, environments, cameras, lighting references, weather/effect references, and other scene components as `assets` / `asset_versions`.
+- Use `scene_asset_placements` to position shared assets and characters in the scene without duplicating character, prop, environment, or file records.
+- Storyboard, comic, and animation systems should reference Scene Builder records and placements rather than creating new scene copies.
+
+## Character Library implementation contract
+
+The Character Library is the canonical reusable source of truth for characters across Scene Builder, Storyboard Workspace, Comic Pipeline, Animation Pipeline, Project Memory, AI Production Assistants, and future feedback/learning systems. Implement it by composing existing project-scoped records:
+
+- Keep identity, role, visual DNA, personality, relationships, voice profile, production notes, status, and arc progress on `characters`.
+- Keep reusable files and visual/audio references in `assets`, `asset_versions`, and `storage_objects`.
+- Use `character_asset_links` for reusable relationships to shared assets, asset versions, accessories, color palettes, turnaround sheets, facial expression sheets, animation presets, voice samples, and other production references.
+- Use `character_rigs`, `character_expressions`, `character_poses`, and `character_clothing_sets` for editable character production libraries that reference shared assets rather than copying files.
+- Expose aggregate read models for UI/editor surfaces, but do not introduce duplicate character tables or one-off pipeline character records.
+
 ## Output-producing integration contract
 
 Any adapter that produces a file, rendered output, generated draft, media export, mask, audio file, rig file, or reusable external artifact must prove the following record path before user-facing exposure:
 
-1. `generation_jobs` or future `production_jobs` / `agent_tasks` records execution, status, input, output, and errors.
+1. `generation_jobs` records execution, status, input, output, and errors; `production_jobs` is a read-only compatibility alias for production automation terminology.
 2. `workflow_stages` records production context, creator-review status, and next action.
 3. `assets` records reusable production identity, source/provenance, type, tags, and ownership.
 4. `asset_versions` records non-destructive output versions, notes, metadata, and file references.
@@ -74,14 +93,14 @@ If an integration cannot satisfy this path, it remains research-only or blocked.
 | File identity and provenance | `assets` | Domain records should reference assets rather than embed file-only truth. |
 | File versions | `asset_versions` | Use for non-destructive edits, assisted outputs, and revisions. |
 | Object storage metadata | `storage_objects` | Required when a binary object is persisted. |
-| Execution history | `generation_jobs` for now | Rename or alias later without breaking existing APIs. |
+| Execution history | `generation_jobs` plus read alias `production_jobs` | Do not destructively rename until existing APIs, orchestrator writes, and automation workers are migrated. |
 | Production progress | `workflow_stages` | Stages should describe production state, review, blockers, and next steps. |
 | Timeline timing | Canonical timeline model when defined | Until then, avoid duplicating timing across incompatible schemas. |
 
 ## Additive migration priorities
 
 1. Add production-oriented taxonomy/source/status values while preserving legacy values.
-2. Add compatibility naming for production jobs without deleting `generation_jobs`.
+2. Verify the `production_jobs` compatibility alias without deleting `generation_jobs`, then migrate services/clients only after API compatibility is reviewed.
 3. Strengthen asset/version/storage links for all output-producing adapters.
 4. Add reusable rig, pose, and expression tables only when editing workflows need them.
 5. Add comic intelligence records only when metadata is insufficient.

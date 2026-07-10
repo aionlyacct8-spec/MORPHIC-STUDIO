@@ -133,11 +133,39 @@ async function main() {
     ];
 
     let timelineId;
+    let expressionId;
+    let assetLinkId;
+    let placementId;
     for (const [label, method, path, body, key] of endpoints) {
       const created = await request(baseUrl, method, path, body);
       if (!created[key]?.id) throw new Error(`${label} did not return ${key}.id`);
       if (key === 'timeline') timelineId = created[key].id;
+      if (key === 'expression') expressionId = created[key].id;
+      if (key === 'assetLink') assetLinkId = created[key].id;
+      if (key === 'placement') placementId = created[key].id;
     }
+
+    await request(baseUrl, 'PATCH', `/api/projects/${projectId}/production/characters/${character.id}/asset-links/${assetLinkId}`, { label: 'Primary turnaround sheet', is_primary: true });
+    await request(baseUrl, 'PATCH', `/api/projects/${projectId}/production/characters/${character.id}/expressions/${expressionId}`, { status: 'approved', metadata: { verifier: true, editable: true } });
+    await request(baseUrl, 'POST', `/api/projects/${projectId}/production/characters/${character.id}/asset-links`, { asset_id: propAsset.id, link_type: 'accessory', label: 'Validation accessory' });
+    await request(baseUrl, 'POST', `/api/projects/${projectId}/production/characters/${character.id}/asset-links`, { asset_id: asset.id, asset_version_id: asset.current_version_id, link_type: 'animation_preset', label: 'Validation motion preset' });
+    await request(baseUrl, 'PATCH', `/api/projects/${projectId}/production/scenes/${scene.id}/placements/${placementId}`, { layer_order: 10, metadata: { verifier: true, editable: true } });
+    await request(baseUrl, 'POST', `/api/projects/${projectId}/production/scenes/${scene.id}/placements`, { asset_id: propAsset.id, placement_type: 'prop', transform: { x: 30, y: 15 }, layer_order: 20 });
+    await request(baseUrl, 'POST', `/api/projects/${projectId}/production/scenes/${scene.id}/placements`, { asset_id: asset.id, asset_version_id: asset.current_version_id, placement_type: 'camera', transform: { shot: 'medium', angle: 'eye-level' }, layer_order: 0 });
+    await request(baseUrl, 'POST', `/api/projects/${projectId}/production/scenes/${scene.id}/placements`, { asset_id: propAsset.id, placement_type: 'effect', metadata: { effect: 'dust motes' }, layer_order: 30 });
+
+    const libraryProfile = await request(baseUrl, 'GET', `/api/projects/${projectId}/production/characters/${character.id}/library`);
+    if ((libraryProfile.characterLibrary?.summary?.assetLinks ?? 0) < 1) throw new Error('character library profile did not include asset links.');
+    if ((libraryProfile.characterLibrary?.summary?.rigs ?? 0) < 1) throw new Error('character library profile did not include rigs.');
+    if ((libraryProfile.characterLibrary?.summary?.accessories ?? 0) < 1) throw new Error('character library profile did not include accessories.');
+    if ((libraryProfile.characterLibrary?.summary?.animationPresets ?? 0) < 1) throw new Error('character library profile did not include animation presets.');
+    if ((libraryProfile.characterLibrary?.summary?.assetVersions ?? 0) < 1) throw new Error('character library profile did not include asset versions.');
+
+    const sceneBuilder = await request(baseUrl, 'GET', `/api/projects/${projectId}/production/scenes/${scene.id}/builder`);
+    if ((sceneBuilder.sceneBuilder?.summary?.characters ?? 0) < 1) throw new Error('scene builder profile did not include character placements.');
+    if ((sceneBuilder.sceneBuilder?.summary?.props ?? 0) < 1) throw new Error('scene builder profile did not include prop placements.');
+    if ((sceneBuilder.sceneBuilder?.summary?.cameras ?? 0) < 1) throw new Error('scene builder profile did not include camera placements.');
+    if ((sceneBuilder.sceneBuilder?.summary?.effects ?? 0) < 1) throw new Error('scene builder profile did not include effect placements.');
 
     await request(baseUrl, 'GET', `/api/projects/${projectId}/production/characters/${character.id}/asset-links`);
     await request(baseUrl, 'GET', `/api/projects/${projectId}/production/characters/${character.id}/rigs`);
@@ -159,10 +187,14 @@ async function main() {
     if (!keyframe.keyframe?.id) throw new Error('animation keyframe did not persist.');
     await request(baseUrl, 'GET', `/api/projects/${projectId}/production/animation/timelines/${timelineId}/keyframes`);
 
+    const compatibilityViews = ['production_jobs'];
     const tables = ['asset_relationships','character_asset_links','character_rigs','character_expressions','character_poses','character_clothing_sets','scene_asset_placements','storyboard_asset_references','comic_speech_bubbles','animation_timelines','animation_keyframes'];
     const client = new Client(getPgPoolConfig());
     await client.connect();
     try {
+      for (const view of compatibilityViews) {
+        await client.query(`SELECT * FROM ${view} WHERE project_id = $1 LIMIT 1`, [projectId]);
+      }
       for (const table of tables) {
         const { rows } = await client.query(`SELECT COUNT(*)::int AS count FROM ${table} WHERE project_id = $1 AND deleted_at IS NULL`, [projectId]);
         if (rows[0].count < 1) throw new Error(`${table} did not persist verification rows.`);
@@ -172,7 +204,7 @@ async function main() {
     }
 
     await request(baseUrl, 'DELETE', `/api/projects/${projectId}`);
-    console.log('✅ Phase 2A-2F migrations, schema, API endpoints, and persistence verified.');
+    console.log('✅ Phase 2A-2F migrations, compatibility aliases, schema, API endpoints, and persistence verified.');
   } finally {
     server.close();
     await pool.end();

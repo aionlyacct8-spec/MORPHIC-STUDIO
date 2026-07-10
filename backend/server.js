@@ -119,6 +119,7 @@ app.get('/api', (_req, res) => {
       'GET  /api/projects/:projectId/graph/nodes',
       'POST /api/projects/:projectId/graph/edges',
       'GET  /api/projects/:projectId/jobs',
+      'GET  /api/projects/:projectId/production-jobs',
       'POST /api/projects/:projectId/jobs/dispatch',
       'GET  /api/system/config',
       'GET  /api/system/queues',
@@ -130,10 +131,13 @@ app.get('/api', (_req, res) => {
       'GET  /api/projects/:projectId/production/chapters',
       'POST /api/projects/:projectId/production/chapters',
       'GET  /api/projects/:projectId/production/comic/pages',
+      'GET  /api/projects/:projectId/production/characters/:characterId/library',
+      'PATCH/DELETE /api/projects/:projectId/production/characters/:characterId/asset-links/:id',
       'GET  /api/projects/:projectId/production/characters/:characterId/rigs',
       'GET  /api/projects/:projectId/production/characters/:characterId/expressions',
       'GET  /api/projects/:projectId/production/characters/:characterId/poses',
       'GET  /api/projects/:projectId/production/characters/:characterId/clothing-sets',
+      'GET  /api/projects/:projectId/production/scenes/:sceneId/builder',
       'GET  /api/projects/:projectId/production/scenes/:sceneId/placements',
       'GET  /api/projects/:projectId/production/storyboards/asset-references',
       'GET  /api/projects/:projectId/production/comic/speech-bubbles',
@@ -172,6 +176,7 @@ app.use('/api/projects/:projectId/assets',                  assetsRouter);
 app.use('/api/projects/:projectId/stories',                 storiesRouter);
 app.use('/api/projects/:projectId/graph',                   knowledgeGraphRouter);
 app.use('/api/projects/:projectId/jobs',                    generationJobsRouter);
+app.use('/api/projects/:projectId/production-jobs',         generationJobsRouter);
 app.use('/api/projects/:projectId/production',              productionRouter);
 app.use('/api/projects/:projectId/adapters',                adaptersRouter);
 app.use('/api/projects/:projectId',                         scenesRouter);  // /scenes and /episodes

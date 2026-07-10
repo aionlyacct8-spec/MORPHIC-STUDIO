@@ -1,6 +1,6 @@
 # Morphic Studio Living Roadmap
 
-**Last updated:** 2026-07-08  
+**Last updated:** 2026-07-09
 **Current priority:** Phase 2 implementation, beginning with Shared Asset System foundations.
 
 This roadmap must stay current. Update it whenever architecture, implementation status, blockers, integrations, or priorities change.
@@ -32,9 +32,9 @@ Active outcomes:
 ## Active tasks
 
 - Follow `docs/AI_SESSION_PROTOCOL.md` / root `AGENTS.md` at the start and end of every AI coding session.
-- Phase 2 implementation validation now has a focused `npm run verify:phase2` harness for Migrations 005/006, shared asset persistence, and Phase 2B-2F API endpoints; run it wherever a reachable PostgreSQL `DATABASE_URL` is available.
+- Phase 2 implementation validation now has a focused `npm run verify:phase2` harness for Migrations 005/006/007, shared asset persistence, the `production_jobs` compatibility alias, the Scene Builder profile/edit contract, and Phase 2B-2F API endpoints; run it wherever a reachable PostgreSQL `DATABASE_URL` is available.
 - Use `docs/CORE_DATA_MODEL.md` to keep Phase 2A implementation additive and compatible with existing APIs.
-- Decide whether `generation_jobs` should be renamed, aliased, or superseded by `production_jobs` / `automation_jobs` before adding new automation workers.
+- Keep `production_jobs` as a read-only compatibility alias over legacy `generation_jobs`; decide the later service/client migration path before adding new automation workers.
 - Decide package-manager lockfile policy.
 - Identify which attached assets/patch files are historical references and can be archived.
 
@@ -49,8 +49,8 @@ Active outcomes:
 
 ## Upcoming tasks
 
-1. Next implementation slice: run `npm run verify:phase2` against a reachable development PostgreSQL database, then use any failures to make focused persistence/API corrections.
-2. Implement Shared Asset System reuse controls and stronger character matching during script intake.
+1. Next implementation slice: run `npm run verify:phase2` against a reachable development PostgreSQL database, then use any failures to make focused Migration 005/006/007 or Scene Builder profile/edit corrections.
+2. Continue Phase 2C Scene Builder Workspace implementation by adding placement edit/delete controls, richer scene metadata editing, and asset thumbnails without duplicate records.
 3. Object storage implementation for durable imported/authored/AI-assisted/rendered/exported files.
 4. Frontend terminology cleanup for any remaining demo/default workflows when related screens are touched.
 5. Redis/BullMQ production automation queue after job taxonomy is stable.
@@ -83,7 +83,7 @@ Active outcomes:
 
 ## Open technical decisions
 
-- What is the migration path from `generation_jobs` to production automation terminology?
+- What is the full service/client migration path from legacy `generation_jobs` writes to production automation terminology after the read-only `production_jobs` alias?
 - Should package management standardize on npm or pnpm?
 - Which file/archive locations should hold historical planning assets?
 - What is the minimum schema for non-destructive revisions and branchable creative decisions?
@@ -95,7 +95,7 @@ Active outcomes:
 |---|---|---|
 | ComfyUI | Adapter exists; simulated mode works; real runtime requires external host. | Run `npm run verify:comfyui-runtime` with real ComfyUI. |
 | MinIO/S3/local object storage | Planning/service scaffolding exists. | Implement durable binary persistence after storage policy decision. |
-| Redis/BullMQ | Health/config scaffolding exists. | Add workers after production job taxonomy decision. |
+| Redis/BullMQ | Health/config scaffolding exists. | Add workers after `production_jobs` alias verification and durable job semantics are settled. |
 | Fabric.js/Konva/PixiJS/Paper.js | Required stack, not integrated. | Wait for editor data contracts. |
 | OpenCV | Required image intelligence, not integrated. | Wait for mask/segmentation metadata contracts. |
 | Krita/OpenToonz/Synfig/SkelForm/Glaxnimate/Blender | Reference/evaluation only. | Evaluate individually after core contracts stabilize. |
@@ -104,7 +104,7 @@ Active outcomes:
 
 - Current static frontend controls have been reframed away from Generate/Regenerate language for Conflict 1; remaining generation terminology is primarily backend/internal compatibility naming.
 - Conflict 4 output-record guardrail is active in open-source evaluation; new output-producing adapters must declare `assets`, `asset_versions`, `storage_objects`, `generation_jobs`, and `workflow_stages`.
-- Some backend and database names still use generation terminology for compatibility.
+- Some backend and database names still use generation terminology for compatibility; Migration 007 adds a read-only `production_jobs` alias as the first non-destructive bridge.
 - Preview launcher demo/default wording has been cleaned up for Conflict 3; continue auditing static frontend cards and example/template content when related screens are touched.
 - Large attached assets and patch files may be historical references rather than active project files.
 - No authenticated multi-user ownership model is implemented yet.

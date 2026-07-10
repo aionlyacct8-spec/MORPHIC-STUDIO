@@ -1,6 +1,6 @@
 # AI Handoff Guide
 
-**Last updated:** 2026-07-08
+**Last updated:** 2026-07-09
 
 Use this file to onboard future AI coding agents quickly. Follow `docs/AI_SESSION_PROTOCOL.md` and root `AGENTS.md` before making changes. Keep this file synchronized with `SESSION_HANDOFF.md`, `ROADMAP.md`, `docs/LIVING_ROADMAP.md`, and the architecture documents.
 
@@ -51,7 +51,7 @@ Current runtime shape:
 
 ## Current priorities
 
-1. Phase 2 foundations: run `npm run verify:phase2` against a reachable development PostgreSQL database and address any schema/API persistence failures.
+1. Phase 2 foundations: run `npm run verify:phase2` against a reachable development PostgreSQL database and address any Migration 005/006/007 or Scene Builder profile/edit persistence failures.
 2. Asset Library reuse controls and stronger character matching.
 3. Object storage implementation for durable shared assets.
 4. Production job taxonomy decision before new automation workers.
@@ -69,7 +69,7 @@ Current runtime shape:
 
 ## Pending decisions
 
-- Rename/alias `generation_jobs` to production automation terminology.
+- Complete the service/client migration plan from legacy `generation_jobs` writes to production automation terminology; `production_jobs` now exists as a read-only compatibility alias.
 - Choose npm vs pnpm lockfile policy.
 - Decide historical archive location for attached PDFs/zips/patches.
 - Define non-destructive revision/version schema.
@@ -77,7 +77,7 @@ Current runtime shape:
 
 ## Next recommended task
 
-Run `npm run verify:phase2` against a reachable development PostgreSQL database and fix only the migration/API persistence failures it reports.
+Run `npm run verify:phase2` from a network environment that can resolve the Supabase pooler host and fix only verified Migration 005/006/007 or Scene Builder profile/edit persistence failures.
 
 ## Commands commonly used
 
